@@ -96,6 +96,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleItemClick = (menu: string, submenu?: string) => {
+    onSelectMenu(menu, submenu);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      onToggleSidebar();
+    }
+  };
+
   const getRoleBadge = (r?: string, admin?: boolean) => {
     if (admin || r === 'admin') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500 text-slate-950 uppercase">Admin</span>;
     if (r === 'pic_piutang') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-500 text-white uppercase">PIC Piutang</span>;
@@ -150,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   if (!isOpen) {
     return (
-      <aside className={`w-16 flex flex-col items-center py-4 border-r transition-all duration-300 z-30 shrink-0 select-none ${
+      <aside className={`hidden md:flex w-16 flex-col items-center py-4 border-r transition-all duration-300 z-30 shrink-0 select-none ${
         isDark 
           ? 'bg-[#0a0d0e] text-zinc-300 border-emerald-950/60 shadow-xl' 
           : 'bg-white text-slate-700 border-slate-200 shadow-sm'
@@ -168,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex flex-col gap-3 items-center flex-1 w-full px-2">
           {/* Dashboard Icon */}
           <button
-            onClick={() => onSelectMenu('dashboard_2026')}
+            onClick={() => handleItemClick('dashboard_2026')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'dashboard_2026' 
                 ? (isDark ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/30')
@@ -180,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectMenu('pendapatan_blud')}
+            onClick={() => handleItemClick('pendapatan_blud')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'pendapatan_blud' 
                 ? (isDark ? 'bg-teal-950/60 text-teal-400 border border-teal-500/40 shadow-sm shadow-teal-950' : 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-md shadow-teal-500/30')
@@ -192,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectMenu('pengeluaran_blud')}
+            onClick={() => handleItemClick('pengeluaran_blud')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'pengeluaran_blud' 
                 ? (isDark ? 'bg-rose-950/60 text-rose-400 border border-rose-500/40 shadow-sm shadow-rose-950' : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/30')
@@ -204,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectMenu('hutang')}
+            onClick={() => handleItemClick('hutang')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'hutang' 
                 ? (isDark ? 'bg-indigo-950/60 text-indigo-400 border border-indigo-500/40 shadow-sm shadow-indigo-950' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/30')
@@ -216,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectMenu('perusahaan_asuransi')}
+            onClick={() => handleItemClick('perusahaan_asuransi')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               ['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu) 
                 ? (isDark ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/30')
@@ -228,7 +235,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectMenu('monitoring_ppn')}
+            onClick={() => handleItemClick('monitoring_ppn')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'monitoring_ppn' 
                 ? (isDark ? 'bg-gradient-to-tr from-emerald-950 to-indigo-950 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 text-white shadow-md shadow-emerald-500/30')
@@ -276,53 +283,61 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <aside className={`w-72 flex flex-col border-r h-screen sticky top-0 transition-all duration-300 z-30 select-none shrink-0 font-sans ${
-      isDark 
-        ? 'bg-[#0a0d0e] text-zinc-300 border-emerald-950/70 shadow-2xl' 
-        : 'bg-white text-slate-700 border-slate-200 shadow-sm'
-    }`}>
-      
-      {/* 1. Header with Logo & Brand Accent */}
-      <div className={`p-4 border-b flex items-center justify-between ${
-        isDark ? 'border-emerald-950/80 bg-[#070b0c]' : 'border-slate-100 bg-slate-50/50'
-      }`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center p-1.5 transition ${
-            isDark 
-              ? 'bg-gradient-to-br from-[#061e16] to-[#040e0b] border border-emerald-500/30 shadow-xs' 
-              : 'bg-white border border-slate-200/90 shadow-xs ring-1 ring-emerald-500/20'
-          }`}>
-            <RsudLogo className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className={`font-bold text-sm tracking-tight ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                RSUD Jatisari
-              </span>
-              <span className={`text-[10px] px-1.5 py-0.2 font-bold rounded ${
-                isDark 
-                  ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40' 
-                  : 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-300/80'
-              }`}>
-                BLUD
-              </span>
-            </div>
-            <div className={`text-[11px] font-medium ${isDark ? 'text-emerald-400/80' : 'text-emerald-700'}`}>
-              Sub Bagian Keuangan
-            </div>
-          </div>
-        </div>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden animate-fade-in"
+        onClick={onToggleSidebar}
+        aria-hidden="true"
+      />
 
-        <button 
-          onClick={onToggleSidebar}
-          className={`p-1.5 rounded-lg transition ${
-            isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-          }`}
-          title="Tutup Menu"
-        >
-          <PanelLeftClose className="w-4 h-4" />
-        </button>
-      </div>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] md:w-72 md:relative flex flex-col border-r h-screen md:sticky md:top-0 transition-transform duration-300 ease-in-out select-none shrink-0 font-sans shadow-2xl md:shadow-sm ${
+        isDark 
+          ? 'bg-[#0a0d0e] text-zinc-300 border-emerald-950/70' 
+          : 'bg-white text-slate-700 border-slate-200'
+      }`}>
+        
+        {/* 1. Header with Logo & Brand Accent */}
+        <div className={`p-4 border-b flex items-center justify-between ${
+          isDark ? 'border-emerald-950/80 bg-[#070b0c]' : 'border-slate-100 bg-slate-50/50'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center p-1.5 transition ${
+              isDark 
+                ? 'bg-gradient-to-br from-[#061e16] to-[#040e0b] border border-emerald-500/30 shadow-xs' 
+                : 'bg-white border border-slate-200/90 shadow-xs ring-1 ring-emerald-500/20'
+            }`}>
+              <RsudLogo className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className={`font-bold text-sm tracking-tight ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
+                  RSUD Jatisari
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.2 font-bold rounded ${
+                  isDark 
+                    ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40' 
+                    : 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-300/80'
+                }`}>
+                  BLUD
+                </span>
+              </div>
+              <div className={`text-[11px] font-medium ${isDark ? 'text-emerald-400/80' : 'text-emerald-700'}`}>
+                Sub Bagian Keuangan
+              </div>
+            </div>
+          </div>
+
+          <button 
+            onClick={onToggleSidebar}
+            className={`p-1.5 rounded-lg transition ${
+              isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+            }`}
+            title="Tutup Menu"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        </div>
 
 
 
@@ -332,7 +347,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* SECTION: UTAMA / DASHBOARD */}
         <div>
           <button
-            onClick={() => onSelectMenu('dashboard_2026')}
+            onClick={() => handleItemClick('dashboard_2026')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl text-xs font-bold transition group select-none ${
               activeMenu === 'dashboard_2026' 
                 ? (isDark 
@@ -409,7 +424,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               isDark ? 'border-teal-900/60' : 'border-teal-200'
             }`}>
               <button
-                onClick={() => onSelectMenu('pendapatan_blud')}
+                onClick={() => handleItemClick('pendapatan_blud')}
                 className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                   activeMenu === 'pendapatan_blud' && !activeSubmenu 
                     ? (isDark 
@@ -427,7 +442,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 return (
                   <button
                     key={sub.id}
-                    onClick={() => onSelectMenu('pendapatan_blud', sub.id)}
+                    onClick={() => handleItemClick('pendapatan_blud', sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                       isSubActive 
                         ? (isDark ? 'bg-teal-950/60 text-teal-300 font-bold border-l-2 border-teal-500' : 'bg-teal-50 text-teal-800 font-bold border-l-2 border-teal-600')
@@ -488,7 +503,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               isDark ? 'border-rose-900/60' : 'border-rose-200'
             }`}>
               <button
-                onClick={() => onSelectMenu('pengeluaran_blud')}
+                onClick={() => handleItemClick('pengeluaran_blud')}
                 className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                   activeMenu === 'pengeluaran_blud' && !activeSubmenu 
                     ? (isDark 
@@ -506,7 +521,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 return (
                   <button
                     key={sub.id}
-                    onClick={() => onSelectMenu('pengeluaran_blud', sub.id)}
+                    onClick={() => handleItemClick('pengeluaran_blud', sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                       isSubActive 
                         ? (isDark ? 'bg-rose-950/60 text-rose-300 font-bold border-l-2 border-rose-500' : 'bg-rose-50 text-rose-800 font-bold border-l-2 border-rose-600')
@@ -571,7 +586,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 return (
                   <button
                     key={sub.id}
-                    onClick={() => onSelectMenu('hutang', sub.id)}
+                    onClick={() => handleItemClick('hutang', sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10.5px] transition truncate flex items-center justify-between ${
                       isSubActive 
                         ? (isDark ? 'bg-indigo-950/60 text-indigo-300 font-bold border-l-2 border-indigo-500' : 'bg-indigo-50 text-indigo-800 font-bold border-l-2 border-indigo-600')
@@ -637,7 +652,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 return (
                   <button
                     key={sub.id}
-                    onClick={() => onSelectMenu(sub.id)}
+                    onClick={() => handleItemClick(sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                       isSubActive 
                         ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
@@ -656,7 +671,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             type="button"
-            onClick={() => onSelectMenu('monitoring_ppn')}
+            onClick={() => handleItemClick('monitoring_ppn')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
               activeMenu === 'monitoring_ppn'
                 ? (isDark 
@@ -822,6 +837,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
     </aside>
+    </>
   );
 };
 
