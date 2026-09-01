@@ -522,7 +522,6 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           GoogleSheetsService.saveConfig(cfg);
           showToast('Pengaturan Google Sheets berhasil disimpan!', 'success');
         }}
-        onTriggerSync={() => performSync(true)}
       />
 
       <UploadSpreadsheetModal
@@ -543,21 +542,11 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           GoogleSheetsService.saveCachedData(updated);
           showToast('Data piutang baru berhasil dicatat!', 'success');
         }}
-        user={user}
-        role={role}
-        isAdmin={isAdmin}
       />
 
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
-        syncConfig={syncConfig}
-        onSaveConfig={(cfg) => {
-          setSyncConfig(prev => ({ ...prev, ...cfg }));
-          GoogleSheetsService.saveConfig(cfg);
-          showToast('Pengaturan sistem berhasil diperbarui', 'success');
-        }}
-        onOpenGoogleSheetsModal={() => setIsGoogleModalOpen(true)}
       />
 
     </div>

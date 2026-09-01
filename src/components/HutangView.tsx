@@ -254,17 +254,17 @@ export const HutangView: React.FC<HutangViewProps> = ({
             r.kegiatan.toLowerCase().trim() === item.kegiatan.toLowerCase().trim()
           );
           
-          if (matched) {
-            return {
-              ...item,
-              totalTagihan: matched.totalTagihan,
-              koreksi: matched.koreksi,
-              jumlahBayar: matched.jumlahBayar,
-              sisaHutang: matched.sisaHutang,
-              isHighlighted: matched.isHighlighted,
-              status: matched.sisaHutang <= 0 ? 'Lunas' : 'Belum Lunas'
-            };
-          }
+            if (matched) {
+              return {
+                ...item,
+                totalTagihan: matched.totalTagihan,
+                koreksi: matched.koreksi,
+                jumlahBayar: matched.jumlahBayar,
+                sisaHutang: matched.sisaHutang,
+                isHighlighted: matched.isHighlighted,
+                status: (matched.sisaHutang <= 0 ? 'Lunas' : 'Belum Lunas') as 'Lunas' | 'Belum Lunas'
+              };
+            }
           return item;
         });
         inMemoryHutangCache = updated;
@@ -656,9 +656,9 @@ export const HutangView: React.FC<HutangViewProps> = ({
       return;
     }
 
-    const updated = items.map(i => {
+    const updated: HutangItem[] = items.map(i => {
       if (i.id === item.id) {
-        const nextStatus = i.status === 'Belum Lunas' ? 'Lunas' : 'Belum Lunas';
+        const nextStatus: 'Lunas' | 'Belum Lunas' = i.status === 'Belum Lunas' ? 'Lunas' : 'Belum Lunas';
         return {
           ...i,
           status: nextStatus,
@@ -966,6 +966,16 @@ export const HutangView: React.FC<HutangViewProps> = ({
                   const handleOpenDetailModal = () => {
                     const itemInvoices = (item as any).invoices || [];
                     setSelectedPosBelanjaDetail({
+                      id: item.id || `pos-${item.noUrut || idx + 1}`,
+                      namaPerusahaan: item.namaPerusahaan || 'REKANAN BLUD',
+                      tahun: item.tahun || '2025',
+                      jenisSumber: item.jenisSumber || 'BLUD',
+                      noPoSpk: item.noPoSpk || '',
+                      tanggalInvoice: item.tanggalInvoice || '2025-01-01',
+                      umurHutangHari: item.umurHutangHari || 365,
+                      bulan: item.bulan || 'Desember',
+                      status: item.status === 'Lunas' ? 'Lunas' : 'Belum Lunas',
+                      isHighlighted: isHigh,
                       noUrut: item.noUrut || (idx + 1),
                       kodeRekening: item.kodeRekening || '',
                       kegiatan: item.kegiatan || item.namaPerusahaan,

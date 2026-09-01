@@ -655,7 +655,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
     let jumlah = Number(formValues.jumlahInvoice) || 0;
     const koreksi = Number(formValues.koreksi) || 0;
-    let totalFix = formValues.totalInvoiceFix !== undefined && formValues.totalInvoiceFix !== '' 
+    let totalFix = formValues.totalInvoiceFix !== undefined && String(formValues.totalInvoiceFix) !== '' 
       ? Number(formValues.totalInvoiceFix) 
       : (jumlah + koreksi);
     let pembayaran = Number(formValues.pembayaran) || 0;
@@ -677,10 +677,10 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       if (pembayaran === 0 && totalFix > 0) {
         pembayaran = totalFix;
       }
-    } else if (formValues.sisaHutang !== undefined && formValues.sisaHutang !== '') {
+    } else if (formValues.sisaHutang !== undefined && String(formValues.sisaHutang) !== '') {
       sisa = Number(formValues.sisaHutang);
-      sisaRiil = formValues.sisaHutangRiil !== undefined && formValues.sisaHutangRiil !== '' ? Number(formValues.sisaHutangRiil) : sisa;
-    } else if (formValues.sisaHutangRiil !== undefined && formValues.sisaHutangRiil !== '') {
+      sisaRiil = formValues.sisaHutangRiil !== undefined && String(formValues.sisaHutangRiil) !== '' ? Number(formValues.sisaHutangRiil) : sisa;
+    } else if (formValues.sisaHutangRiil !== undefined && String(formValues.sisaHutangRiil) !== '') {
       sisaRiil = Number(formValues.sisaHutangRiil);
       sisa = sisaRiil;
     } else {
@@ -2155,7 +2155,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       value={formValues.pembayaran || 0}
                       onChange={(e) => {
                         const p = Number(e.target.value);
-                        let fix = Number(formValues.totalInvoiceFix) !== undefined && formValues.totalInvoiceFix !== '' 
+                        let fix = formValues.totalInvoiceFix !== undefined && String(formValues.totalInvoiceFix) !== '' 
                           ? Number(formValues.totalInvoiceFix) 
                           : ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
                         let j = Number(formValues.jumlahInvoice) || 0;

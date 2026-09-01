@@ -54,9 +54,11 @@ import { formatRupiah, formatDateDDMMYYYY } from '../utils/formatters';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage, auth } from '../lib/firebase';
 
-interface PerusahaanAsuransiViewProps { isAdmin?: boolean;
+interface PerusahaanAsuransiViewProps { 
+  isAdmin?: boolean;
   currentUserEmail?: string;
   userRole?: string;
+  selectedBulan?: string;
   onShowToast?: (msg: string, type: 'success' | 'info' | 'error') => void;
   onOpenUploadModal?: () => void;
 }

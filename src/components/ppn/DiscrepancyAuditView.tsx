@@ -34,11 +34,13 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
   const filteredDiscrepancies = discrepancies.filter((d) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
+    const vendor = (d.namaVendorCoretax || d.namaVendorHutang || '').toLowerCase();
+    const notes = (d.notes || '').toLowerCase();
     return (
       d.nomorInvoice.toLowerCase().includes(q) ||
       d.nomorFaktur.toLowerCase().includes(q) ||
-      d.vendor.toLowerCase().includes(q) ||
-      d.notes.toLowerCase().includes(q)
+      vendor.includes(q) ||
+      notes.includes(q)
     );
   });
 
@@ -94,7 +96,13 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
               <div>
                 <div className="text-[10px] text-slate-400">Total Selisih Nominal</div>
                 <div className="text-sm font-extrabold text-amber-300 font-mono">
-                  {formatRupiah(discrepancies.reduce((a, b) => a + Math.abs(b.selisih), 0))}
+                  {formatRupiah(
+                    discrepancies.reduce((a, b) => {
+                      const coretaxVal = (b.dpp || 0) + (b.ppn || 0);
+                      const hutangVal = b.nilaiInvoice || 0;
+                      return a + Math.abs(coretaxVal - hutangVal);
+                    }, 0)
+                  )}
                 </div>
               </div>
               <div className="h-6 w-px bg-slate-700"></div>
@@ -181,36 +189,43 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
                 {filteredDiscrepancies.length > 0 ? (
-                  filteredDiscrepancies.map((item) => (
-                    <tr key={`disc-${item.id}`} className="hover:bg-rose-50/30 dark:hover:bg-rose-950/20 transition-colors">
-                      <td className="py-3 px-3.5 font-mono font-bold text-slate-900 dark:text-white">
-                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 rounded border border-slate-200 dark:border-zinc-700">
-                          {item.nomorInvoice}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-700 dark:text-zinc-300">
-                        {item.nomorFaktur}
-                      </td>
-                      <td className="py-3 px-3 font-bold text-slate-900 dark:text-zinc-100 max-w-xs truncate">
-                        {item.vendor}
-                      </td>
-                      <td className="py-3 px-3 text-right font-mono text-slate-700 dark:text-zinc-300">
-                        {formatRupiah(item.nilaiCoretax)}
-                      </td>
-                      <td className="py-3 px-3 text-right font-mono text-slate-700 dark:text-zinc-300">
-                        {formatRupiah(item.nilaiHutang)}
-                      </td>
-                      <td className="py-3 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/30">
-                        {item.selisih > 0 ? `+${formatRupiah(item.selisih)}` : formatRupiah(item.selisih)}
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 text-[11px]">
-                        <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400 font-medium">
-                          <AlertTriangle className="w-3 h-3 shrink-0" />
-                          {item.notes}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                  filteredDiscrepancies.map((item) => {
+                    const coretaxTotal = (item.dpp || 0) + (item.ppn || 0);
+                    const hutangTotal = item.nilaiInvoice || 0;
+                    const diff = coretaxTotal - hutangTotal;
+                    const vendorName = item.namaVendorCoretax || item.namaVendorHutang || '-';
+
+                    return (
+                      <tr key={`disc-${item.id}`} className="hover:bg-rose-50/30 dark:hover:bg-rose-950/20 transition-colors">
+                        <td className="py-3 px-3.5 font-mono font-bold text-slate-900 dark:text-white">
+                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 rounded border border-slate-200 dark:border-zinc-700">
+                            {item.nomorInvoice}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-[11px] text-slate-700 dark:text-zinc-300">
+                          {item.nomorFaktur}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-zinc-100 max-w-xs truncate">
+                          {vendorName}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-slate-700 dark:text-zinc-300">
+                          {formatRupiah(coretaxTotal)}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-slate-700 dark:text-zinc-300">
+                          {formatRupiah(hutangTotal)}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/30">
+                          {diff > 0 ? `+${formatRupiah(diff)}` : formatRupiah(diff)}
+                        </td>
+                        <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 text-[11px]">
+                          <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400 font-medium">
+                            <AlertTriangle className="w-3 h-3 shrink-0" />
+                            {item.notes || 'Selisih nilai dokumen'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={7} className="py-10 text-center text-slate-400 dark:text-zinc-500">

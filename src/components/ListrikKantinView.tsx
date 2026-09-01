@@ -32,9 +32,11 @@ import { syncSemuaRekapanFromSources } from '../services/rekapanSyncService';
 import { syncDocumentToFirestore } from '../services/firestoreSync';
 import { formatRupiah } from '../utils/formatters';
 
-interface ListrikKantinViewProps { isAdmin?: boolean;
+interface ListrikKantinViewProps { 
+  isAdmin?: boolean;
   currentUserEmail?: string;
   userRole?: string;
+  selectedBulan?: string;
   onShowToast?: (msg: string, type: 'success' | 'info' | 'error') => void;
   onOpenUploadModal?: () => void;
 }

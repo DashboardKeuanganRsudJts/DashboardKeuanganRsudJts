@@ -268,7 +268,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
   // Top 10 Latest Outstanding Invoices
   const latestOutstandingInvoices = useMemo(() => {
     const list: any[] = [];
-    allOutstandingPerusahaan.forEach((p, pIdx) => {
+    allOutstandingPerusahaan.forEach((p: any, pIdx) => {
       const cleanName = (p.namaPerusahaan || `corp-${pIdx}`).toLowerCase().replace(/[^a-z0-9]/g, '-');
       list.push({
         id: p.id || `PER-${cleanName}-${p.bulan || 'BLN'}-${p.no || pIdx}`,
