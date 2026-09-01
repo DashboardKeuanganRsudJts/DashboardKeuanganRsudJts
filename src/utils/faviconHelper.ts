@@ -3,7 +3,8 @@
  * Supports dynamic real-time updates when user changes or resets the logo in Settings.
  */
 
-const DEFAULT_FAVICON = '/favicon.svg';
+const baseUrl = import.meta.env.BASE_URL || './';
+const DEFAULT_FAVICON = baseUrl.endsWith('/') ? `${baseUrl}favicon.svg` : `${baseUrl}/favicon.svg`;
 
 /**
  * Generates an optimized square icon data URL from any image source (Base64 or URL).
