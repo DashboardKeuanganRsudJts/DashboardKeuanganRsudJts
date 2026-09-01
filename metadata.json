@@ -1,0 +1,8 @@
+{
+  "name": "Dashboard Monitoring Sub Bagian Keuangan RSUD Jatisari",
+  "description": "Dashboard Monitoring Sub Bagian Keuangan RSUD Jatisari Karawang, mengelola Pendapatan BLUD, Pengeluaran BLUD, Hutang, Piutang Asuransi/Pasien, serta Monitoring PPN (Coretax DJP & Realisasi SP2D) terintegrasi Google Sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

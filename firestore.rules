@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    match /users/{userId} {
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow read: if true;
+      allow update, delete: if isAdmin();
+    }
+    
+    match /invoices/{invoiceId} {
+      allow read: if true; 
+      allow write: if isAuthenticated(); 
+    }
+    
+    match /perusahaan_invoices/{document=**} {
+      allow read: if true; 
+      allow write: if isAuthenticated(); 
+    }
+    
+    match /listrik_invoices/{document=**} {
+      allow read: if true; 
+      allow write: if isAuthenticated(); 
+    }
+
+    match /pengeluaran/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /pendapatan/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /hutang/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /invoices2025/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /invoices2026/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /legacy_hutang2025/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /legacy_hutang2026/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /appData/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /appState/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+  }
+}
+

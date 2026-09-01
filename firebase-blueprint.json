@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "Invoice": {
+      "title": "Invoice",
+      "description": "A record of an invoice",
+      "type": "object",
+      "properties": {
+        "noInvoice": { "type": "string" },
+        "noBukti": { "type": "string" },
+        "noSepKlaim": { "type": "string" },
+        "noRm": { "type": "string" },
+        "namaPasien": { "type": "string" },
+        "penjamin": { "type": "string" },
+        "namaDetailPenjamin": { "type": "string" },
+        "jenisLayanan": { "type": "string" },
+        "tanggalPelayanan": { "type": "string" },
+        "tanggalJatuhTempo": { "type": "string" },
+        "nominalTagihan": { "type": "number" },
+        "nominalDibayar": { "type": "number" },
+        "sisaPiutang": { "type": "number" },
+        "statusKlaim": { "type": "string" },
+        "dpjp": { "type": "string" },
+        "keteranganDispute": { "type": "string" },
+        "tanggalUpdateTerakhir": { "type": "string" },
+        "hariUmur": { "type": "number" },
+        "kategoriUmur": { "type": "string" },
+        "ruangan": { "type": "string" },
+        "documentUrl": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["noBukti", "nominalTagihan", "createdBy"]
+    }
+  },
+  "firestore": {
+    "invoices/{invoiceId}": {
+      "schema": { "$ref": "#/entities/Invoice" },
+      "description": "Collection of invoices"
+    }
+  }
+}
