@@ -63,17 +63,18 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
           }
           
           const isEmailAdmin = (currentUser.email === 'begegbayunugroho@gmail.com') || (currentUser.email?.toLowerCase().includes('admin') ?? false);
+          const isEmailPajak = currentUser.email?.toLowerCase().includes('pajak') || currentUser.email?.toLowerCase().includes('ppn');
           
           if (userDocSnap && userDocSnap.exists()) {
             const data = userDocSnap.data();
-            const userRole = data.role || (isEmailAdmin ? 'admin' : 'viewer');
+            const userRole = data.role || (isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : 'viewer');
             const userIsAdmin = data.isAdmin === true || userRole === 'admin' || isEmailAdmin;
             const finalRole = userIsAdmin && (userRole === 'viewer' || !userRole) ? 'admin' : userRole;
             
             setRole(finalRole);
             setIsAdmin(userIsAdmin);
           } else {
-            const defaultRole = isEmailAdmin ? 'admin' : 'viewer';
+            const defaultRole = isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : 'viewer';
             // Only try to set if we are potentially online, or handle the error
             try {
               await setDoc(userDocRef, {
@@ -91,8 +92,9 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
         } catch (err) {
           console.error("Error in AuthWrapper auth state change:", err);
           const isEmailAdmin = (currentUser.email === 'begegbayunugroho@gmail.com') || (currentUser.email?.toLowerCase().includes('admin') ?? false);
+          const isEmailPajak = currentUser.email?.toLowerCase().includes('pajak') || currentUser.email?.toLowerCase().includes('ppn');
           setIsAdmin(isEmailAdmin);
-          setRole(isEmailAdmin ? 'admin' : 'viewer');
+          setRole(isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : 'viewer');
         }
       } else {
         setIsAdmin(false);
@@ -114,9 +116,10 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       const userDocRef = doc(db, 'users', currentUser.uid);
       const userDocSnap = await getDoc(userDocRef);
       const isEmailAdmin = (currentUser.email === 'begegbayunugroho@gmail.com') || (currentUser.email?.toLowerCase().includes('admin') ?? false);
+      const isEmailPajak = (currentUser.email?.toLowerCase().includes('pajak') ?? false) || (currentUser.email?.toLowerCase().includes('ppn') ?? false);
       
       if (!userDocSnap.exists()) {
-        const assignedRole = isEmailAdmin ? 'admin' : selectedRole;
+        const assignedRole = isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : selectedRole;
         await setDoc(userDocRef, {
           email: currentUser.email,
           role: assignedRole,
@@ -127,7 +130,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
         setIsAdmin(assignedRole === 'admin');
       } else {
         const d = userDocSnap.data();
-        const userRole = d.role || (isEmailAdmin ? 'admin' : 'viewer');
+        const userRole = d.role || (isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : 'viewer');
         const userIsAdmin = d.isAdmin === true || userRole === 'admin' || isEmailAdmin;
         const finalRole = userIsAdmin && (userRole === 'viewer' || !userRole) ? 'admin' : userRole;
         setRole(finalRole);
@@ -151,6 +154,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       setError(null);
       setIsSubmitting(true);
       const isEmailAdmin = (email === 'begegbayunugroho@gmail.com') || email.toLowerCase().includes('admin');
+      const isEmailPajak = email.toLowerCase().includes('pajak') || email.toLowerCase().includes('ppn');
 
       if (isLoginMode) {
         const res = await signInWithEmailAndPassword(auth, email, password);
@@ -158,13 +162,13 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
         const snap = await getDoc(userDocRef);
         if (snap.exists()) {
           const d = snap.data();
-          const userRole = d.role || (isEmailAdmin ? 'admin' : 'viewer');
+          const userRole = d.role || (isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : 'viewer');
           const userIsAdmin = d.isAdmin === true || userRole === 'admin' || isEmailAdmin;
           const finalRole = userIsAdmin && (userRole === 'viewer' || !userRole) ? 'admin' : userRole;
           setRole(finalRole);
           setIsAdmin(userIsAdmin);
         } else {
-          const roleVal = isEmailAdmin ? 'admin' : 'viewer';
+          const roleVal = isEmailAdmin ? 'admin' : isEmailPajak ? 'pic_pajak' : 'viewer';
           setRole(roleVal);
           setIsAdmin(roleVal === 'admin');
         }
@@ -180,7 +184,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
         }
 
         const res = await createUserWithEmailAndPassword(auth, email, password);
-        const assignedRole = isEmailAdmin ? 'admin' : selectedRole;
+        const assignedRole = isEmailAdmin ? 'admin' : (isEmailPajak && selectedRole === 'viewer') ? 'pic_pajak' : selectedRole;
         await setDoc(doc(db, 'users', res.user.uid), {
           email,
           role: assignedRole,
@@ -200,6 +204,12 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       }
       setIsSubmitting(false);
     }
+  };
+
+  const handleQuickPreset = (presetRole: string, presetEmail: string) => {
+    setEmail(presetEmail);
+    setPassword('rsudjatisari2026');
+    setSelectedRole(presetRole);
   };
 
   if (loading) {
@@ -307,6 +317,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
                     className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#1565C0]/25"
                   >
                     <option value="viewer">Viewer (Hanya Lihat)</option>
+                    <option value="pic_pajak">PIC Pajak (Monitoring PPN & Faktur DJP Coretax)</option>
                     <option value="pic_piutang">PIC Piutang & Asuransi & Listrik</option>
                     <option value="pic_pendapatan">PIC Pendapatan BLUD</option>
                     <option value="pic_pengeluaran">PIC Pengeluaran BLUD</option>
@@ -315,6 +326,48 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
                   </select>
                 </div>
               )}
+
+              {/* Quick Preset Selector for Easy Role Access */}
+              <div className="pt-2 pb-1">
+                <div className="text-[10px] font-semibold text-slate-500 mb-1.5 flex items-center justify-between">
+                  <span>Pilih Cepat Akun Role:</span>
+                  <span className="text-[9px] text-emerald-600 font-bold">1-Klik Isi Form</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset('pic_pajak', 'pajak@rsudjatisari.go.id')}
+                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 transition flex items-center gap-1.5"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span className="truncate">PIC Pajak (PPN)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset('pic_hutang', 'hutang@rsudjatisari.go.id')}
+                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 transition flex items-center gap-1.5"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                    <span className="truncate">PIC Hutang</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset('pic_piutang', 'piutang@rsudjatisari.go.id')}
+                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-900 transition flex items-center gap-1.5"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                    <span className="truncate">PIC Piutang</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickPreset('admin', 'admin@rsudjatisari.go.id')}
+                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 transition flex items-center gap-1.5"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span className="truncate">Super Admin</span>
+                  </button>
+                </div>
+              </div>
 
               <button
                 type="submit"

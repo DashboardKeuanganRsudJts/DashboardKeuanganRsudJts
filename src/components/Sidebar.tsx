@@ -105,6 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const getRoleBadge = (r?: string, admin?: boolean) => {
     if (admin || r === 'admin') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500 text-slate-950 uppercase">Admin</span>;
+    if (r === 'pic_pajak' || r === 'pic_ppn') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-600 text-white uppercase">PIC Pajak</span>;
     if (r === 'pic_piutang') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-500 text-white uppercase">PIC Piutang</span>;
     if (r === 'pic_pendapatan') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500 text-white uppercase">PIC Pendapatan</span>;
     if (r === 'pic_pengeluaran') return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500 text-white uppercase">PIC Pengeluaran</span>;

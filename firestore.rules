@@ -69,6 +69,14 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAuthenticated();
     }
+    match /ppn_data/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /ppn_coretax/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
   }
 }
 
