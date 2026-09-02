@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, User } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  setPersistence, 
+  browserSessionPersistence,
+  User 
+} from 'firebase/auth';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, getDocFromCache } from 'firebase/firestore';
 import { Loader2, Mail, Lock, Eye, EyeOff, Activity, FileText, ShieldCheck, Clock, CheckCircle2, X, LogIn, UserCheck } from 'lucide-react';
@@ -110,6 +118,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     try {
       setError(null);
       setIsSubmitting(true);
+      await setPersistence(auth, browserSessionPersistence);
       const result = await signInWithPopup(auth, googleProvider);
       const currentUser = result.user;
       
@@ -153,6 +162,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     try {
       setError(null);
       setIsSubmitting(true);
+      await setPersistence(auth, browserSessionPersistence);
       const isEmailAdmin = (email === 'begegbayunugroho@gmail.com') || email.toLowerCase().includes('admin');
       const isEmailPajak = email.toLowerCase().includes('pajak') || email.toLowerCase().includes('ppn');
 
@@ -204,12 +214,6 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       }
       setIsSubmitting(false);
     }
-  };
-
-  const handleQuickPreset = (presetRole: string, presetEmail: string) => {
-    setEmail(presetEmail);
-    setPassword('rsudjatisari2026');
-    setSelectedRole(presetRole);
   };
 
   if (loading) {
@@ -326,48 +330,6 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
                   </select>
                 </div>
               )}
-
-              {/* Quick Preset Selector for Easy Role Access */}
-              <div className="pt-2 pb-1">
-                <div className="text-[10px] font-semibold text-slate-500 mb-1.5 flex items-center justify-between">
-                  <span>Pilih Cepat Akun Role:</span>
-                  <span className="text-[9px] text-emerald-600 font-bold">1-Klik Isi Form</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickPreset('pic_pajak', 'pajak@rsudjatisari.go.id')}
-                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 transition flex items-center gap-1.5"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                    <span className="truncate">PIC Pajak (PPN)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickPreset('pic_hutang', 'hutang@rsudjatisari.go.id')}
-                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 transition flex items-center gap-1.5"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                    <span className="truncate">PIC Hutang</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickPreset('pic_piutang', 'piutang@rsudjatisari.go.id')}
-                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-900 transition flex items-center gap-1.5"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-                    <span className="truncate">PIC Piutang</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickPreset('admin', 'admin@rsudjatisari.go.id')}
-                    className="px-2 py-1.5 text-left text-[11px] font-medium rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 transition flex items-center gap-1.5"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="truncate">Super Admin</span>
-                  </button>
-                </div>
-              </div>
 
               <button
                 type="submit"

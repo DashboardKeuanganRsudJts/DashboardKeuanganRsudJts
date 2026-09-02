@@ -23,6 +23,7 @@ interface CoretaxDataViewProps {
   onEditRecord: (record: CoretaxPPNRecord) => void;
   onDeleteRecord: (id: string) => void;
   onOpenUpload: () => void;
+  canEdit?: boolean;
 }
 
 export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
@@ -31,6 +32,7 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
   onEditRecord,
   onDeleteRecord,
   onOpenUpload,
+  canEdit = false,
 }) => {
   const [search, setSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
@@ -143,21 +145,25 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
               <span>Format 13 Kolom Excel</span>
             </button>
 
-            <button
-              onClick={onOpenUpload}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Upload / Paste Coretax</span>
-            </button>
+            {canEdit && (
+              <>
+                <button
+                  onClick={onOpenUpload}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload / Paste Coretax</span>
+                </button>
 
-            <button
-              onClick={onAddRecord}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-900 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Plus className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Tambah Faktur</span>
-            </button>
+                <button
+                  onClick={onAddRecord}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-900 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Tambah Faktur</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -282,7 +288,9 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
                 <th className="py-3.5 px-3.5 whitespace-nowrap bg-indigo-700/80 text-white font-extrabold shadow-inner">
                   13. Nomor invoice
                 </th>
-                <th className="py-3.5 px-3 text-center whitespace-nowrap w-20">Aksi</th>
+                {canEdit && (
+                  <th className="py-3.5 px-3 text-center whitespace-nowrap w-20">Aksi</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 font-medium">
@@ -387,24 +395,26 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
                         )}
                       </td>
 
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => onEditRecord(item)}
-                            className="p-1.5 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-zinc-800 transition-colors"
-                            title="Edit Faktur"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onDeleteRecord(item.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors"
-                            title="Hapus Faktur"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+                      {canEdit && (
+                        <td className="py-3 px-3 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => onEditRecord(item)}
+                              className="p-1.5 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-zinc-800 transition-colors"
+                              title="Edit Faktur"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => onDeleteRecord(item.id)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors"
+                              title="Hapus Faktur"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })

@@ -90,7 +90,9 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
   onNavigateSubmenu
 }) => {
   const { isDark } = useTheme();
-  const isSuperAdmin = (role === 'admin') || Boolean(isAdmin);
+  const isUserLoggedIn = Boolean(user);
+  const isSuperAdmin = isUserLoggedIn && ((role === 'admin') || Boolean(isAdmin));
+  const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (role === 'pic_hutang'));
 
   // States for raw invoice records
   const [invoices2025, setInvoices2025] = useState<InvoiceHutang2025Record[]>(() => {
@@ -546,15 +548,17 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         </div>
 
         <div className="relative z-10 flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button
-            onClick={() => syncAllHutangData(true)}
-            disabled={isSyncing}
-            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg transition transform active:scale-95 flex items-center gap-2 border border-indigo-400/40 disabled:opacity-50 cursor-pointer"
-            title="Sinkronkan data dari Invoice Hutang 2025 & 2026"
-          >
-            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>SINKRONISASI DATA</span>
-          </button>
+          {isPicHutangOrAdmin && (
+            <button
+              onClick={() => syncAllHutangData(true)}
+              disabled={isSyncing}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg transition transform active:scale-95 flex items-center gap-2 border border-indigo-400/40 disabled:opacity-50 cursor-pointer"
+              title="Sinkronkan data dari Invoice Hutang 2025 & 2026"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>SINKRONISASI DATA</span>
+            </button>
+          )}
 
           <button
             onClick={handleExportCombinedExcel}

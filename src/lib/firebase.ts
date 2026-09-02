@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { initializeFirestore } from 'firebase/firestore';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import firebaseConfigData from '../../firebase-applet-config.json';
 
@@ -15,9 +15,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true
+  experimentalAutoDetectLongPolling: true,
+  ignoreUndefinedProperties: true
 }, firebaseConfigData.firestoreDatabaseId);
 export const auth = getAuth(app);
+
+// Sesi login hanya berlaku selama tab/browser aktif.
+// Saat browser ditutup atau logout, pengguna wajib login ulang.
+setPersistence(auth, browserSessionPersistence).catch((err) => {
+  console.warn("Could not set auth session persistence:", err);
+});
+
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 

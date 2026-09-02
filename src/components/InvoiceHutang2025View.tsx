@@ -225,8 +225,9 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   isAdmin,
   onShowToast
 }) => {
-  const isSuperAdmin = Boolean(isAdmin) || role === 'admin';
-  const isPicHutangOrAdmin = isSuperAdmin || role === 'pic_hutang';
+  const isUserLoggedIn = Boolean(user);
+  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || role === 'admin');
+  const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || role === 'pic_hutang');
 
   // State for dataset - initialize with in-memory singleton or localStorage cache first, then load from IndexedDB
   const [data, setData] = useState<InvoiceHutang2025Record[]>(() => {

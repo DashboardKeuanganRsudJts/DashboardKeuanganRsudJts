@@ -68,10 +68,12 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
   isAdmin,
   onShowToast,
 }) => {
-  const isSuperAdmin = (role === 'admin') || Boolean(isAdmin);
-  const isPicHutangOrAdmin = isSuperAdmin || (role === 'pic_hutang');
+  const isUserLoggedIn = Boolean(user);
+  const isSuperAdmin = isUserLoggedIn && ((role === 'admin') || Boolean(isAdmin));
+  const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (role === 'pic_hutang'));
 
   const canModifyRecord = (record: any) => {
+    if (!isUserLoggedIn) return false;
     if (isSuperAdmin) return true;
     if (role === 'pic_hutang') {
       if (!record?.createdBy || record?.createdBy === user?.email) return true;

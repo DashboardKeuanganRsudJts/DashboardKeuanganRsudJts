@@ -219,7 +219,9 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     window.print();
   };
 
-  const isPicPiutangOrAdmin = isAdmin || userRole === 'pic_piutang';
+  const isUserLoggedIn = Boolean(currentUserEmail);
+  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || userRole === 'admin');
+  const isPicPiutangOrAdmin = isUserLoggedIn && (isSuperAdmin || userRole === 'pic_piutang');
 
   return (
     <div className="space-y-6">

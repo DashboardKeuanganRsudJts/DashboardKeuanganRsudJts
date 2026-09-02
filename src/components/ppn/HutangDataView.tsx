@@ -30,6 +30,7 @@ interface HutangDataViewProps {
   lastSyncedAt?: string;
   sheetUrl?: string;
   onUpdateSheetUrl?: (newUrl: string) => void;
+  canEdit?: boolean;
 }
 
 export const HutangDataView: React.FC<HutangDataViewProps> = ({
@@ -43,6 +44,7 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
   lastSyncedAt,
   sheetUrl = DEFAULT_GOOGLE_SHEETS_URL,
   onUpdateSheetUrl,
+  canEdit = false,
 }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -110,7 +112,7 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {onSyncGoogleSheets && (
+            {onSyncGoogleSheets && canEdit && (
               <button
                 onClick={() => onSyncGoogleSheets()}
                 disabled={isSyncing}
@@ -132,21 +134,25 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
               <span>Buka Sheet</span>
             </a>
 
-            <button
-              onClick={onOpenUpload}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all hover:scale-[1.02]"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Upload / Paste</span>
-            </button>
+            {canEdit && (
+              <>
+                <button
+                  onClick={onOpenUpload}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all hover:scale-[1.02]"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload / Paste</span>
+                </button>
 
-            <button
-              onClick={onAddRecord}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-900 transition-all hover:scale-[1.02]"
-            >
-              <Plus className="w-3.5 h-3.5 text-blue-600" />
-              <span>Tambah Manual</span>
-            </button>
+                <button
+                  onClick={onAddRecord}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-900 transition-all hover:scale-[1.02]"
+                >
+                  <Plus className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Tambah Manual</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -287,7 +293,9 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
                 </th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Tanggal Bayar</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Keterangan / Pengadaan</th>
-                <th className="py-3.5 px-3 text-center whitespace-nowrap w-20">Aksi</th>
+                {canEdit && (
+                  <th className="py-3.5 px-3 text-center whitespace-nowrap w-20">Aksi</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 font-medium">
@@ -353,24 +361,26 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
                       {item.keterangan || item.jenisHutang || 'Barjas BLUD'}
                     </td>
 
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => onEditRecord(item)}
-                          className="p-1.5 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors"
-                          title="Edit Data Hutang"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => onDeleteRecord(item.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors"
-                          title="Hapus Data Hutang"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => onEditRecord(item)}
+                            className="p-1.5 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors"
+                            title="Edit Data Hutang"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => onDeleteRecord(item.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors"
+                            title="Hapus Data Hutang"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (

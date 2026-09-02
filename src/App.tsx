@@ -99,13 +99,15 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
     }, 4500);
   };
 
-  const isSuperAdmin = Boolean(isAdmin) || role === 'admin' || (user?.email === 'begegbayunugroho@gmail.com') || (user?.email?.toLowerCase().includes('admin') ?? false);
-  const effectiveRole = isSuperAdmin ? 'admin' : role;
+  const isUserLoggedIn = Boolean(user);
+  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || role === 'admin' || (user?.email === 'begegbayunugroho@gmail.com') || (user?.email?.toLowerCase().includes('admin') ?? false));
+  const effectiveRole = isSuperAdmin ? 'admin' : (isUserLoggedIn ? role : undefined);
 
-  const canEditPiutang = isSuperAdmin || role === 'pic_piutang';
-  const canEditPendapatan = isSuperAdmin || role === 'pic_pendapatan';
-  const canEditPengeluaran = isSuperAdmin || role === 'pic_pengeluaran';
-  const canEditHutang = isSuperAdmin || role === 'pic_hutang';
+  const canEditPiutang = isUserLoggedIn && (isSuperAdmin || role === 'pic_piutang');
+  const canEditPendapatan = isUserLoggedIn && (isSuperAdmin || role === 'pic_pendapatan');
+  const canEditPengeluaran = isUserLoggedIn && (isSuperAdmin || role === 'pic_pengeluaran');
+  const canEditHutang = isUserLoggedIn && (isSuperAdmin || role === 'pic_hutang');
+  const canEditPajak = isUserLoggedIn && (isSuperAdmin || role === 'pic_pajak');
 
   // Handle menu selection from Sidebar or Dashboard
   const handleSelectMenu = (menu: string, submenu?: string) => {
@@ -522,7 +524,12 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
 
           {/* 8. MONITORING PPN (Coretax DJP & Data Hutang 2026) */}
           {activeMenu === 'monitoring_ppn' && (
-            <MonitoringPpnView />
+            <MonitoringPpnView 
+              user={user}
+              role={effectiveRole}
+              isAdmin={isSuperAdmin}
+              onShowToast={showToast}
+            />
           )}
 
         </main>

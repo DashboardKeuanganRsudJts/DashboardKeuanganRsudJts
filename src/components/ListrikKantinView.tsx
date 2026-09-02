@@ -117,10 +117,12 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
   onShowToast, 
   onOpenUploadModal 
 }) => {
-  const isSuperAdmin = (userRole === 'admin') || Boolean(isAdmin);
-  const isPicPiutangOrAdmin = isSuperAdmin || (userRole === 'pic_piutang');
+  const isUserLoggedIn = Boolean(currentUserEmail);
+  const isSuperAdmin = isUserLoggedIn && ((userRole === 'admin') || Boolean(isAdmin));
+  const isPicPiutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (userRole === 'pic_piutang'));
 
   const canModifyRecord = (row?: any) => {
+    if (!isUserLoggedIn) return false;
     if (isSuperAdmin) return true;
     if (userRole === 'pic_piutang') {
       if (!row || !row.createdBy || row.createdBy === currentUserEmail) return true;
@@ -580,7 +582,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               </button>
             )}
 
-            {userRole === 'admin' && (
+            {isSuperAdmin && (
               <button
                 onClick={handleResetToScreenshots}
                 className="px-3 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 border border-slate-700"
@@ -807,16 +809,16 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                     </div>
 
                     {/* Delete Stand Button */}
-                    <button
-                      onClick={() => handleDeleteStand(stand.namaStand)}
-                      disabled={userRole !== 'admin'}
-                      className="ml-1 p-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/60 transition flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95"
-                      title={`Hapus stand ${stand.namaStand} dari sistem`}
-                      style={{ opacity: userRole !== 'admin' ? 0.5 : 1, cursor: userRole !== 'admin' ? 'not-allowed' : 'pointer' }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                      <span className="hidden sm:inline">Hapus Stand</span>
-                    </button>
+                    {isSuperAdmin && (
+                      <button
+                        onClick={() => handleDeleteStand(stand.namaStand)}
+                        className="ml-1 p-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/60 transition flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95"
+                        title={`Hapus stand ${stand.namaStand} dari sistem`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <span className="hidden sm:inline">Hapus Stand</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 

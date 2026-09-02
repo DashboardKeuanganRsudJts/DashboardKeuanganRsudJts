@@ -338,10 +338,12 @@ let inMemoryPerusahaanCache: PerusahaanAsuransiRow[] | null = null;
 let inMemoryMasterPartnersCache: MasterPartnerInfo[] | null = null;
 
 export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ isAdmin, onShowToast, onOpenUploadModal, currentUserEmail, userRole }) => {
-  const isSuperAdmin = (userRole === 'admin') || Boolean(isAdmin);
-  const isPicPiutangOrAdmin = isSuperAdmin || (userRole === 'pic_piutang');
+  const isUserLoggedIn = Boolean(currentUserEmail);
+  const isSuperAdmin = isUserLoggedIn && ((userRole === 'admin') || Boolean(isAdmin));
+  const isPicPiutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (userRole === 'pic_piutang'));
 
   const canModifyRecord = (record: any) => {
+    if (!isUserLoggedIn) return false;
     if (isSuperAdmin) return true;
     if (userRole === 'pic_piutang') {
       if (!record?.createdBy || record?.createdBy === currentUserEmail) return true;
@@ -1372,7 +1374,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               </button>
             )}
 
-            {userRole === 'admin' && (
+            {isSuperAdmin && (
               <button
                 onClick={handleResetToEmptyAllMonths}
                 className="px-3 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-rose-700/50"
@@ -1589,14 +1591,16 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             {row.namaPerusahaan}
                           </div>
                           {/* Tombol "+" Pojok Kanan Atas Perusahaan untuk Memudahkan PIC Piutang Membuat Invoice Baru */}
-                          <button
-                            type="button"
-                            onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
-                            className="p-1 rounded-md text-emerald-700 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/70 dark:hover:bg-emerald-900/80 border border-emerald-200/90 dark:border-emerald-800/80 hover:border-emerald-300 transition-all shadow-2xs hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer"
-                            title={`Buat Invoice Baru untuk ${row.namaPerusahaan}`}
-                          >
-                            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                          </button>
+                          {isPicPiutangOrAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
+                              className="p-1 rounded-md text-emerald-700 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/70 dark:hover:bg-emerald-900/80 border border-emerald-200/90 dark:border-emerald-800/80 hover:border-emerald-300 transition-all shadow-2xs hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer"
+                              title={`Buat Invoice Baru untuk ${row.namaPerusahaan}`}
+                            >
+                              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                            </button>
+                          )}
                         </div>
 
                         {/* LOGIKA TAMPILAN INVOICE: */}
@@ -1604,16 +1608,20 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                         {!hasInvoices ? (
                           <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-zinc-500 italic">
                             <span>Belum ada invoice</span>
-                            <span>•</span>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
-                              className="text-[10px] font-semibold not-italic text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline flex items-center gap-0.5 cursor-pointer"
-                              title={`Buat invoice untuk ${row.namaPerusahaan}`}
-                            >
-                              <Plus className="w-3 h-3 stroke-[2.5]" />
-                              Buat Invoice
-                            </button>
+                            {isPicPiutangOrAdmin && (
+                              <>
+                                <span>•</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
+                                  className="text-[10px] font-semibold not-italic text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline flex items-center gap-0.5 cursor-pointer"
+                                  title={`Buat invoice untuk ${row.namaPerusahaan}`}
+                                >
+                                  <Plus className="w-3 h-3 stroke-[2.5]" />
+                                  Buat Invoice
+                                </button>
+                              </>
+                            )}
                           </div>
                         ) : invoices.length === 1 ? (
                           /* CASE B: TEPAT 1 INVOICE -> TAMPILKAN LANGSUNG KARTU INVOICE TUNGGAL */
@@ -1853,16 +1861,16 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                                 ))}
 
                                 <div className="flex items-center justify-between pt-0.5">
-                                  {isAdmin && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
-                                    className="p-1 rounded text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition shrink-0"
-                                    title={"Tambah Invoice Baru"}
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
+                                  {isPicPiutangOrAdmin && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
+                                      className="p-1 rounded text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition shrink-0"
+                                      title={"Tambah Invoice Baru"}
+                                    >
+                                      <Plus className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() => toggleRowAccordion(rowKey)}

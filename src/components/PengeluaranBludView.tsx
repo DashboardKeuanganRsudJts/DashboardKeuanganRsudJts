@@ -89,10 +89,12 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
   const [currentSubTab, setCurrentSubTab] = useState<string>(activeSubmenu || 'belanja_pegawai');
 
   // Role permissions check
-  const isSuperAdmin = (userRole === 'admin') || Boolean(isAdmin);
-  const isPicPengeluaranOrAdmin = isSuperAdmin || (userRole === 'pic_pengeluaran');
+  const isUserLoggedIn = Boolean(currentUserEmail);
+  const isSuperAdmin = isUserLoggedIn && ((userRole === 'admin') || Boolean(isAdmin));
+  const isPicPengeluaranOrAdmin = isUserLoggedIn && (isSuperAdmin || (userRole === 'pic_pengeluaran'));
 
   const canModifyRecord = (record: any) => {
+    if (!isUserLoggedIn) return false;
     if (isSuperAdmin) return true;
     if (userRole === 'pic_pengeluaran') {
       if (!record?.createdBy || record?.createdBy === currentUserEmail) return true;

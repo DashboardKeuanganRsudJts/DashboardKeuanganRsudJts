@@ -35,7 +35,23 @@ import { DetailModal } from './ppn/DetailModal';
 import { AddRecordModal } from './ppn/AddRecordModal';
 import { ImportModal } from './ppn/ImportModal';
 
-export const MonitoringPpnView: React.FC = () => {
+interface MonitoringPpnViewProps {
+  user?: any;
+  role?: string;
+  isAdmin?: boolean;
+  onShowToast?: (message: string, type?: 'success' | 'error' | 'info') => void;
+}
+
+export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
+  user,
+  role,
+  isAdmin,
+  onShowToast,
+}) => {
+  const isUserLoggedIn = Boolean(user);
+  const isSuperAdmin = isUserLoggedIn && ((role === 'admin') || Boolean(isAdmin));
+  const isPicPajakOrHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (role === 'pic_pajak') || (role === 'pic_hutang'));
+
   // State for data
   const [coretaxData, setCoretaxData] = useState<CoretaxPPNRecord[]>(() => {
     const saved = localStorage.getItem('rsud_ppn_coretax_data_2026');
@@ -220,15 +236,17 @@ export const MonitoringPpnView: React.FC = () => {
           {/* Right Master Action Buttons */}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Sync Google Sheets */}
-            <button
-              onClick={() => handleGoogleSheetsSync()}
-              disabled={isSyncing}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-              title="Sinkronisasi Data Hutang Real-time dari Google Sheets"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'Menyinkronkan...' : 'Sync Google Sheets'}</span>
-            </button>
+            {isPicPajakOrHutangOrAdmin && (
+              <button
+                onClick={() => handleGoogleSheetsSync()}
+                disabled={isSyncing}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                title="Sinkronisasi Data Hutang Real-time dari Google Sheets"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Menyinkronkan...' : 'Sync Google Sheets'}</span>
+              </button>
+            )}
 
             {/* Export Excel */}
             <button
@@ -241,29 +259,33 @@ export const MonitoringPpnView: React.FC = () => {
             </button>
 
             {/* Quick Upload */}
-            <button
-              onClick={() => {
-                setImportModalType('coretax');
-                setIsImportModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 transition-all hover:scale-[1.02]"
-            >
-              <Upload className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>Upload Data</span>
-            </button>
+            {isPicPajakOrHutangOrAdmin && (
+              <>
+                <button
+                  onClick={() => {
+                    setImportModalType('coretax');
+                    setIsImportModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 transition-all hover:scale-[1.02]"
+                >
+                  <Upload className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Upload Data</span>
+                </button>
 
-            {/* Quick Add */}
-            <button
-              onClick={() => {
-                setEditItem(null);
-                setAddModalType(activeTab === 'hutang' ? 'hutang' : 'coretax');
-                setIsAddModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-sm transition-all hover:scale-[1.02]"
-            >
-              <Plus className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
-              <span>Tambah Faktur</span>
-            </button>
+                {/* Quick Add */}
+                <button
+                  onClick={() => {
+                    setEditItem(null);
+                    setAddModalType(activeTab === 'hutang' ? 'hutang' : 'coretax');
+                    setIsAddModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-sm transition-all hover:scale-[1.02]"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+                  <span>Tambah Faktur</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -371,6 +393,7 @@ export const MonitoringPpnView: React.FC = () => {
       {activeTab === 'coretax' && (
         <CoretaxDataView
           data={coretaxData}
+          canEdit={isPicPajakOrHutangOrAdmin}
           onAddRecord={() => {
             setEditItem(null);
             setAddModalType('coretax');
@@ -392,6 +415,7 @@ export const MonitoringPpnView: React.FC = () => {
       {activeTab === 'hutang' && (
         <HutangDataView
           data={hutangData}
+          canEdit={isPicPajakOrHutangOrAdmin}
           onAddRecord={() => {
             setEditItem(null);
             setAddModalType('hutang');
