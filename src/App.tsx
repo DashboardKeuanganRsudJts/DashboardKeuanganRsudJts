@@ -122,7 +122,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
     if (user && location.pathname === '/') {
       navigate('/home');
     }
-  }, [user]);
+  }, [user, location.pathname, navigate]);
 
   // Synchronize Browser Favicon in real-time (default or custom uploaded logo)
   useEffect(() => {
