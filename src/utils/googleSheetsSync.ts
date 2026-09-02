@@ -111,12 +111,14 @@ export async function fetchHutangFromGoogleSheets(sheetUrl: string): Promise<{
     });
   }
 
-  const now = new Intl.DateTimeFormat('id-ID', {
+  const now = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false
   }).format(new Date());
 
   return {

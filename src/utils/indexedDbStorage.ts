@@ -7,6 +7,8 @@ const DB_NAME = 'rsud_dashboard_db';
 const DB_VERSION = 2; // Incremented to guarantee onupgradeneeded creates STORE_NAME
 const STORE_NAME = 'keyvalue_store';
 
+import { syncArrayToFirestore } from '../services/firestoreSync';
+
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
@@ -111,7 +113,6 @@ export async function idbSet<T>(key: string, value: T): Promise<void> {
       key === 'rsud_hutang_blud_apbd_v2025_complete' || 
       key === 'rsud_rekap_pengadaan_hutang_2026_master_v3') {
     try {
-      const { syncArrayToFirestore } = await import('../services/firestoreSync');
       // We must sync BEFORE we overwrite the local IDB, so we can diff against the old data
       await syncArrayToFirestore(key, value as any);
     } catch (err) {

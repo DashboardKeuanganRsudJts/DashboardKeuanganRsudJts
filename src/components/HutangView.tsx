@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatRupiah } from '../utils/formatters';
+import { syncHighlightsToFirestore } from '../services/firestoreSync';
 import { 
   Building2, 
   Plus, 
@@ -581,7 +582,7 @@ export const HutangView: React.FC<HutangViewProps> = ({
         customHighlights[targetNo] = formIsHighlighted;
         localStorage.setItem('rsud_rekap_2025_highlights', JSON.stringify(customHighlights));
         
-        import('../services/firestoreSync').then(m => m.syncHighlightsToFirestore('2025', customHighlights));
+        syncHighlightsToFirestore('2025', customHighlights);
       } catch (e) {
         console.warn('Failed to save highlight preference', e);
       }

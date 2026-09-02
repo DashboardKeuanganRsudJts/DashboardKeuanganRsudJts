@@ -40,6 +40,7 @@ interface MonitoringPpnViewProps {
   role?: string;
   isAdmin?: boolean;
   onShowToast?: (message: string, type?: 'success' | 'error' | 'info') => void;
+  activeSubmenu?: string | null;
 }
 
 export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
@@ -47,6 +48,7 @@ export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
   role,
   isAdmin,
   onShowToast,
+  activeSubmenu,
 }) => {
   const isUserLoggedIn = Boolean(user);
   const isSuperAdmin = isUserLoggedIn && ((role === 'admin') || Boolean(isAdmin));
@@ -82,7 +84,7 @@ export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
   });
 
   // UI state
-  const [activeTab, setActiveTab] = useState<'monitoring' | 'coretax' | 'hutang' | 'audit'>('monitoring');
+  const activeTab = (activeSubmenu as 'monitoring' | 'coretax' | 'hutang' | 'audit') || 'monitoring';
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -287,71 +289,6 @@ export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
               </>
             )}
           </div>
-        </div>
-
-        {/* Tab Navigation Menu */}
-        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto pb-1">
-          <button
-            onClick={() => setActiveTab('monitoring')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 ${
-              activeTab === 'monitoring'
-                ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white shadow-md shadow-indigo-500/20'
-                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800'
-            }`}
-          >
-            <TableIcon className="w-4 h-4" />
-            <span>Dashboard & Rekonsiliasi Terintegrasi</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${activeTab === 'monitoring' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'}`}>
-              {linkedItems.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('coretax')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 ${
-              activeTab === 'coretax'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
-                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800'
-            }`}
-          >
-            <Receipt className="w-4 h-4" />
-            <span>Data Coretax (13 Kolom Master)</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${activeTab === 'coretax' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'}`}>
-              {coretaxData.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('hutang')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 ${
-              activeTab === 'hutang'
-                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/20'
-                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800'
-            }`}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Data Hutang & Realisasi SP2D</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${activeTab === 'hutang' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'}`}>
-              {hutangData.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('audit')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 ${
-              activeTab === 'audit'
-                ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-md shadow-rose-500/20'
-                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800'
-            }`}
-          >
-            <AlertTriangle className="w-4 h-4" />
-            <span>Audit & Selisih Rekonsiliasi</span>
-            {discrepancies.length + unlinkedCoretax.length + unlinkedHutang.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500 text-white animate-pulse">
-                {discrepancies.length + unlinkedCoretax.length + unlinkedHutang.length}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 

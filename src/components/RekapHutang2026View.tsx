@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { User } from 'firebase/auth';
+import { syncHighlightsToFirestore } from '../services/firestoreSync';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { 
   aggregateRekapHutang2026, 
@@ -317,7 +318,7 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
         const customHighlights = JSON.parse(localStorage.getItem('rsud_rekap_2026_highlights') || '{}');
         customHighlights[targetNo] = formIsHighlighted;
         localStorage.setItem('rsud_rekap_2026_highlights', JSON.stringify(customHighlights));
-        import('../services/firestoreSync').then(m => m.syncHighlightsToFirestore('2026', customHighlights));
+        syncHighlightsToFirestore('2026', customHighlights);
       } catch (e) {
         console.warn('Failed to save highlight preference', e);
       }

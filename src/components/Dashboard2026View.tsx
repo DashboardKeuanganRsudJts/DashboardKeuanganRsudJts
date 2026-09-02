@@ -60,8 +60,18 @@ interface Dashboard2026ViewProps {
 }
 
 export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, currentUserEmail, userRole, onNavigateTab, onOpenUploadModal }) => {
+  const getCurrentTimeWIB = () => {
+    return new Date().toLocaleTimeString('en-GB', {
+      timeZone: 'Asia/Jakarta',
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
   const [selectedBulan, setSelectedBulan] = useState<string>('AGUSTUS');
-  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(() => new Date().toLocaleTimeString('id-ID'));
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(getCurrentTimeWIB());
 
   // 1. Live Data Perusahaan & Asuransi
   const [perusahaanData, setPerusahaanData] = useState<PerusahaanAsuransiRow[]>(() => {
@@ -180,7 +190,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         const savedPeng = localStorage.getItem('rsud_pengeluaran_blud_data');
         if (savedPeng) setPengeluaranList(JSON.parse(savedPeng));
 
-        setLastUpdatedTime(new Date().toLocaleTimeString('id-ID'));
+        setLastUpdatedTime(getCurrentTimeWIB());
       } catch (e) {
         console.warn(e);
       }

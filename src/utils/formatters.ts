@@ -60,12 +60,14 @@ export function formatDateTimeIndo(dateTimeStr: string): string {
   try {
     const d = new Date(dateTimeStr);
     if (isNaN(d.getTime())) return dateTimeStr;
-    return new Intl.DateTimeFormat('id-ID', {
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jakarta',
       day: 'numeric',
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false
     }).format(d) + ' WIB';
   } catch {
     return dateTimeStr;

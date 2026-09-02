@@ -183,11 +183,11 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
           setIsAdmin(roleVal === 'admin');
         }
       } else {
-        if (selectedRole.startsWith('pic_')) {
+        if (selectedRole.startsWith('pic_') || selectedRole === 'admin') {
           const q = query(collection(db, 'users'), where('role', '==', selectedRole));
           const snap = await getDocs(q);
           if (!snap.empty) {
-            setError("Maaf PIC yang anda pilih sudah ada");
+            setError(`Maaf ${selectedRole === 'admin' ? 'SUPER ADMIN' : 'PIC'} yang anda pilih sudah ada`);
             setIsSubmitting(false);
             return;
           }
@@ -208,6 +208,24 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       setIsLoginModalOpen(false);
     } catch (err: any) {
       if (err.code === 'auth/invalid-credential' || (err.message && err.message.includes('auth/invalid-credential'))) {
+        if (isLoginMode) {
+          try {
+            const q = query(collection(db, 'users'), where('email', '==', email));
+            const snap = await getDocs(q);
+            if (snap.empty) {
+              setError('Daftar Heula Sateh Mun Rek Asup');
+            } else {
+              setError('Punten, Password na salah lur.');
+            }
+          } catch (e) {
+            setError('Punten, Password na salah lur.');
+          }
+        } else {
+          setError('Terjadi kesalahan saat pendaftaran.');
+        }
+      } else if (err.code === 'auth/wrong-password') {
+        setError('Punten, Password na salah lur.');
+      } else if (err.code === 'auth/user-not-found') {
         setError('Daftar Heula Sateh Mun Rek Asup');
       } else {
         setError(err.message || 'Terjadi kesalahan autentikasi.');
