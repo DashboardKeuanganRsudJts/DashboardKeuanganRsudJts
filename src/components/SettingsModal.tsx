@@ -107,7 +107,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div>
             <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-200 mb-1">Logo Instansi (RSUD)</h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mb-4">
-              Ubah logo rumah sakit yang ditampilkan pada halaman login dan dashboard. Anda dapat menggunakan logo default atau mengunggah gambar baru.
+              Ubah logo rumah sakit yang ditampilkan pada tab browser (favicon), halaman login, dan dashboard. Mendukung format gambar PNG, JPG/JPEG, dan WebP resmi RSUD Jatisari.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border border-slate-200 dark:border-zinc-800 rounded-xl bg-slate-50 dark:bg-[#12181f]">

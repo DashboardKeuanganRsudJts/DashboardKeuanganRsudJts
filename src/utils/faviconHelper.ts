@@ -4,7 +4,8 @@
  */
 
 const baseUrl = import.meta.env.BASE_URL || './';
-const DEFAULT_FAVICON = baseUrl.endsWith('/') ? `${baseUrl}favicon.svg` : `${baseUrl}/favicon.svg`;
+const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+export const DEFAULT_FAVICON = `${cleanBase}favicon.png`;
 
 /**
  * Generates an optimized square icon data URL from any image source (Base64 or URL).
