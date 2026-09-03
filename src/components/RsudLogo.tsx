@@ -6,7 +6,7 @@ interface RsudLogoProps {
   showText?: boolean;
 }
 
-const DEFAULT_LOGO = '/logo-rsud.png';
+const DEFAULT_LOGO = '/logo-rsud.png?v=2';
 
 export const RsudLogo: React.FC<RsudLogoProps> = ({ className = 'w-11 h-11' }) => {
   const [logoSrc, setLogoSrc] = useState<string>(() => {
@@ -36,10 +36,10 @@ export const RsudLogo: React.FC<RsudLogoProps> = ({ className = 'w-11 h-11' }) =
         alt="Logo RSUD Jatisari"
         className="w-full h-full object-contain filter drop-shadow-sm"
         onError={(e) => {
-          // Fallback to favicon.png or logo-rsud.jpg if needed
+          // Fallback to favicon.png if needed
           const target = e.currentTarget;
-          if (!target.src.endsWith('favicon.png')) {
-            target.src = '/favicon.png';
+          if (!target.src.includes('favicon.png')) {
+            target.src = '/favicon.png?v=2';
           }
         }}
       />
