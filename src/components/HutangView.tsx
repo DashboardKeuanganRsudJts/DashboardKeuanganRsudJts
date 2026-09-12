@@ -45,6 +45,7 @@ import { SemuaRekapHutangView } from './SemuaRekapHutangView';
 import DatabaseKodeRekeningView from './DatabaseKodeRekeningView';
 import { aggregateRekapHutang2025, RekapPosBelanjaItem } from '../utils/rekapHutang2025Aggregator';
 import { RekapPembelianPerbulanView } from './RekapPembelianPerbulanView';
+import { RekapSupplierView } from './RekapSupplierView';
 
 const STORAGE_KEY = 'rsud_hutang_blud_apbd_v2025_complete';
 
@@ -136,6 +137,7 @@ const KODE_REKENING_LIST = [
 interface HutangViewProps {
   isAdmin?: boolean;
   activeSubmenu?: string;
+  onNavigateSubmenu?: (subTab: string) => void;
   user?: User | null;
   role?: string;
   onOpenLoginModal?: () => void;
@@ -145,12 +147,20 @@ interface HutangViewProps {
 export const HutangView: React.FC<HutangViewProps> = ({ 
   isAdmin, 
   activeSubmenu = 'semua_rekap_hutang',
+  onNavigateSubmenu,
   user,
   role,
   onOpenLoginModal,
   onShowToast
 }) => {
   const [currentSubTab, setCurrentSubTab] = useState<string>(activeSubmenu || 'semua_rekap_hutang');
+
+  const handleNavigateSubmenu = (sub: string) => {
+    setCurrentSubTab(sub);
+    if (onNavigateSubmenu) {
+      onNavigateSubmenu(sub);
+    }
+  };
 
   // Role permissions
   const isUserLoggedIn = Boolean(user);
@@ -699,7 +709,7 @@ export const HutangView: React.FC<HutangViewProps> = ({
         role={role}
         isAdmin={isAdmin}
         onShowToast={onShowToast}
-        onNavigateSubmenu={(sub) => setCurrentSubTab(sub)}
+        onNavigateSubmenu={handleNavigateSubmenu}
       />
     );
   }
@@ -743,6 +753,32 @@ export const HutangView: React.FC<HutangViewProps> = ({
 
   if (currentSubTab === 'rekap_pembayaran_perbulan') {
     return <RekapPembelianPerbulanView type="pembayaran" />;
+  }
+
+  if (currentSubTab === 'rekap_supplier_2026') {
+    return (
+      <RekapSupplierView 
+        year={2026}
+        user={user}
+        role={role}
+        isAdmin={isAdmin}
+        onShowToast={onShowToast}
+        onNavigateSubmenu={handleNavigateSubmenu}
+      />
+    );
+  }
+
+  if (currentSubTab === 'rekap_supplier_2025') {
+    return (
+      <RekapSupplierView 
+        year={2025}
+        user={user}
+        role={role}
+        isAdmin={isAdmin}
+        onShowToast={onShowToast}
+        onNavigateSubmenu={handleNavigateSubmenu}
+      />
+    );
   }
 
   if (currentSubTab === 'database_kode_rekening') {

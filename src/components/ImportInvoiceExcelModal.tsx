@@ -14,7 +14,8 @@ import {
   Check
 } from 'lucide-react';
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
-import { formatRupiah } from '../utils/formatters';
+import { formatRupiah, getMonthNameIndo } from '../utils/formatters';
+import { downloadInvoiceHutangExcelTemplate } from '../utils/invoiceExcelTemplate';
 
 interface ImportInvoiceExcelModalProps {
   isOpen: boolean;
@@ -143,12 +144,20 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
 
         const no = parseNum(getVal('no', 'nomor', 'no.') || (idx + 1));
         const bagian = String(getVal('bidang', 'bagian', 'unit', 'instalasi') || 'Bidang Pelayanan Non Medik').trim();
-        const subBelanja = String(getVal('keterangan pengadaan', 'sub belanja', 'sub_belanja', 'jenis belanja', 'kategori') || 'BELANJA OBAT').trim();
+        const subBelanja = String(getVal('keterangan pengadaan', 'jenis pengadaan', 'sub belanja', 'sub_belanja', 'jenis belanja', 'kategori') || 'BELANJA OBAT').trim();
         
-        const tglTandaTerima = parseDateStr(getVal('tanggal rekap', 'tgl tanda terima', 'tanda terima', 'tgl_terima', 'terima'));
+        const tglTandaTerima = parseDateStr(getVal('tanggal rekap', 'tgl rekap', 'tgl tanda terima', 'tanda terima', 'tgl_terima', 'terima'));
+        const tglRekap = tglTandaTerima;
+        const rawBulanRekap = String(getVal('bulan rekap', 'bln rekap') || '').trim();
+        const derivedBulanRekap = getMonthNameIndo(tglRekap);
+        const bulanRekap = derivedBulanRekap || rawBulanRekap || '';
+
         const tglSpbSpk = parseDateStr(getVal('tanggal masuk spj', 'masuk spj', 'tgl spb', 'spk', 'po', 'spb/spk/po', 'tgl spj'));
         const tglInvoice = parseDateStr(getVal('tanggal invoice', 'tgl invoice', 'tgl faktur', 'tanggal faktur'));
-        const bulanInvoice = String(getVal('bulan', 'bulan invoice', 'bln') || '-').trim();
+        const rawBulanInvoice = String(getVal('bulan invoice', 'bulan', 'bln') || '').trim();
+        const derivedBulanInvoice = getMonthNameIndo(tglInvoice);
+        const bulanInvoice = derivedBulanInvoice || rawBulanInvoice || '-';
+
         const rawNoInvoice = String(getVal('nomor invoice/spk/po', 'nomor invoice', 'no invoice', 'no faktur', 'kwitansi', 'no kwitansi') || `INV/${no}/2025`).trim();
         let noInvoice = rawNoInvoice;
         if (noInvoice.startsWith('Rp') || noInvoice.startsWith('rp') || noInvoice.startsWith('RP')) {
@@ -171,8 +180,12 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
         const parsedSisa = parseNum(rawSisa);
         const sisaHutang = (rawSisa !== undefined && rawSisa !== '' && rawSisa !== null) ? parsedSisa : Math.max(0, totalInvoiceFix - pembayaran);
         const sudahMasukBukuKas = parseBool(getVal('a', 'sudah masuk buku kas', 'buku kas', 'kas', 'masuk kas'));
-        const tglSpdBukuKas = parseDateStr(getVal('tanggal bayar', 'tgl spd', 'tanggal spd', 'tgl_spd'));
-        const bulanSpd = String(getVal('bulan bayar', 'bulan spd', 'bln spd', 'bln bayar') || row[keys[19]] || '-').trim();
+        const tglSpdBukuKas = parseDateStr(getVal('tanggal bayar', 'tgl bayar', 'tgl spd', 'tanggal spd', 'tgl_spd'));
+        const tglBayar = tglSpdBukuKas;
+        const rawBulanBayar = String(getVal('bulan bayar', 'bulan spd', 'bln spd', 'bln bayar') || row[keys[18]] || '').trim();
+        const derivedBulanBayar = getMonthNameIndo(tglBayar);
+        const bulanSpd = derivedBulanBayar || rawBulanBayar || '-';
+
         const noSpdBukuKas = String(getVal('nomor sp2d', 'nomor spd', 'no spd', 'no_spd', 'sp2d') || '-').trim();
         const lamaHariHutang = parseNum(getVal('umur hutang', 'lama hari', 'lama hutang', 'hari'));
         const keterangan = String(getVal('keterangan', 'status', 'ket', 'catatan') || (sisaHutang <= 0 ? 'Lunas' : 'Belum Lunas')).trim();
@@ -187,10 +200,14 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
           no: no || (records.length + 1),
           rekanan: rekanan || 'Penyedia Barang/Jasa',
           bagian,
+          bidang: bagian,
           uraian: uraian || 'Pengadaan Barang & Jasa',
           subBelanja,
           tglTandaTerima,
+          tglRekap,
+          bulanRekap,
           tglSpbSpk,
+          tglMasukSpj: tglSpbSpk,
           tglInvoice,
           bulanInvoice,
           noInvoice,
@@ -203,6 +220,7 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
           sisaHutang,
           sudahMasukBukuKas,
           tglSpdBukuKas,
+          tglBayar,
           bulanSpd,
           noSpdBukuKas,
           lamaHariHutang,
@@ -285,133 +303,7 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
   };
 
   const handleDownloadTemplate = () => {
-    const headers = [
-      'NO',
-      'PERUSAHAAN / VENDOR',
-      'BIDANG',
-      'JENIS PENGADAAN',
-      'KETERANGAN PENGADAAN',
-      'TANGGAL REKAP',
-      'TANGGAL INVOICE',
-      'BULAN',
-      'NOMOR INVOICE/SPK/PO',
-      'TANGGAL JATUH TEMPO',
-      'JUMLAH',
-      'KOREKSI',
-      'NILAI SPJ',
-      'DIBAYAR',
-      'JENIS ANGGARAN BLUD / APBD',
-      'SISA',
-      'A',
-      'TANGGAL BAYAR',
-      '',
-      'NOMOR SP2D',
-      'UMUR HUTANG',
-      'BELUM JT',
-      '1-30 Hari',
-      '31-60 Hari',
-      '61-90 Hari',
-      '>90 Hari'
-    ];
-
-    const sampleRows = [
-      [
-        1,
-        'PT. RANAH MULTI SEMESTA',
-        'Bidang Pelayanan Non Medik',
-        'Belanja Bahan-Bahan Lainnya (Farmasi)',
-        'BELANJA BMHP',
-        '08/08/2025',
-        '10/09/2025',
-        '31/07/2025',
-        'Juli',
-        'RS2025070246',
-        '30/08/2025',
-        45186093,
-        0,
-        45186093,
-        45186093,
-        'BLUD',
-        0,
-        'TRUE',
-        '21/01/2026',
-        'JANUARI',
-        'SPD-LS/RSUD Jatisari/I/2026/00028',
-        0,
-        '',
-        '',
-        '',
-        '',
-        ''
-      ],
-      [
-        2,
-        'PT. BINA SAN PRIMA',
-        'Bidang Pelayanan Non Medik',
-        'Belanja Obat-Obatan-Obat',
-        'BELANJA OBAT',
-        '08/08/2025',
-        '',
-        '30/07/2025',
-        'Juli',
-        'FKKRW/202507/14587',
-        '13/09/2025',
-        359363,
-        0,
-        359363,
-        359363,
-        'BLUD',
-        0,
-        'TRUE',
-        '21/01/2026',
-        'JANUARI',
-        'SPD-LS/RSUD Jatisari/I/2026/00033',
-        0,
-        '',
-        '',
-        '',
-        '',
-        ''
-      ],
-      [
-        3,
-        'PT. BELANT PERSADA',
-        'IT',
-        'Belanja Jasa Konversi Aplikasi/Sistem Informasi',
-        'BELANJA APLIKASI SIM RS',
-        '08/08/2025',
-        '',
-        '31/12/2025',
-        'Desember',
-        '400.728/067/PKS-RSUD Jatisari/2024',
-        '',
-        119700000,
-        0,
-        119700000,
-        0,
-        'BLUD',
-        119700000,
-        'FALSE',
-        '01/01/2026',
-        'JANUARI',
-        '',
-        60,
-        '',
-        '',
-        119700000,
-        '',
-        ''
-      ]
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
-    // Set auto column width
-    ws['!cols'] = headers.map(() => ({ wch: 22 }));
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, `Template Invoice ${year}`);
-
-    XLSX.writeFile(wb, `TEMPLATE_IMPORT_INVOICE_HUTANG_${year}_RSUD.xlsx`);
+    downloadInvoiceHutangExcelTemplate(year);
   };
 
   const handleApplyImport = () => {
@@ -459,14 +351,14 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
             <div className="flex items-start gap-2.5">
               <HelpCircle className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
               <div className="text-xs text-slate-300 leading-relaxed">
-                Gunakan template resmi untuk hasil import yang presisi. Sistem otomatis memetakan nama kolom rekanan, nominal, tanggal, dan status.
+                Template Excel resmi telah diperbarui dengan 26 kolom lengkap termasuk <strong>BULAN REKAP</strong> &amp; <strong>BULAN INVOICE</strong> (otomatis tersinkronisasi dengan tanggal dokumen).
               </div>
             </div>
             <button
               onClick={handleDownloadTemplate}
               className="inline-flex items-center gap-2 px-3.5 py-2 bg-teal-600/90 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition shrink-0 border border-teal-400/40"
             >
-              <Download className="w-3.5 h-3.5" /> Download Format Excel
+              <Download className="w-3.5 h-3.5" /> Download Template Format Excel
             </button>
           </div>
 
@@ -624,7 +516,11 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
                     <tr>
                       <th className="px-3 py-2">No</th>
                       <th className="px-3 py-2">Rekanan</th>
-                      <th className="px-3 py-2">Uraian / Pos Belanja</th>
+                      <th className="px-3 py-2">Pos Belanja</th>
+                      <th className="px-3 py-2 whitespace-nowrap">Tgl Rekap</th>
+                      <th className="px-3 py-2 whitespace-nowrap text-teal-400">Bulan Rekap</th>
+                      <th className="px-3 py-2 whitespace-nowrap">Tgl Invoice</th>
+                      <th className="px-3 py-2 whitespace-nowrap text-teal-400">Bulan Invoice</th>
                       <th className="px-3 py-2">No Invoice</th>
                       <th className="px-3 py-2 text-right">Nilai Total</th>
                       <th className="px-3 py-2 text-right">Pembayaran</th>
@@ -637,8 +533,12 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
                       <tr key={i} className="hover:bg-zinc-800/40">
                         <td className="px-3 py-2 font-mono text-zinc-400">{row.no}</td>
                         <td className="px-3 py-2 font-bold text-zinc-100 whitespace-nowrap">{row.rekanan}</td>
-                        <td className="px-3 py-2 max-w-xs truncate text-zinc-300">{row.uraian}</td>
-                        <td className="px-3 py-2 font-mono text-teal-400">{row.noInvoice}</td>
+                        <td className="px-3 py-2 max-w-xs truncate text-zinc-300">{row.subBelanja || row.uraian}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-mono text-zinc-300">{row.tglRekap || row.tglTandaTerima || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-semibold text-teal-300">{row.bulanRekap || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-mono text-zinc-300">{row.tglInvoice || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-semibold text-teal-300">{row.bulanInvoice || '-'}</td>
+                        <td className="px-3 py-2 font-mono text-teal-400 whitespace-nowrap">{row.noInvoice}</td>
                         <td className="px-3 py-2 text-right font-mono font-bold text-zinc-100">{formatRupiah(row.totalInvoiceFix)}</td>
                         <td className="px-3 py-2 text-right font-mono text-emerald-400">{formatRupiah(row.pembayaran)}</td>
                         <td className="px-3 py-2 text-right font-mono text-rose-400 font-bold">{formatRupiah(row.sisaHutang)}</td>

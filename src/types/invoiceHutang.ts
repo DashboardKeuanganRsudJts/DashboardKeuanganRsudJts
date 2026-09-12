@@ -11,6 +11,7 @@ export interface InvoiceHutang2025Record {
   tglSpbSpk: string;
   tglInvoice: string;
   tglRekap?: string;
+  bulanRekap?: string;
   tglMasukSpj?: string;
   tglBayar?: string;
   bulanInvoice: string;

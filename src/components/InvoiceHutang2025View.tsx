@@ -4,6 +4,7 @@ import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { formatRupiah, formatDateDDMMYYYY, getMonthNameIndo } from '../utils/formatters';
+import { downloadInvoiceHutangExcelTemplate } from '../utils/invoiceExcelTemplate';
 import { idbGet, idbSet, idbDelete, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
 import { MASTER_31_POS_BELANJA } from '../utils/rekapHutang2025Aggregator';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
@@ -38,18 +39,29 @@ import { User } from 'firebase/auth';
 
 const IDB_KEY_INVOICE_2025 = 'rsud_invoice_hutang_2025';
 
-// Helper to parse any date string (DD/MM/YYYY or YYYY-MM-DD) to YYYY-MM-DD for input[type="date"]
+// Helper to parse any date string (DD/MM/YYYY, YYYY-MM-DD, DD-MM-YYYY, or ISO) to YYYY-MM-DD for input[type="date"]
 const toInputDate = (dateStr?: string): string => {
   if (!dateStr) return '';
   const trimmed = dateStr.trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
-  // If DD/MM/YYYY
+  if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) return trimmed.slice(0, 10);
+  // If DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
   const parts = trimmed.split(/[/.-]/);
   if (parts.length === 3) {
     if (parts[2].length === 4) {
       const day = parts[0].padStart(2, '0');
       const month = parts[1].padStart(2, '0');
       const year = parts[2];
+      return `${year}-${month}-${day}`;
+    } else if (parts[2].length === 2) {
+      const day = parts[0].padStart(2, '0');
+      const month = parts[1].padStart(2, '0');
+      const year = `20${parts[2]}`;
+      return `${year}-${month}-${day}`;
+    } else if (parts[0].length === 4) {
+      const year = parts[0];
+      const month = parts[1].padStart(2, '0');
+      const day = parts[2].padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
   }
@@ -67,18 +79,45 @@ const fromInputDate = (inputDateStr?: string): string => {
   return inputDateStr;
 };
 
-// Helper to get month name in Indonesian from date
-const getMonthNameFromDate = (dateStr?: string): string => {
-  if (!dateStr) return 'DESEMBER';
+export const INDONESIAN_MONTH_NAMES = [
+  'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
+  'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
+];
+
+// Helper to get month name in Indonesian from date (strictly based on date string)
+export const getMonthNameFromDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
   const iso = toInputDate(dateStr);
-  if (!iso) return 'DESEMBER';
+  if (!iso) {
+    const upper = dateStr.trim().toUpperCase();
+    if (INDONESIAN_MONTH_NAMES.includes(upper)) return upper;
+    return '';
+  }
   const parts = iso.split('-');
-  const monthNum = parseInt(parts[1], 10);
-  const months = [
-    'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
-    'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
-  ];
-  return months[monthNum - 1] || 'DESEMBER';
+  if (parts.length >= 2) {
+    const monthNum = parseInt(parts[1], 10);
+    if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+      return INDONESIAN_MONTH_NAMES[monthNum - 1];
+    }
+  }
+  return '';
+};
+
+export const getEffectiveBulanInvoice = (item: { tglInvoice?: string; bulanInvoice?: string }): string => {
+  if (item.tglInvoice) {
+    const m = getMonthNameFromDate(item.tglInvoice);
+    if (m) return m;
+  }
+  return item.bulanInvoice || '';
+};
+
+export const getEffectiveBulanRekap = (item: { tglRekap?: string; tglTandaTerima?: string; bulanRekap?: string }): string => {
+  const dateStr = item.tglRekap || item.tglTandaTerima;
+  if (dateStr) {
+    const m = getMonthNameFromDate(dateStr);
+    if (m) return m;
+  }
+  return item.bulanRekap || '';
 };
 
 export const INDONESIAN_MONTH_RANKS: Record<string, number> = {
@@ -293,7 +332,16 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterRekanan, setFilterRekanan] = useState('ALL');
+  const [filterRekanan, setFilterRekanan] = useState<string>(() => {
+    try {
+      const saved = sessionStorage.getItem('rsud_filter_rekanan_2025');
+      if (saved) {
+        sessionStorage.removeItem('rsud_filter_rekanan_2025');
+        return saved;
+      }
+    } catch (e) {}
+    return 'ALL';
+  });
   const [filterBulan, setFilterBulan] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL'); // ALL, LUNAS, BELUM_LUNAS
   const [filterSumber, setFilterSumber] = useState('ALL'); // ALL, BLUD, APBD
@@ -313,7 +361,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [formValues, setFormValues] = useState<Partial<InvoiceHutang2025Record>>({});
-  const [isCustomSubBelanja, setIsCustomSubBelanja] = useState(false);
   const [isCustomPosBelanja, setIsCustomPosBelanja] = useState(false);
 
   // Unique list of Rekanan & Bulan for dropdown filters
@@ -328,8 +375,13 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   const uniqueBulan = useMemo(() => {
     const set = new Set<string>();
     data.forEach(d => {
-      if (d.bulanInvoice && d.bulanInvoice.trim()) {
-        set.add(d.bulanInvoice.trim().toUpperCase());
+      const bInv = getEffectiveBulanInvoice(d);
+      if (bInv && bInv.trim()) {
+        set.add(bInv.trim().toUpperCase());
+      }
+      const bRek = getEffectiveBulanRekap(d);
+      if (bRek && bRek.trim()) {
+        set.add(bRek.trim().toUpperCase());
       }
     });
     return Array.from(set).sort((a, b) => {
@@ -400,9 +452,13 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         return false;
       }
 
-      // Bulan filter
-      if (filterBulan !== 'ALL' && item.bulanInvoice.toUpperCase() !== filterBulan) {
-        return false;
+      // Bulan filter (check effective bulanInvoice or effective bulanRekap)
+      if (filterBulan !== 'ALL') {
+        const bInv = getEffectiveBulanInvoice(item).toUpperCase();
+        const bRek = getEffectiveBulanRekap(item).toUpperCase();
+        if (bInv !== filterBulan && bRek !== filterBulan) {
+          return false;
+        }
       }
 
       // Sumber Anggaran filter
@@ -421,10 +477,20 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
       return true;
     }).sort((a, b) => {
-      // Month sorting (Bulan Invoice or Bulan SPD)
-      if (sortField === 'bulanInvoice' || sortField === 'bulanSpd') {
-        const valMonthA = (a[sortField] || (sortField === 'bulanInvoice' ? a.bulanSpd : a.bulanInvoice) || '') as string;
-        const valMonthB = (b[sortField] || (sortField === 'bulanInvoice' ? b.bulanSpd : b.bulanInvoice) || '') as string;
+      // Month sorting (Bulan Invoice, Bulan Rekap, or Bulan SPD)
+      if (sortField === 'bulanInvoice' || sortField === ('bulanRekap' as any) || sortField === 'bulanSpd') {
+        let valMonthA = '';
+        let valMonthB = '';
+        if (sortField === 'bulanInvoice') {
+          valMonthA = getEffectiveBulanInvoice(a);
+          valMonthB = getEffectiveBulanInvoice(b);
+        } else if (sortField === ('bulanRekap' as any)) {
+          valMonthA = getEffectiveBulanRekap(a);
+          valMonthB = getEffectiveBulanRekap(b);
+        } else {
+          valMonthA = (a.bulanSpd || '') as string;
+          valMonthB = (b.bulanSpd || '') as string;
+        }
         const rankA = getMonthRank(valMonthA);
         const rankB = getMonthRank(valMonthB);
         if (rankA !== rankB) {
@@ -538,7 +604,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     const todayDisplay = fromInputDate(todayStr); // DD/MM/YYYY
     const currentMonth = getMonthNameFromDate(todayStr);
 
-    setIsCustomSubBelanja(false);
     setIsCustomPosBelanja(false);
     setFormValues({
       no: nextNo,
@@ -550,6 +615,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       subBelanja: 'BELANJA BMHP',
       tglTandaTerima: todayDisplay, // TGL REKAP
       tglRekap: todayDisplay,
+      bulanRekap: currentMonth,
       tglSpbSpk: '', // TGL MASUK SPJ
       tglMasukSpj: '',
       tglInvoice: todayDisplay,
@@ -579,12 +645,19 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   };
 
   const handleOpenEdit = (record: InvoiceHutang2025Record) => {
-    setIsCustomSubBelanja(!availableSubBelanja.includes(record.subBelanja || ''));
     setIsCustomPosBelanja(false);
+    const effRekap = record.tglRekap || record.tglTandaTerima || '';
+    const effBulanRekap = getMonthNameFromDate(effRekap) || record.bulanRekap || '';
+    const effInvoice = record.tglInvoice || '';
+    const effBulanInvoice = getMonthNameFromDate(effInvoice) || record.bulanInvoice || '';
+
     setFormValues({ 
       ...record,
       bidang: record.bidang || record.bagian || 'Bidang Pelayanan Non Medik',
-      tglRekap: record.tglRekap || record.tglTandaTerima || '',
+      tglRekap: effRekap,
+      bulanRekap: effBulanRekap,
+      tglInvoice: effInvoice,
+      bulanInvoice: effBulanInvoice,
       tglMasukSpj: record.tglMasukSpj || record.tglSpbSpk || '',
       tglBayar: record.tglBayar || record.tglSpdBukuKas || ''
     });
@@ -691,6 +764,9 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
     const finalBidang = formValues.bidang || formValues.bagian || '';
     const finalTglRekap = formValues.tglRekap || formValues.tglTandaTerima || '';
+    const finalBulanRekap = getMonthNameFromDate(finalTglRekap) || formValues.bulanRekap || '';
+    const finalTglInvoice = formValues.tglInvoice || '';
+    const finalBulanInvoice = getMonthNameFromDate(finalTglInvoice) || formValues.bulanInvoice || '';
     const finalTglSpj = formValues.tglMasukSpj || formValues.tglSpbSpk || '';
     const finalTglBayar = formValues.tglBayar || formValues.tglSpdBukuKas || '';
 
@@ -707,6 +783,9 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
             bidang: finalBidang,
             tglTandaTerima: finalTglRekap,
             tglRekap: finalTglRekap,
+            bulanRekap: finalBulanRekap,
+            tglInvoice: finalTglInvoice,
+            bulanInvoice: finalBulanInvoice,
             tglSpbSpk: finalTglSpj,
             tglMasukSpj: finalTglSpj,
             tglSpdBukuKas: finalTglBayar,
@@ -737,11 +816,12 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         subBelanja: formValues.subBelanja || '',
         tglTandaTerima: finalTglRekap,
         tglRekap: finalTglRekap,
+        bulanRekap: finalBulanRekap,
         tglSpbSpk: finalTglSpj,
         tglMasukSpj: finalTglSpj,
-        tglInvoice: formValues.tglInvoice || '',
+        tglInvoice: finalTglInvoice,
+        bulanInvoice: finalBulanInvoice,
         tglBayar: finalTglBayar,
-        bulanInvoice: formValues.bulanInvoice || '',
         noInvoice: formValues.noInvoice || '',
         jatuhTempo: formValues.jatuhTempo || '',
         jumlahInvoice: jumlah,
@@ -796,10 +876,10 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       'PERUSAHAAN / VENDOR',
       'BIDANG',
       'JENIS PENGADAAN',
-      'KETERANGAN PENGADAAN',
       'TANGGAL REKAP',
+      'BULAN REKAP',
       'TANGGAL INVOICE',
-      'BULAN',
+      'BULAN INVOICE',
       'NOMOR INVOICE/SPK/PO',
       'TANGGAL JATUH TEMPO',
       'JUMLAH',
@@ -832,12 +912,12 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       return [
         item.no,
         `"${(item.rekanan || '').replace(/"/g, '""')}"`,
-        `"${(item.bagian || '').replace(/"/g, '""')}"`,
-        `"${(item.uraian || '').replace(/"/g, '""')}"`,
+        `"${(item.bagian || item.bidang || '').replace(/"/g, '""')}"`,
         `"${(item.subBelanja || '').replace(/"/g, '""')}"`,
-        `"${item.tglTandaTerima || ''}"`,
+        `"${item.tglRekap || item.tglTandaTerima || ''}"`,
+        `"${getEffectiveBulanRekap(item)}"`,
         `"${item.tglInvoice || ''}"`,
-        `"${item.bulanInvoice || ''}"`,
+        `"${getEffectiveBulanInvoice(item)}"`,
         `"${(item.noInvoice || '').replace(/"/g, '""')}"`,
         `"${item.jatuhTempo || ''}"`,
         item.jumlahInvoice,
@@ -847,8 +927,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         `"${item.sumberAnggaran || 'BLUD'}"`,
         item.sisaHutang,
         item.sudahMasukBukuKas ? 'TRUE' : 'FALSE',
-        `"${item.tglSpdBukuKas || ''}"`,
-        `"${getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd || ''}"`,
+        `"${item.tglBayar || item.tglSpdBukuKas || ''}"`,
+        `"${getMonthNameIndo(item.tglBayar || item.tglSpdBukuKas || '') || item.bulanSpd || ''}"`,
         `"${(item.noSpdBukuKas || '').replace(/"/g, '""')}"`,
         item.lamaHariHutang || 0,
         belumJt,
@@ -876,10 +956,10 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       'PERUSAHAAN / VENDOR',
       'BIDANG',
       'JENIS PENGADAAN',
-      'KETERANGAN PENGADAAN',
       'TANGGAL REKAP',
+      'BULAN REKAP',
       'TANGGAL INVOICE',
-      'BULAN',
+      'BULAN INVOICE',
       'NOMOR INVOICE/SPK/PO',
       'TANGGAL JATUH TEMPO',
       'JUMLAH',
@@ -912,12 +992,12 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       return [
         item.no,
         item.rekanan,
-        item.bagian,
-        item.uraian,
+        item.bagian || item.bidang || '',
         item.subBelanja,
-        item.tglTandaTerima,
-        item.tglInvoice,
-        item.bulanInvoice,
+        item.tglRekap || item.tglTandaTerima || '',
+        getEffectiveBulanRekap(item),
+        item.tglInvoice || '',
+        getEffectiveBulanInvoice(item),
         item.noInvoice,
         item.jatuhTempo,
         item.jumlahInvoice,
@@ -927,8 +1007,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         item.sumberAnggaran,
         item.sisaHutang,
         item.sudahMasukBukuKas ? 'TRUE' : 'FALSE',
-        item.tglSpdBukuKas,
-        getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd,
+        item.tglBayar || item.tglSpdBukuKas || '',
+        getMonthNameIndo(item.tglBayar || item.tglSpdBukuKas || '') || item.bulanSpd,
         item.noSpdBukuKas,
         item.lamaHariHutang,
         belumJt,
@@ -1014,6 +1094,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
             title="Download Format Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel
+          </button>
+
+          {/* Template Excel */}
+          <button
+            onClick={() => downloadInvoiceHutangExcelTemplate(2025)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-950/80 hover:bg-teal-900 text-teal-200 font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-teal-700/50"
+            title="Download Template Format Excel Kosong / Contoh (26 Kolom Lengkap)"
+          >
+            <Download className="w-3.5 h-3.5 text-teal-400" /> Template Excel
           </button>
 
           {/* Export CSV */}
@@ -1238,15 +1327,17 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 </th>
                 <th className="px-3 py-3">BIDANG</th>
                 <th className="px-4 py-3">JENIS PENGADAAN</th>
-                <th className="px-3 py-3">KETERANGAN PENGADAAN</th>
                 <th onClick={() => handleSort('tglRekap')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Rekap">
                   <div className="flex items-center gap-1">TANGGAL REKAP <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglRekap' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
+                </th>
+                <th onClick={() => handleSort('bulanRekap' as any)} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e] bg-teal-50/50 dark:bg-emerald-950/40" title="Klik untuk sortir berdasarkan Bulan Rekap">
+                  <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN REKAP <ArrowUpDown className={`w-3 h-3 ${sortField === ('bulanRekap' as any) ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
                 </th>
                 <th onClick={() => handleSort('tglInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Invoice">
                   <div className="flex items-center gap-1">TANGGAL INVOICE <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglInvoice' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
                 <th onClick={() => handleSort('bulanInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e] bg-teal-50/50 dark:bg-emerald-950/40" title="Klik untuk sortir berdasarkan Bulan Invoice">
-                  <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN <ArrowUpDown className={`w-3 h-3 ${sortField === 'bulanInvoice' ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
+                  <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN INVOICE <ArrowUpDown className={`w-3 h-3 ${sortField === 'bulanInvoice' ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
                 </th>
                 <th onClick={() => handleSort('noInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center gap-1">NOMOR INVOICE/SPK/PO <ArrowUpDown className="w-2.5 h-2.5" /></div>
@@ -1284,7 +1375,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">
               {paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={28} className="px-6 py-12 text-center text-slate-500 dark:text-zinc-400">
+                  <td colSpan={29} className="px-6 py-12 text-center text-slate-500 dark:text-zinc-400">
                     Tidak ada data invoice yang sesuai dengan kriteria pencarian/filter.
                   </td>
                 </tr>
@@ -1316,21 +1407,19 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         {item.bagian || '-'}
                       </td>
                       <td className="px-4 py-2.5 text-slate-700 dark:text-zinc-300 text-[11px] max-w-[220px] truncate">
-                        {item.uraian || '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 text-[11px]">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 font-medium">
-                          {item.subBelanja || '-'}
-                        </span>
+                        {item.subBelanja || '-'}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                        {formatDateDDMMYYYY(item.tglTandaTerima || '')}
+                        {formatDateDDMMYYYY(item.tglRekap || item.tglTandaTerima || '')}
+                      </td>
+                      <td className="px-3 py-2.5 text-teal-700 dark:text-teal-300 font-semibold text-[10px]">
+                        {getEffectiveBulanRekap(item) || '-'}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
                         {formatDateDDMMYYYY(item.tglInvoice || '')}
                       </td>
                       <td className="px-3 py-2.5 text-slate-700 dark:text-zinc-300 font-semibold text-[10px]">
-                        {item.bulanInvoice || '-'}
+                        {getEffectiveBulanInvoice(item) || '-'}
                       </td>
                       <td className="px-3 py-2.5 font-mono text-indigo-700 dark:text-indigo-300 font-medium text-[11px]">
                         {item.noInvoice || '-'}
@@ -1609,7 +1698,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   </div>
                   <div>
                     <span className="text-slate-500 dark:text-zinc-400 block font-medium">Bulan Invoice:</span>
-                    <span className="font-bold text-slate-800 dark:text-zinc-200">{selectedRecord.bulanInvoice || '-'}</span>
+                    <span className="font-bold text-slate-800 dark:text-zinc-200">{getEffectiveBulanInvoice(selectedRecord) || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 dark:text-zinc-400 block font-medium">Bulan Rekap:</span>
+                    <span className="font-bold text-teal-700 dark:text-teal-300">{getEffectiveBulanRekap(selectedRecord) || '-'}</span>
                   </div>
                 </div>
               </div>
@@ -1617,16 +1710,24 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               {/* Tanggal-Tanggal Kalender */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
+                  <span className="text-slate-500 dark:text-zinc-400 block">Tgl Rekap:</span>
+                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{formatDateDDMMYYYY(selectedRecord.tglRekap || selectedRecord.tglTandaTerima || '')}</span>
+                </div>
+                <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
+                  <span className="text-slate-500 dark:text-zinc-400 block">Bulan Rekap:</span>
+                  <span className="font-semibold text-teal-700 dark:text-teal-300">{getEffectiveBulanRekap(selectedRecord) || '-'}</span>
+                </div>
+                <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
                   <span className="text-slate-500 dark:text-zinc-400 block">Tgl Invoice:</span>
                   <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{formatDateDDMMYYYY(selectedRecord.tglInvoice || '')}</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
-                  <span className="text-slate-500 dark:text-zinc-400 block">Jatuh Tempo:</span>
-                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.jatuhTempo || '-'}</span>
+                  <span className="text-slate-500 dark:text-zinc-400 block">Bulan Invoice:</span>
+                  <span className="font-semibold text-slate-800 dark:text-zinc-200">{getEffectiveBulanInvoice(selectedRecord) || '-'}</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
-                  <span className="text-slate-500 dark:text-zinc-400 block">Tgl Rekap:</span>
-                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{formatDateDDMMYYYY(selectedRecord.tglRekap || selectedRecord.tglTandaTerima || '')}</span>
+                  <span className="text-slate-500 dark:text-zinc-400 block">Jatuh Tempo:</span>
+                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.jatuhTempo || '-'}</span>
                 </div>
               </div>
 
@@ -1779,11 +1880,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                  {/* Pos Belanja Dropdown lengkap dengan Kode Rekening */}
+                  {/* Jenis Pengadaan Dropdown lengkap dengan Kode Rekening */}
                   <div className="sm:col-span-8">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-slate-700 dark:text-zinc-300 font-bold">
-                        Pos Belanja (Lengkap Kode Rekening)
+                        Jenis Pengadaan <span className="text-red-500">*</span>
                       </label>
                       <button
                         type="button"
@@ -1793,27 +1894,26 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         {isCustomPosBelanja ? 'Pilih dari Master Pos' : '+ Input Manual'}
                       </button>
                     </div>
-
                     {isCustomPosBelanja ? (
                       <input
                         type="text"
-                        value={formValues.uraian || ''}
-                        onChange={(e) => setFormValues({ ...formValues, uraian: e.target.value })}
+                        value={formValues.subBelanja || ''}
+                        onChange={(e) => setFormValues({ ...formValues, subBelanja: e.target.value })}
                         className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl"
-                        placeholder="Ketik uraian pos belanja kustom..."
+                        placeholder="Ketik jenis pengadaan kustom..."
                       />
                     ) : (
                       <select
                         value={
-                          availablePosBelanja.find(p => p.uraian === formValues.uraian)?.label ||
-                          (formValues.uraian ? `${formValues.kodeRekening || '[No Rek]'} - ${formValues.uraian}` : '')
+                          availablePosBelanja.find(p => p.uraian === formValues.subBelanja)?.label ||
+                          (formValues.subBelanja ? `${formValues.kodeRekening || '[No Rek]'} - ${formValues.subBelanja}` : '')
                         }
                         onChange={(e) => {
                           const selected = availablePosBelanja.find(p => p.label === e.target.value);
                           if (selected) {
                             setFormValues({
                               ...formValues,
-                              uraian: selected.uraian,
+                              subBelanja: selected.uraian,
                               kodeRekening: selected.kodeRekening
                             });
                           }
@@ -1842,44 +1942,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                     />
                   </div>
 
-                  {/* Sub Belanja Dropdown */}
-                  <div className="sm:col-span-6">
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-slate-700 dark:text-zinc-300 font-bold">
-                        Sub Belanja (Dropdown Otomatis)
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setIsCustomSubBelanja(!isCustomSubBelanja)}
-                        className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold"
-                      >
-                        {isCustomSubBelanja ? 'Pilih dari List' : '+ Input Manual'}
-                      </button>
-                    </div>
-
-                    {isCustomSubBelanja ? (
-                      <input
-                        type="text"
-                        value={formValues.subBelanja || ''}
-                        onChange={(e) => setFormValues({ ...formValues, subBelanja: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl uppercase font-semibold"
-                        placeholder="Contoh: BELANJA BMHP"
-                      />
-                    ) : (
-                      <select
-                        value={formValues.subBelanja || 'BELANJA BMHP'}
-                        onChange={(e) => setFormValues({ ...formValues, subBelanja: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-semibold"
-                      >
-                        {availableSubBelanja.map((sub, idx) => (
-                          <option key={idx} value={sub}>{sub}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
                   {/* Sumber Anggaran */}
-                  <div className="sm:col-span-6">
+                  <div className="sm:col-span-12">
                     <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Sumber Anggaran</label>
                     <select
                       value={formValues.sumberAnggaran || 'BLUD'}
@@ -1925,7 +1989,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-xs"
                     />
                     <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center justify-between">
-                      <span>Bulan: <strong className="text-teal-600 dark:text-teal-400">{formValues.bulanInvoice || 'DESEMBER'}</strong></span>
+                      <span>Bulan Invoice: <strong className="text-teal-600 dark:text-teal-400">{formValues.bulanInvoice || getMonthNameFromDate(formValues.tglInvoice) || '-'}</strong></span>
                       <span className="font-mono">{formValues.tglInvoice || '-'}</span>
                     </div>
                   </div>
@@ -1971,17 +2035,21 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       type="date"
                       value={toInputDate(formValues.tglRekap || formValues.tglTandaTerima)}
                       onChange={(e) => {
-                        const display = fromInputDate(e.target.value);
+                        const iso = e.target.value;
+                        const display = fromInputDate(iso);
+                        const month = getMonthNameFromDate(iso);
                         setFormValues({
                           ...formValues,
                           tglRekap: display,
-                          tglTandaTerima: display
+                          tglTandaTerima: display,
+                          bulanRekap: month
                         });
                       }}
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-xs"
                     />
-                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 text-right font-mono">
-                      {formValues.tglRekap || formValues.tglTandaTerima || '-'}
+                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center justify-between">
+                      <span>Bulan Rekap: <strong className="text-teal-600 dark:text-teal-400">{formValues.bulanRekap || getMonthNameFromDate(formValues.tglRekap || formValues.tglTandaTerima) || '-'}</strong></span>
+                      <span className="font-mono">{formValues.tglRekap || formValues.tglTandaTerima || '-'}</span>
                     </div>
                   </div>
 

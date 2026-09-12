@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     monitoring_ppn: false,
   });
 
-  // Auto-expand section on mount or when activeMenu changes
+  // Auto-expand section on mount or when activeMenu or activeSubmenu changes
   useEffect(() => {
     if (activeMenu === 'pendapatan_blud') {
       setExpandedSections(prev => ({ ...prev, pendapatan: true }));
@@ -93,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     } else if (activeMenu === 'monitoring_ppn') {
       setExpandedSections(prev => ({ ...prev, monitoring_ppn: true }));
     }
-  }, [activeMenu]);
+  }, [activeMenu, activeSubmenu]);
 
   const toggleSection = (key: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -497,7 +497,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 max-h-64 overflow-y-auto custom-scrollbar ${
+                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
                   isDark ? 'border-indigo-900/60' : 'border-indigo-200'
                 }`}>
               {hutangSubmenus.map((sub) => {
@@ -505,6 +505,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 return (
                   <button
                     key={sub.id}
+                    id={`sidebar-submenu-${sub.id}`}
                     onClick={() => handleItemClick('hutang', sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10.5px] transition truncate flex items-center justify-between ${
                       isSubActive 

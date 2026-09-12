@@ -497,6 +497,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             <HutangView 
               isAdmin={isSuperAdmin}
               activeSubmenu={activeSubmenu}
+              onNavigateSubmenu={(sub) => handleSelectMenu('hutang', sub)}
               user={user}
               role={effectiveRole}
               onOpenLoginModal={openLoginModal}
