@@ -33,7 +33,7 @@ export interface PengeluaranItem {
   createdBy?: string;
 }
 
-const INITIAL_PENGELUARAN: PengeluaranItem[] = [
+export const INITIAL_PENGELUARAN: PengeluaranItem[] = [
   { id: 'PENG-001', bulan: 'Agustus', tanggal: '28-08-2026', uraian: 'Belanja Gaji, Tunjangan & Insentif Nakes BLUD', kodeRekening: '5.1.01.01.01.0001', kategori: 'Belanja Pegawai & Nakes', jumlah: 1850000000, penerima: 'Pegawai & Nakes RSUD', status: 'Lunas' },
   { id: 'PENG-002', bulan: 'Agustus', tanggal: '27-08-2026', uraian: 'Pengadaan Obat-obatan & Bahan Habis Pakai Medis', kodeRekening: '5.1.02.01.01.0019', kategori: 'Belanja Barang & Jasa (Obat/BMHP)', jumlah: 685000000, penerima: 'PT. Farma Medika Nusantara', status: 'Lunas' },
   { id: 'PENG-003', bulan: 'Agustus', tanggal: '25-08-2026', uraian: 'Pemeliharaan Alat Kesehatan RS & Kalibrasi', kodeRekening: '5.1.02.02.01.0025', kategori: 'Belanja Pemeliharaan & Kalibrasi', jumlah: 145000000, penerima: 'CV. Medika Teknik Utama', status: 'Lunas' },
@@ -57,7 +57,7 @@ let inMemoryPengeluaranCache: PengeluaranItem[] | null = null;
 
 const PENGELUARAN_STORAGE_KEY = 'rsud_pengeluaran_blud_data';
 
-const getInitialPengeluaranData = (): PengeluaranItem[] => {
+export const getInitialPengeluaranData = (): PengeluaranItem[] => {
   if (inMemoryPengeluaranCache && inMemoryPengeluaranCache.length > 0) {
     return inMemoryPengeluaranCache;
   }

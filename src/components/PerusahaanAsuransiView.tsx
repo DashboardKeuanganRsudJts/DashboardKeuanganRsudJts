@@ -338,16 +338,29 @@ let inMemoryMasterPartnersCache: MasterPartnerInfo[] | null = null;
 
 export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ isAdmin, onShowToast, onOpenUploadModal, currentUserEmail, userRole }) => {
   const isUserLoggedIn = Boolean(currentUserEmail);
-  const isSuperAdmin = isUserLoggedIn && ((userRole === 'admin') || Boolean(isAdmin));
-  const isPicPiutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (userRole === 'pic_piutang'));
+  const emailLower = (currentUserEmail || '').toLowerCase().trim();
+  const roleLower = (userRole || '').toLowerCase().trim();
 
-  const canModifyRecord = (record: any) => {
-    if (!isUserLoggedIn) return false;
-    if (isSuperAdmin) return true;
-    if (userRole === 'pic_piutang') {
-      if (!record?.createdBy || record?.createdBy === currentUserEmail) return true;
-    }
-    return false;
+  // Verifikasi jika user adalah admin dari bagian/modul lain (Hutang, Pendapatan, Pengeluaran, Pajak)
+  const isOtherDepartmentAdmin = 
+    emailLower.includes('hutang') || roleLower.includes('hutang') ||
+    emailLower.includes('pendapatan') || roleLower.includes('pendapatan') ||
+    emailLower.includes('pengeluaran') || roleLower.includes('pengeluaran') ||
+    emailLower.includes('pajak') || roleLower.includes('pajak') ||
+    emailLower.includes('ppn') || roleLower.includes('ppn');
+
+  // Khusus tombol-tombol aksi, penambahan tagihan, dan pembayaran invoice di Piutang HANYA untuk ADMIN_PIUTANG
+  const isOnlyAdminPiutang = isUserLoggedIn && !isOtherDepartmentAdmin && (
+    emailLower === 'begegbayunugroho@gmail.com' ||
+    emailLower.includes('piutang') ||
+    roleLower === 'pic_piutang' ||
+    roleLower === 'admin_piutang' ||
+    (Boolean(isAdmin) && (roleLower === 'admin' || emailLower.includes('admin')) && emailLower.includes('piutang'))
+  );
+
+  const canModifyRecord = (_record?: any) => {
+    if (!isUserLoggedIn || !isOnlyAdminPiutang) return false;
+    return true;
   };
 
   // 1. MASTER PARTNER DIRECTORY (Initialized with 40 partners, extensible by user)
@@ -1325,8 +1338,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
           <div className="flex flex-wrap items-center gap-2">
             
-            {/* Upload Spreadsheet Quick Action */}
-            {onOpenUploadModal && isPicPiutangOrAdmin && (
+            {/* Upload Spreadsheet Quick Action (Hanya Admin Piutang) */}
+            {onOpenUploadModal && isOnlyAdminPiutang && (
               <button
                 onClick={onOpenUploadModal}
                 className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-emerald-500/40"
@@ -1337,8 +1350,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               </button>
             )}
 
-            {/* Primary Action 1: Tambah Rekanan Baru */}
-            {isPicPiutangOrAdmin && (
+            {/* Primary Action 1: Tambah Rekanan Baru (Hanya Admin Piutang) */}
+            {isOnlyAdminPiutang && (
               <button
                 onClick={handleOpenAddPartner}
                 className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-teal-400/30"
@@ -1349,8 +1362,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               </button>
             )}
 
-            {/* Primary Action 2: Entri Tagihan Baru */}
-            {isPicPiutangOrAdmin && (
+            {/* Primary Action 2: Entri Tagihan Baru (Hanya Admin Piutang) */}
+            {isOnlyAdminPiutang && (
               <button
                 onClick={() => handleOpenAddInvoice()}
                 className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-emerald-400/30"
@@ -1361,8 +1374,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               </button>
             )}
 
-            {/* Primary Action 3: Input Pembayaran Invoice */}
-            {isPicPiutangOrAdmin && (
+            {/* Primary Action 3: Input Pembayaran Invoice (Hanya Admin Piutang) */}
+            {isOnlyAdminPiutang && (
               <button
                 onClick={() => handleOpenPayment()}
                 className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-amber-400/30"
@@ -1373,7 +1386,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               </button>
             )}
 
-            {isSuperAdmin && (
+            {isOnlyAdminPiutang && (
               <button
                 onClick={handleResetToEmptyAllMonths}
                 className="px-3 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-rose-700/50"
@@ -1543,13 +1556,15 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 <th className="py-3 px-3 border-r border-emerald-900/60">Tgl Bayar</th>
                 <th className="py-3 px-3 text-right border-r border-emerald-900/60">Pembayaran</th>
                 <th className="py-3 px-3 text-right font-bold border-r border-rose-900 bg-rose-950 text-rose-100">Sisa Piutang</th>
-                <th className="py-3 px-2 text-center sticky right-0 bg-emerald-950 dark:bg-[#081b22] z-10">Aksi</th>
+                {isOnlyAdminPiutang && (
+                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-950 dark:bg-[#081b22] z-10">Aksi</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400 dark:text-zinc-500">
+                  <td colSpan={isOnlyAdminPiutang ? 10 : 9} className="py-12 text-center text-slate-400 dark:text-zinc-500">
                     Tidak ada data piutang untuk filter bulan <strong>{selectedBulan}</strong>.
                   </td>
                 </tr>
@@ -1590,7 +1605,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             {row.namaPerusahaan}
                           </div>
                           {/* Tombol "+" Pojok Kanan Atas Perusahaan untuk Memudahkan PIC Piutang Membuat Invoice Baru */}
-                          {isPicPiutangOrAdmin && (
+                          {isOnlyAdminPiutang && (
                             <button
                               type="button"
                               onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
@@ -1607,7 +1622,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                         {!hasInvoices ? (
                           <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-zinc-500 italic">
                             <span>Belum ada invoice</span>
-                            {isPicPiutangOrAdmin && (
+                            {isOnlyAdminPiutang && (
                               <>
                                 <span>•</span>
                                 <button
@@ -1860,7 +1875,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                                 ))}
 
                                 <div className="flex items-center justify-between pt-0.5">
-                                  {isPicPiutangOrAdmin && (
+                                  {isOnlyAdminPiutang && (
                                     <button
                                       type="button"
                                       onClick={() => handleOpenAddInvoice(row.namaPerusahaan, row.jenisPengobatan, row.bulan)}
@@ -1894,7 +1909,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
                       {/* 5. PIUTANG LALU */}
                       <td className="py-3 px-3 text-right font-mono text-slate-700 dark:text-zinc-300 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
-                        {isPicPiutangOrAdmin ? (
+                        {isOnlyAdminPiutang ? (
                           <button
                             type="button"
                             onClick={() => handleOpenEditPiutangLalu(row)}
@@ -1926,7 +1941,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
                       {/* 11. PEMBAYARAN */}
                       <td className="py-3 px-3 text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
-                        {isPicPiutangOrAdmin ? (
+                        {isOnlyAdminPiutang ? (
                           <button
                             type="button"
                             onClick={() => handleOpenPayment(row, undefined, 'manual')}
@@ -1952,11 +1967,11 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                         {formatRupiah(row.sisaPiutang)}
                       </td>
 
-                      {/* 14. AKSI */}
-                      <td className="py-3 px-2 text-center whitespace-nowrap sticky right-0 bg-white/95 dark:bg-[#0d1216]/95 backdrop-blur-xs z-10 align-top shadow-xs">
-                        <div className="flex items-center justify-center gap-1">
-                          {/* TOMBOL EDIT PIUTANG LALU */}
-                          {isPicPiutangOrAdmin && (
+                      {/* 14. AKSI (Hanya ditampilkan untuk ADMIN_PIUTANG) */}
+                      {isOnlyAdminPiutang && (
+                        <td className="py-3 px-2 text-center whitespace-nowrap sticky right-0 bg-white/95 dark:bg-[#0d1216]/95 backdrop-blur-xs z-10 align-top shadow-xs">
+                          <div className="flex items-center justify-center gap-1">
+                            {/* TOMBOL EDIT PIUTANG LALU */}
                             <button
                               type="button"
                               onClick={() => handleOpenEditPiutangLalu(row)}
@@ -1965,10 +1980,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             >
                               <Edit className="w-3.5 h-3.5" />
                             </button>
-                          )}
 
-                          {/* TOMBOL BAYAR INVOICE / MANUAL */}
-                          {isPicPiutangOrAdmin && (
+                            {/* TOMBOL BAYAR INVOICE / MANUAL */}
                             <button
                               onClick={() => handleOpenPayment(row)}
                               className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 transition"
@@ -1976,18 +1989,18 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             >
                               <CreditCard className="w-3.5 h-3.5" />
                             </button>
-                          )}
 
-                          {/* CETAK SURAT TAGIHAN */}
-                          <button
-                            onClick={() => handleOpenSuratInvoice(row)}
-                            className="p-1.5 rounded bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition"
-                            title="Cetak Surat Penagihan / Invoice Resmi"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" />
-                          </button>
-                        </div>
-                      </td>
+                            {/* CETAK SURAT TAGIHAN */}
+                            <button
+                              onClick={() => handleOpenSuratInvoice(row)}
+                              className="p-1.5 rounded bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition"
+                              title="Cetak Surat Penagihan / Invoice Resmi"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })

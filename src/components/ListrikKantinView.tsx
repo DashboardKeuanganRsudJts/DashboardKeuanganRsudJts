@@ -118,16 +118,42 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
   onOpenUploadModal 
 }) => {
   const isUserLoggedIn = Boolean(currentUserEmail);
-  const isSuperAdmin = isUserLoggedIn && ((userRole === 'admin') || Boolean(isAdmin));
-  const isPicPiutangOrAdmin = isUserLoggedIn && (isSuperAdmin || (userRole === 'pic_piutang'));
+  const emailLower = (currentUserEmail || '').toLowerCase();
+  const isExcludedDept = 
+    emailLower.includes('pendapatan') ||
+    emailLower.includes('kasir') ||
+    emailLower.includes('rawat_inap') ||
+    emailLower.includes('igd') ||
+    emailLower.includes('pelayanan') ||
+    emailLower.includes('perbendaharaan') ||
+    emailLower.includes('anggaran') ||
+    emailLower.includes('akuntansi') ||
+    emailLower.includes('belanja') ||
+    emailLower.includes('gaji') ||
+    emailLower.includes('pajak') ||
+    emailLower.includes('aset') ||
+    emailLower.includes('bmd') ||
+    emailLower.includes('remunerasi') ||
+    emailLower.includes('jaspel') ||
+    emailLower.includes('hutang') ||
+    emailLower.includes('farmasi') ||
+    emailLower.includes('logistik');
+
+  const isOnlyAdminPiutang = isUserLoggedIn && !isExcludedDept && (
+    Boolean(isAdmin) ||
+    userRole === 'pic_piutang' || 
+    userRole === 'admin_piutang' ||
+    emailLower.includes('piutang')
+  );
+  const isSuperAdmin = isOnlyAdminPiutang;
+  const isPicPiutangOrAdmin = isOnlyAdminPiutang;
 
   const canModifyRecord = (row?: any) => {
-    if (!isUserLoggedIn) return false;
-    if (isSuperAdmin) return true;
+    if (!isUserLoggedIn || !isOnlyAdminPiutang) return false;
     if (userRole === 'pic_piutang') {
       if (!row || !row.createdBy || row.createdBy === currentUserEmail) return true;
     }
-    return false;
+    return true;
   };
   const [stands, setStands] = useState<ListrikKantinStandGroup[]>(getInitialListrikKantinData);
 

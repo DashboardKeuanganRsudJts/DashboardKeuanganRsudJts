@@ -145,14 +145,40 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
   };
 
   const isUserLoggedIn = Boolean(user);
-  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || role === 'admin' || (user?.email === 'begegbayunugroho@gmail.com') || (user?.email?.toLowerCase().includes('admin') ?? false));
-  const effectiveRole = isSuperAdmin ? 'admin' : (isUserLoggedIn ? role : undefined);
+  const emailLower = (user?.email || '').toLowerCase().trim();
+  const roleLower = (role || '').toLowerCase().trim();
 
-  const canEditPiutang = isUserLoggedIn && (isSuperAdmin || role === 'pic_piutang');
-  const canEditPendapatan = isUserLoggedIn && (isSuperAdmin || role === 'pic_pendapatan');
-  const canEditPengeluaran = isUserLoggedIn && (isSuperAdmin || role === 'pic_pengeluaran');
-  const canEditHutang = isUserLoggedIn && (isSuperAdmin || role === 'pic_hutang');
-  const canEditPajak = isUserLoggedIn && (isSuperAdmin || role === 'pic_pajak');
+  // Deteksi modul spesifik berdasarkan email atau role PIC
+  const isHutangUser = emailLower.includes('hutang') || roleLower.includes('hutang') || role === 'pic_hutang';
+  const isPiutangUser = emailLower.includes('piutang') || roleLower.includes('piutang') || role === 'pic_piutang' || role === 'admin_piutang';
+  const isPendapatanUser = emailLower.includes('pendapatan') || roleLower.includes('pendapatan') || role === 'pic_pendapatan';
+  const isPengeluaranUser = emailLower.includes('pengeluaran') || roleLower.includes('pengeluaran') || role === 'pic_pengeluaran';
+  const isPajakUser = emailLower.includes('pajak') || emailLower.includes('ppn') || roleLower.includes('pajak') || roleLower.includes('ppn') || role === 'pic_pajak';
+
+  // Super Admin universal hanya untuk akun developer utama atau admin umum tanpa keterkaitan modul spesifik
+  const isUniversalSuperAdmin = isUserLoggedIn && (
+    emailLower === 'begegbayunugroho@gmail.com' ||
+    (Boolean(isAdmin) && !isHutangUser && !isPiutangUser && !isPendapatanUser && !isPengeluaranUser && !isPajakUser) ||
+    (roleLower === 'admin' && !isHutangUser && !isPiutangUser && !isPendapatanUser && !isPengeluaranUser && !isPajakUser)
+  );
+
+  const isSuperAdmin = isUniversalSuperAdmin;
+
+  // Batasan ketat: Admin dari bagian/modul lain tidak diizinkan mengubah modul di luar tanggung jawabnya
+  const canEditPiutang = isUserLoggedIn && !isHutangUser && !isPendapatanUser && !isPengeluaranUser && !isPajakUser && (isUniversalSuperAdmin || isPiutangUser);
+  const canEditPendapatan = isUserLoggedIn && !isHutangUser && !isPiutangUser && !isPengeluaranUser && !isPajakUser && (isUniversalSuperAdmin || isPendapatanUser);
+  const canEditPengeluaran = isUserLoggedIn && !isHutangUser && !isPiutangUser && !isPendapatanUser && !isPajakUser && (isUniversalSuperAdmin || isPengeluaranUser);
+  const canEditHutang = isUserLoggedIn && !isPiutangUser && !isPendapatanUser && !isPengeluaranUser && !isPajakUser && (isUniversalSuperAdmin || isHutangUser);
+  const canEditPajak = isUserLoggedIn && !isHutangUser && !isPiutangUser && !isPendapatanUser && !isPengeluaranUser && (isUniversalSuperAdmin || isPajakUser);
+
+  const effectiveRole = isUniversalSuperAdmin 
+    ? 'admin' 
+    : isPiutangUser ? 'pic_piutang'
+    : isHutangUser ? 'pic_hutang'
+    : isPendapatanUser ? 'pic_pendapatan'
+    : isPengeluaranUser ? 'pic_pengeluaran'
+    : isPajakUser ? 'pic_pajak'
+    : (isUserLoggedIn ? role : undefined);
 
   // Handle menu selection from Sidebar or Dashboard
   
@@ -508,16 +534,16 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           {/* 5. PIUTANG: PERUSAHAAN & ASURANSI */}
           {activeMenu === 'perusahaan_asuransi' && (
             <PerusahaanAsuransiView
-              isAdmin={isSuperAdmin}
+              isAdmin={canEditPiutang}
               currentUserEmail={user?.email || undefined}
-              userRole={effectiveRole}
+              userRole={canEditPiutang ? (isUniversalSuperAdmin ? 'admin' : 'pic_piutang') : effectiveRole}
               selectedBulan={selectedBulan}
               onOpenUploadModal={() => {
                 if (!user) {
                   openLoginModal();
                   showToast('Silakan login terlebih dahulu.', 'info');
                 } else if (!canEditPiutang) {
-                  showToast('Akses terbatas: Hanya PIC Piutang dan Admin yang dapat upload.', 'error');
+                  showToast('Akses terbatas: Hanya Admin Piutang yang dapat upload.', 'error');
                 } else {
                   setIsUploadModalOpen(true);
                 }
@@ -528,16 +554,16 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           {/* 6. PIUTANG: LISTRIK KANTIN */}
           {activeMenu === 'listrik_kantin' && (
             <ListrikKantinView
-              isAdmin={isSuperAdmin}
+              isAdmin={canEditPiutang}
               currentUserEmail={user?.email || undefined}
-              userRole={effectiveRole}
+              userRole={canEditPiutang ? (isUniversalSuperAdmin ? 'admin' : 'pic_piutang') : effectiveRole}
               selectedBulan={selectedBulan}
               onOpenUploadModal={() => {
                 if (!user) {
                   openLoginModal();
                   showToast('Silakan login terlebih dahulu.', 'info');
                 } else if (!canEditPiutang) {
-                  showToast('Akses terbatas: Hanya PIC Piutang dan Admin yang dapat upload.', 'error');
+                  showToast('Akses terbatas: Hanya Admin Piutang yang dapat upload.', 'error');
                 } else {
                   setIsUploadModalOpen(true);
                 }
@@ -548,16 +574,16 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           {/* 7. PIUTANG: SEMUA REKAPAN */}
           {activeMenu === 'semua_rekapan' && (
             <SemuaRekapanView
-              isAdmin={isSuperAdmin}
+              isAdmin={canEditPiutang}
               currentUserEmail={user?.email || undefined}
-              userRole={effectiveRole}
+              userRole={canEditPiutang ? (isUniversalSuperAdmin ? 'admin' : 'pic_piutang') : effectiveRole}
               selectedBulan={selectedBulan}
               onOpenUploadModal={() => {
                 if (!user) {
                   openLoginModal();
                   showToast('Silakan login terlebih dahulu.', 'info');
                 } else if (!canEditPiutang) {
-                  showToast('Akses terbatas: Hanya PIC Piutang dan Admin yang dapat upload.', 'error');
+                  showToast('Akses terbatas: Hanya Admin Piutang yang dapat upload.', 'error');
                 } else {
                   setIsUploadModalOpen(true);
                 }

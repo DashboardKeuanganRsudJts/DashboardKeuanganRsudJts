@@ -46,7 +46,7 @@ export interface PendapatanItem {
   createdBy?: string;
 }
 
-const INITIAL_PENDAPATAN: PendapatanItem[] = [
+export const INITIAL_PENDAPATAN: PendapatanItem[] = [
   { id: 'PEND-001', bulan: 'Agustus', tanggal: '28-08-2026', sumber: 'Pelayanan Rawat Inap BPJS & Umum', kategori: 'Pendapatan Fungsional RS', kodeRekening: '4.1.04.16.01.0001', jumlahTarget: 2100000000, jumlahRealisasi: 1845000000, keterangan: 'Optimal' },
   { id: 'PEND-002', bulan: 'Agustus', tanggal: '27-08-2026', sumber: 'Pelayanan Rawat Jalan & Poliklinik Spesialis', kategori: 'Pendapatan Fungsional RS', kodeRekening: '4.1.04.16.01.0002', jumlahTarget: 1400000000, jumlahRealisasi: 1285129960, keterangan: 'Optimal' },
   { id: 'PEND-003', bulan: 'Agustus', tanggal: '26-08-2026', sumber: 'Instalasi Gawat Darurat (IGD) & Bedah Sentral', kategori: 'Pendapatan Fungsional RS', kodeRekening: '4.1.04.16.01.0003', jumlahTarget: 950000000, jumlahRealisasi: 820000000, keterangan: 'Stabil' },
@@ -71,7 +71,7 @@ let inMemoryPendapatanCache: PendapatanItem[] | null = null;
 
 const PENDAPATAN_STORAGE_KEY = 'rsud_pendapatan_blud_data';
 
-const getInitialPendapatanData = (): PendapatanItem[] => {
+export const getInitialPendapatanData = (): PendapatanItem[] => {
   if (inMemoryPendapatanCache && inMemoryPendapatanCache.length > 0) {
     return inMemoryPendapatanCache;
   }

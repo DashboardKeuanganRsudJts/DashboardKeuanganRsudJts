@@ -216,8 +216,34 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
   };
 
   const isUserLoggedIn = Boolean(currentUserEmail);
-  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || userRole === 'admin');
-  const isPicPiutangOrAdmin = isUserLoggedIn && (isSuperAdmin || userRole === 'pic_piutang');
+  const emailLower = (currentUserEmail || '').toLowerCase();
+  const isExcludedDept = 
+    emailLower.includes('pendapatan') ||
+    emailLower.includes('kasir') ||
+    emailLower.includes('rawat_inap') ||
+    emailLower.includes('igd') ||
+    emailLower.includes('pelayanan') ||
+    emailLower.includes('perbendaharaan') ||
+    emailLower.includes('anggaran') ||
+    emailLower.includes('akuntansi') ||
+    emailLower.includes('belanja') ||
+    emailLower.includes('gaji') ||
+    emailLower.includes('pajak') ||
+    emailLower.includes('aset') ||
+    emailLower.includes('bmd') ||
+    emailLower.includes('remunerasi') ||
+    emailLower.includes('jaspel') ||
+    emailLower.includes('hutang') ||
+    emailLower.includes('farmasi') ||
+    emailLower.includes('logistik');
+
+  const isOnlyAdminPiutang = isUserLoggedIn && !isExcludedDept && (
+    Boolean(isAdmin) ||
+    userRole === 'pic_piutang' || 
+    userRole === 'admin_piutang' ||
+    emailLower.includes('piutang')
+  );
+  const isPicPiutangOrAdmin = isOnlyAdminPiutang;
 
   return (
     <div className="space-y-6">
