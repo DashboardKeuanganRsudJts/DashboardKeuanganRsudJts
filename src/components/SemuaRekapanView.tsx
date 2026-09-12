@@ -68,17 +68,24 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
 
 
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const handleUpdate = () => {
-      try {
-        const synced = syncSemuaRekapanFromSources();
-        setRekapanGroups(synced);
-      } catch (e) {
-        console.warn('Error on sync update:', e);
-      }
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        try {
+          const synced = syncSemuaRekapanFromSources(undefined, undefined, false);
+          setRekapanGroups(synced);
+        } catch (e) {
+          console.warn('Error on sync update:', e);
+        }
+      }, 300);
     };
 
     // Run initial sync check
-    handleUpdate();
+    try {
+      const synced = syncSemuaRekapanFromSources(undefined, undefined, false);
+      setRekapanGroups(synced);
+    } catch (e) {}
 
     window.addEventListener('rsud_semua_rekapan_updated', handleUpdate);
     window.addEventListener('rsud_perusahaan_data_updated', handleUpdate);
@@ -87,6 +94,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     window.addEventListener('storage', handleUpdate);
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       window.removeEventListener('rsud_semua_rekapan_updated', handleUpdate);
       window.removeEventListener('rsud_perusahaan_data_updated', handleUpdate);
       window.removeEventListener('rsud_listrik_data_updated', handleUpdate);
@@ -98,7 +106,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
   const handleResetToMaster = () => {
     try {
       localStorage.setItem('rsud_semua_rekapan_2026', JSON.stringify(SEMUA_REKAPAN_REAL_GROUPS));
-      const resynced = syncSemuaRekapanFromSources();
+      const resynced = syncSemuaRekapanFromSources(undefined, undefined, true);
       setRekapanGroups(resynced);
       window.dispatchEvent(new Event('rsud_semua_rekapan_updated'));
       if (onShowToast) onShowToast('Data Semua Rekapan berhasil diperbarui ke data master dan disinkronkan.', 'success');

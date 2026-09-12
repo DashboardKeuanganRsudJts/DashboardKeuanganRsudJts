@@ -164,8 +164,10 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
   });
 
   // Central refresh logic for all data stores
-  const refreshAllData = useCallback(async () => {
-    setIsRefreshing(true);
+  const refreshAllData = useCallback(async (isManual: boolean = false) => {
+    if (isManual) {
+      setIsRefreshing(true);
+    }
     try {
       // Load Hutang 2025 & 2026 from IndexedDB / LocalStorage
       const saved2025 = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025');
@@ -226,21 +228,28 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         }
       }
 
-      setRekapanGroups(syncSemuaRekapanFromSources());
+      // Compute synced groups without writing to Firestore
+      setRekapanGroups(syncSemuaRekapanFromSources(undefined, undefined, false));
       setLastUpdatedTime(getCurrentTimeWIB());
     } catch (e) {
       console.warn('Dashboard data refresh warning:', e);
     } finally {
-      setTimeout(() => setIsRefreshing(false), 400);
+      if (isManual) {
+        setTimeout(() => setIsRefreshing(false), 400);
+      }
     }
   }, []);
 
-  // Initial load and real-time listeners
+  // Initial load and debounced real-time listeners
   useEffect(() => {
-    refreshAllData();
+    refreshAllData(false);
 
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const handleDataUpdate = () => {
-      refreshAllData();
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        refreshAllData(false);
+      }, 400);
     };
 
     window.addEventListener('rsud_invoice_hutang_2025_updated', handleDataUpdate);
@@ -256,6 +265,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
     window.addEventListener('storage', handleDataUpdate);
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       window.removeEventListener('rsud_invoice_hutang_2025_updated', handleDataUpdate);
       window.removeEventListener('rsud_invoice_hutang_2026_updated', handleDataUpdate);
       window.removeEventListener('rsud_hutang_data_updated', handleDataUpdate);
@@ -550,7 +560,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
             </div>
             <div className="h-8 w-px bg-white/30 dark:bg-emerald-900/60"></div>
             <button
-              onClick={() => refreshAllData()}
+              onClick={() => refreshAllData(true)}
               disabled={isRefreshing}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 dark:bg-emerald-900/50 hover:bg-white/30 dark:hover:bg-emerald-800 text-white text-xs font-medium transition border border-white/20 dark:border-emerald-700/50 shadow-2xs backdrop-blur-sm disabled:opacity-60 cursor-pointer"
               title="Perbarui data secara langsung"

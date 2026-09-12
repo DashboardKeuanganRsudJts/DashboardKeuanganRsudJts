@@ -116,7 +116,8 @@ export function rollForwardPerusahaanRows(
  */
 export function syncSemuaRekapanFromSources(
   overridePerusahaanData?: PerusahaanAsuransiRow[],
-  overrideListrikData?: ListrikKantinStandGroup[]
+  overrideListrikData?: ListrikKantinStandGroup[],
+  syncToFirestore: boolean = false
 ): Record<string, SemuaRekapanGroup> {
   let existingGroups: Record<string, SemuaRekapanGroup> = { ...SEMUA_REKAPAN_REAL_GROUPS };
 
@@ -286,8 +287,14 @@ export function syncSemuaRekapanFromSources(
   }
 
   try {
-    localStorage.setItem('rsud_semua_rekapan_2026', JSON.stringify(updatedGroups));
-    syncDocumentToFirestore('semua_rekapan_2026', updatedGroups);
+    const newString = JSON.stringify(updatedGroups);
+    const oldString = localStorage.getItem('rsud_semua_rekapan_2026');
+    if (newString !== oldString) {
+      localStorage.setItem('rsud_semua_rekapan_2026', newString);
+      if (syncToFirestore) {
+        syncDocumentToFirestore('semua_rekapan_2026', updatedGroups);
+      }
+    }
   } catch (e) {
     console.error('Error saving synchronized rsud_semua_rekapan_2026:', e);
   }

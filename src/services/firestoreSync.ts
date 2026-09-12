@@ -37,6 +37,11 @@ export function initFirestoreSync() {
       else if (colName === 'legacy_hutang2025') idbKey = 'rsud_hutang_blud_apbd_v2025_complete';
       else if (colName === 'legacy_hutang2026') idbKey = 'rsud_rekap_pengadaan_hutang_2026_master_v3';
       
+      const existingData = await idbGet<any[]>(idbKey);
+      if (existingData && JSON.stringify(existingData) === JSON.stringify(data)) {
+        return; // Skip duplicate echo update
+      }
+
       await idbSetLocalOnly(idbKey, data);
       window.dispatchEvent(new CustomEvent(`${idbKey}_updated`, { detail: data }));
       
@@ -59,10 +64,13 @@ export function initFirestoreSync() {
       
       const localKey = `rsud_rekap_${year}_highlights`;
       try {
-        localStorage.setItem(localKey, JSON.stringify(data));
+        const currentLocal = localStorage.getItem(localKey);
+        const newString = JSON.stringify(data);
+        if (currentLocal === newString) return; // Skip duplicate echo update
+
+        localStorage.setItem(localKey, newString);
+        window.dispatchEvent(new CustomEvent(`${localKey}_updated`, { detail: data }));
       } catch (e) {}
-      
-      window.dispatchEvent(new CustomEvent(`${localKey}_updated`, { detail: data }));
     });
   });
 
@@ -78,7 +86,13 @@ export function initFirestoreSync() {
       const docData = snapshot.data();
       if (docData && docData.payload) {
         try {
-          localStorage.setItem(storageKey, JSON.stringify(docData.payload));
+          const currentLocal = localStorage.getItem(storageKey);
+          const newString = JSON.stringify(docData.payload);
+          if (currentLocal === newString) {
+            return; // Skip duplicate echo update
+          }
+
+          localStorage.setItem(storageKey, newString);
           window.dispatchEvent(new CustomEvent(eventName, { detail: docData.payload }));
           window.dispatchEvent(new CustomEvent('rsud_data_updated'));
         } catch (e) {
