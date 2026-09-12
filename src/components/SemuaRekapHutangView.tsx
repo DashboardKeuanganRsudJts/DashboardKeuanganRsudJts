@@ -903,6 +903,12 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
                       <div className="text-[10.5px] text-slate-600 dark:text-zinc-300 truncate max-w-xs mt-0.5">
                         {item.uraian}
                       </div>
+                      {item.kodeRekening && (
+                        <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
+                          <span className="opacity-60 text-[9px] uppercase font-sans">Kode:</span>
+                          <span>{item.kodeRekening}</span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Tahun */}

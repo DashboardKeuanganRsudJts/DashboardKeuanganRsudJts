@@ -6,12 +6,15 @@
       "type": "object",
       "properties": {
         "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
         "role": { 
           "type": "string",
           "enum": ["admin", "pic_piutang", "pic_pendapatan", "pic_pengeluaran", "pic_hutang", "pic_pajak", "viewer"]
         },
         "isAdmin": { "type": "boolean" },
-        "createdAt": { "type": "string" }
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
       },
       "required": ["email", "role"]
     },

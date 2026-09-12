@@ -14,6 +14,7 @@ import { Loader2, Mail, Lock, Eye, EyeOff, Activity, FileText, ShieldCheck, Cloc
 import { RsudLogo } from './RsudLogo';
 import { MotifBackground } from './MotifBackground';
 import bgImage from '../assets/images/rsud_jatisari_bg_1787917665665.jpg';
+import { setLocalUserProfile } from '../utils/userProfile';
 
 interface AuthWrapperProps {
   children: (
@@ -48,7 +49,18 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       setLoginBg(saved || bgImage);
     };
     window.addEventListener('rsud_bg_updated', handleBgUpdate);
-    return () => window.removeEventListener('rsud_bg_updated', handleBgUpdate);
+
+    const handleProfileUpdate = () => {
+      if (auth.currentUser) {
+        setUser({ ...auth.currentUser } as User);
+      }
+    };
+    window.addEventListener('user_profile_updated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('rsud_bg_updated', handleBgUpdate);
+      window.removeEventListener('user_profile_updated', handleProfileUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -79,6 +91,12 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
             const userIsAdmin = data.isAdmin === true || userRole === 'admin' || isEmailAdmin;
             const finalRole = userIsAdmin && (userRole === 'viewer' || !userRole) ? 'admin' : userRole;
             
+            // Sync custom avatar and display name to local profile cache
+            setLocalUserProfile(currentUser.uid, {
+              photoURL: data.photoURL || currentUser.photoURL,
+              displayName: data.displayName || currentUser.displayName
+            });
+
             setRole(finalRole);
             setIsAdmin(userIsAdmin);
           } else {

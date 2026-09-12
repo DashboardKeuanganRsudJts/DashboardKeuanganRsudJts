@@ -13,7 +13,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow create: if isAuthenticated() && request.auth.uid == userId;
       allow read: if true;
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin']) || isAdmin()));
+      allow delete: if isAdmin();
     }
     
     match /invoices/{invoiceId} {

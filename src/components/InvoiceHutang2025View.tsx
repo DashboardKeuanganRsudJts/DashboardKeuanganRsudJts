@@ -6,8 +6,9 @@ import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { formatRupiah, formatDateDDMMYYYY, getMonthNameIndo } from '../utils/formatters';
 import { downloadInvoiceHutangExcelTemplate } from '../utils/invoiceExcelTemplate';
 import { idbGet, idbSet, idbDelete, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
-import { MASTER_31_POS_BELANJA } from '../utils/rekapHutang2025Aggregator';
+import { MASTER_31_POS_BELANJA, matchInvoiceToPosBelanja } from '../utils/rekapHutang2025Aggregator';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
+import { getEffectiveJatuhTempo, calculateUmurHutang, addOneMonthToDateStr } from '../utils/umurHutang';
 import { 
   Search, 
   Plus, 
@@ -154,6 +155,22 @@ export const parseDateForSort = (dateStr?: string): number => {
   return new Date(iso).getTime() || 0;
 };
 
+// Helper to resolve the correct Kode Rekening for a 2025 invoice record
+export const getEffectiveKodeRekening = (item: InvoiceHutang2025Record): string => {
+  if (item.kodeRekening && item.kodeRekening.trim() && item.kodeRekening.trim() !== '-') {
+    return item.kodeRekening.trim();
+  }
+  const matched = matchInvoiceToPosBelanja(item);
+  if (matched?.kodeRekening && matched.kodeRekening.trim() && matched.kodeRekening.trim() !== '-') {
+    return matched.kodeRekening.trim();
+  }
+  const matchCode = (item.subBelanja || item.uraian || '').match(/\b5\.\d\.\d{2}\.\d{2}\.\d{2}\.\d{4}\b/);
+  if (matchCode) {
+    return matchCode[0];
+  }
+  return '';
+};
+
 const BIDANG_OPTIONS = [
   'Bidang Pelayanan Medik',
   'Bidang Pelayanan Non Medik',
@@ -245,9 +262,20 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025
 
   const keterangan = (sisaHutang <= 0 || sisaHutangRiil <= 0) ? 'Lunas' : (item.keterangan || 'Belum Lunas');
 
+  const effectiveJt = getEffectiveJatuhTempo(item);
+  const calculatedUmur = calculateUmurHutang({
+    jatuhTempo: effectiveJt,
+    tglInvoice: item.tglInvoice,
+    tglRekap: item.tglRekap,
+    tglTandaTerima: item.tglTandaTerima,
+    lamaHariHutang: item.lamaHariHutang
+  });
+
   return {
     ...item,
     noInvoice: cleanNoInvoice,
+    jatuhTempo: (item.jatuhTempo && item.jatuhTempo !== '-' && item.jatuhTempo !== '0') ? item.jatuhTempo : (effectiveJt || '-'),
+    lamaHariHutang: calculatedUmur,
     jumlahInvoice: numJumlah,
     koreksi: numKoreksi,
     totalInvoiceFix,
@@ -442,6 +470,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
           item.noInvoice.toLowerCase().includes(q) ||
           item.uraian.toLowerCase().includes(q) ||
           item.subBelanja.toLowerCase().includes(q) ||
+          (item.kodeRekening && item.kodeRekening.toLowerCase().includes(q)) ||
+          getEffectiveKodeRekening(item).toLowerCase().includes(q) ||
           item.noSpdBukuKas.toLowerCase().includes(q) ||
           item.keterangan.toLowerCase().includes(q);
         if (!matchSearch) return false;
@@ -499,10 +529,22 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         return a.no - b.no;
       }
 
+      // Sort by Umur Hutang dynamically
+      if (sortField === 'lamaHariHutang') {
+        const umurA = calculateUmurHutang(a);
+        const umurB = calculateUmurHutang(b);
+        if (umurA !== umurB) {
+          return sortAsc ? umurA - umurB : umurB - umurA;
+        }
+        return a.no - b.no;
+      }
+
       // Date sorting
       if (['tglInvoice', 'tglRekap', 'tglTandaTerima', 'tglMasukSpj', 'tglSpbSpk', 'jatuhTempo', 'tglBayar', 'tglSpdBukuKas'].includes(String(sortField))) {
-        const timeA = parseDateForSort(a[sortField as keyof InvoiceHutang2025Record] as string);
-        const timeB = parseDateForSort(b[sortField as keyof InvoiceHutang2025Record] as string);
+        const valA = sortField === 'jatuhTempo' ? (getEffectiveJatuhTempo(a) || a.jatuhTempo) : (a[sortField as keyof InvoiceHutang2025Record] as string);
+        const valB = sortField === 'jatuhTempo' ? (getEffectiveJatuhTempo(b) || b.jatuhTempo) : (b[sortField as keyof InvoiceHutang2025Record] as string);
+        const timeA = parseDateForSort(valA);
+        const timeB = parseDateForSort(valB);
         if (timeA !== timeB) {
           return sortAsc ? timeA - timeB : timeB - timeA;
         }
@@ -545,7 +587,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       totalSisaHutangRiil += i.sisaHutangRiil || 0;
 
       const sisa = i.sisaHutang || 0;
-      const umur = i.lamaHariHutang || 0;
+      const umur = calculateUmurHutang(i);
       if (sisa > 0) {
         if (umur <= 0) totalBelumJt += sisa;
         else if (umur <= 30) totalH130 += sisa;
@@ -650,6 +692,14 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     const effBulanRekap = getMonthNameFromDate(effRekap) || record.bulanRekap || '';
     const effInvoice = record.tglInvoice || '';
     const effBulanInvoice = getMonthNameFromDate(effInvoice) || record.bulanInvoice || '';
+    const effJatuhTempo = (record.jatuhTempo && record.jatuhTempo !== '-' && record.jatuhTempo !== '0')
+      ? record.jatuhTempo
+      : (getEffectiveJatuhTempo(record) || (effInvoice ? addOneMonthToDateStr(effInvoice) : ''));
+    const effUmur = calculateUmurHutang({
+      ...record,
+      jatuhTempo: effJatuhTempo,
+      tglInvoice: effInvoice
+    });
 
     setFormValues({ 
       ...record,
@@ -658,6 +708,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       bulanRekap: effBulanRekap,
       tglInvoice: effInvoice,
       bulanInvoice: effBulanInvoice,
+      jatuhTempo: effJatuhTempo,
+      lamaHariHutang: effUmur,
       tglMasukSpj: record.tglMasukSpj || record.tglSpbSpk || '',
       tglBayar: record.tglBayar || record.tglSpdBukuKas || ''
     });
@@ -845,15 +897,16 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       if (onShowToast) onShowToast(`Invoice baru berhasil ditambahkan`, 'success');
     }
 
-    inMemoryInvoice2025Cache = nextData;
-    setData(nextData);
+    const sanitizedData = nextData.map(sanitizeInvoiceRecord);
+    inMemoryInvoice2025Cache = sanitizedData;
+    setData(sanitizedData);
     setIsFormOpen(false);
 
     // Save immediately and synchronously across storage layers
-    idbSet(IDB_KEY_INVOICE_2025, nextData).catch(err => {
+    idbSet(IDB_KEY_INVOICE_2025, sanitizedData).catch(err => {
       console.warn('[IDB] Error persisting invoice 2025:', err);
     });
-    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: nextData }));
+    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: sanitizedData }));
   };
 
   const handleRefreshNominal = () => {
@@ -892,22 +945,14 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       'TANGGAL BAYAR',
       'BULAN BAYAR',
       'NOMOR SP2D',
-      'UMUR HUTANG',
-      'BELUM JT',
-      '1-30 Hari',
-      '31-60 Hari',
-      '61-90 Hari',
-      '>90 Hari'
+      'UMUR HUTANG'
     ];
 
     const rows = filteredItems.map(item => {
-      const sisa = item.sisaHutang;
-      const umur = item.lamaHariHutang;
-      const belumJt = sisa > 0 && umur <= 0 ? sisa : '';
-      const h130 = sisa > 0 && umur > 0 && umur <= 30 ? sisa : '';
-      const h3160 = sisa > 0 && umur > 30 && umur <= 60 ? sisa : '';
-      const h6190 = sisa > 0 && umur > 60 && umur <= 90 ? sisa : '';
-      const h90plus = sisa > 0 && umur > 90 ? sisa : '';
+      const umur = calculateUmurHutang(item);
+      const jtDisplay = (item.jatuhTempo && item.jatuhTempo !== '-' && item.jatuhTempo !== '0')
+        ? item.jatuhTempo
+        : (getEffectiveJatuhTempo(item) || '');
 
       return [
         item.no,
@@ -919,7 +964,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         `"${item.tglInvoice || ''}"`,
         `"${getEffectiveBulanInvoice(item)}"`,
         `"${(item.noInvoice || '').replace(/"/g, '""')}"`,
-        `"${item.jatuhTempo || ''}"`,
+        `"${jtDisplay}"`,
         item.jumlahInvoice,
         item.koreksi || '',
         item.totalInvoiceFix,
@@ -930,12 +975,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         `"${item.tglBayar || item.tglSpdBukuKas || ''}"`,
         `"${getMonthNameIndo(item.tglBayar || item.tglSpdBukuKas || '') || item.bulanSpd || ''}"`,
         `"${(item.noSpdBukuKas || '').replace(/"/g, '""')}"`,
-        item.lamaHariHutang || 0,
-        belumJt,
-        h130,
-        h3160,
-        h6190,
-        h90plus
+        umur
       ];
     });
 
@@ -972,22 +1012,14 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       'TANGGAL BAYAR',
       'BULAN BAYAR',
       'NOMOR SP2D',
-      'UMUR HUTANG',
-      'BELUM JT',
-      '1-30 Hari',
-      '31-60 Hari',
-      '61-90 Hari',
-      '>90 Hari'
+      'UMUR HUTANG'
     ];
 
     const rows = filteredItems.map(item => {
-      const sisa = item.sisaHutang;
-      const umur = item.lamaHariHutang;
-      const belumJt = sisa > 0 && umur <= 0 ? sisa : '';
-      const h130 = sisa > 0 && umur > 0 && umur <= 30 ? sisa : '';
-      const h3160 = sisa > 0 && umur > 30 && umur <= 60 ? sisa : '';
-      const h6190 = sisa > 0 && umur > 60 && umur <= 90 ? sisa : '';
-      const h90plus = sisa > 0 && umur > 90 ? sisa : '';
+      const umur = calculateUmurHutang(item);
+      const jtDisplay = (item.jatuhTempo && item.jatuhTempo !== '-' && item.jatuhTempo !== '0')
+        ? item.jatuhTempo
+        : (getEffectiveJatuhTempo(item) || '');
 
       return [
         item.no,
@@ -999,7 +1031,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         item.tglInvoice || '',
         getEffectiveBulanInvoice(item),
         item.noInvoice,
-        item.jatuhTempo,
+        jtDisplay,
         item.jumlahInvoice,
         item.koreksi || 0,
         item.totalInvoiceFix,
@@ -1010,12 +1042,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         item.tglBayar || item.tglSpdBukuKas || '',
         getMonthNameIndo(item.tglBayar || item.tglSpdBukuKas || '') || item.bulanSpd,
         item.noSpdBukuKas,
-        item.lamaHariHutang,
-        belumJt,
-        h130,
-        h3160,
-        h6190,
-        h90plus
+        umur
       ];
     });
 
@@ -1044,10 +1071,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       }));
     }
 
-    inMemoryInvoice2025Cache = finalData;
-    setData(finalData);
-    idbSet(IDB_KEY_INVOICE_2025, finalData).catch(err => console.warn('[IDB] error on import:', err));
-    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: finalData }));
+    const sanitizedFinalData = finalData.map(sanitizeInvoiceRecord);
+    inMemoryInvoice2025Cache = sanitizedFinalData;
+    setData(sanitizedFinalData);
+    idbSet(IDB_KEY_INVOICE_2025, sanitizedFinalData).catch(err => console.warn('[IDB] error on import:', err));
+    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: sanitizedFinalData }));
     if (onShowToast) {
       onShowToast(
         mode === 'replace'
@@ -1364,18 +1392,13 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 <th onClick={() => handleSort('lamaHariHutang')} className="px-3 py-3 text-center cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">UMUR HUTANG <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-right text-amber-700 dark:text-amber-500">BELUM JT</th>
-                <th className="px-3 py-3 text-right text-orange-600 dark:text-orange-400">1-30 Hari</th>
-                <th className="px-3 py-3 text-right text-rose-600 dark:text-rose-400">31-60 Hari</th>
-                <th className="px-3 py-3 text-right text-red-600 dark:text-red-400">61-90 Hari</th>
-                <th className="px-3 py-3 text-right text-rose-700 dark:text-rose-300 font-bold">&gt;90 Hari</th>
                 <th className="px-3 py-3 text-center w-24 border-l border-teal-200 dark:border-emerald-900">AKSI</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">
               {paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={29} className="px-6 py-12 text-center text-slate-500 dark:text-zinc-400">
+                  <td colSpan={22} className="px-6 py-12 text-center text-slate-500 dark:text-zinc-400">
                     Tidak ada data invoice yang sesuai dengan kriteria pencarian/filter.
                   </td>
                 </tr>
@@ -1383,12 +1406,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 paginatedItems.map((item) => {
                   const isLunas = item.sisaHutang <= 0;
                   const sisa = item.sisaHutang;
-                  const umur = item.lamaHariHutang;
-                  const belumJt = sisa > 0 && umur <= 0 ? sisa : 0;
-                  const h130 = sisa > 0 && umur > 0 && umur <= 30 ? sisa : 0;
-                  const h3160 = sisa > 0 && umur > 30 && umur <= 60 ? sisa : 0;
-                  const h6190 = sisa > 0 && umur > 60 && umur <= 90 ? sisa : 0;
-                  const h90plus = sisa > 0 && umur > 90 ? sisa : 0;
 
                   return (
                     <tr 
@@ -1406,8 +1423,25 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 text-[11px] max-w-[140px] truncate">
                         {item.bagian || '-'}
                       </td>
-                      <td className="px-4 py-2.5 text-slate-700 dark:text-zinc-300 text-[11px] max-w-[220px] truncate">
-                        {item.subBelanja || '-'}
+                      <td className="px-4 py-2.5 text-[11px] min-w-[180px] max-w-[240px]">
+                        <div className="font-semibold text-slate-800 dark:text-zinc-200 leading-snug line-clamp-2" title={item.subBelanja || item.uraian || '-'}>
+                          {item.subBelanja || item.uraian || '-'}
+                        </div>
+                        {(() => {
+                          const kode = getEffectiveKodeRekening(item);
+                          return kode ? (
+                            <div className="text-[10px] font-mono font-medium text-emerald-700 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                              <span className="text-[9px] uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-sans">Kode:</span>
+                              <span className="bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/60 font-semibold inline-block">
+                                {kode}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 mt-0.5">
+                              -
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
                         {formatDateDDMMYYYY(item.tglRekap || item.tglTandaTerima || '')}
@@ -1425,7 +1459,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         {item.noInvoice || '-'}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                        {item.jatuhTempo || '-'}
+                        {item.jatuhTempo && item.jatuhTempo !== '-' ? item.jatuhTempo : (getEffectiveJatuhTempo(item) || '-')}
                       </td>
                       <td className="px-4 py-2.5 text-right font-mono font-medium text-slate-800 dark:text-zinc-200">
                         {formatRupiah(item.jumlahInvoice)}
@@ -1475,23 +1509,26 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       <td className="px-4 py-2.5 font-mono text-[10.5px] text-slate-700 dark:text-zinc-300 max-w-[200px] truncate" title={item.noSpdBukuKas}>
                         {item.noSpdBukuKas || '-'}
                       </td>
-                      <td className="px-3 py-2.5 text-center font-mono font-medium text-slate-600 dark:text-zinc-400">
-                        {item.lamaHariHutang > 0 ? `${item.lamaHariHutang}` : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-[10.5px] text-amber-700 dark:text-amber-500">
-                        {belumJt > 0 ? formatRupiah(belumJt) : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-[10.5px] text-orange-600 dark:text-orange-400">
-                        {h130 > 0 ? formatRupiah(h130) : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-[10.5px] text-rose-600 dark:text-rose-400">
-                        {h3160 > 0 ? formatRupiah(h3160) : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-[10.5px] text-red-600 dark:text-red-400">
-                        {h6190 > 0 ? formatRupiah(h6190) : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-[10.5px] font-bold text-rose-700 dark:text-rose-300">
-                        {h90plus > 0 ? formatRupiah(h90plus) : '-'}
+                      <td className="px-3 py-2.5 text-center font-mono font-medium">
+                        {(() => {
+                          const u = calculateUmurHutang(item);
+                          if (item.sisaHutang <= 0) {
+                            return <span className="text-slate-400 dark:text-zinc-500 font-sans text-[11px]">Lunas</span>;
+                          }
+                          if (u <= 0) {
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Belum JT</span>;
+                          }
+                          if (u <= 30) {
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">{u} hr</span>;
+                          }
+                          if (u <= 60) {
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">{u} hr</span>;
+                          }
+                          if (u <= 90) {
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800">{u} hr</span>;
+                          }
+                          return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse">{u} hr</span>;
+                        })()}
                       </td>
                       <td className="px-3 py-2.5 text-center border-l border-slate-200 dark:border-zinc-800">
                         <div className="flex items-center justify-center gap-1">
@@ -1561,21 +1598,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   {stats.totalSisaHutang > 0 ? formatRupiah(stats.totalSisaHutang) : '-'}
                 </td>
                 <td colSpan={5}></td>
-                <td className="px-3 py-3 text-right font-mono text-xs text-amber-700 dark:text-amber-400">
-                  {stats.totalBelumJt > 0 ? formatRupiah(stats.totalBelumJt) : '-'}
-                </td>
-                <td className="px-3 py-3 text-right font-mono text-xs text-orange-600 dark:text-orange-400">
-                  {stats.totalH130 > 0 ? formatRupiah(stats.totalH130) : '-'}
-                </td>
-                <td className="px-3 py-3 text-right font-mono text-xs text-rose-600 dark:text-rose-400">
-                  {stats.totalH3160 > 0 ? formatRupiah(stats.totalH3160) : '-'}
-                </td>
-                <td className="px-3 py-3 text-right font-mono text-xs text-red-600 dark:text-red-400">
-                  {stats.totalH6190 > 0 ? formatRupiah(stats.totalH6190) : '-'}
-                </td>
-                <td className="px-3 py-3 text-right font-mono text-xs font-black text-rose-800 dark:text-rose-200">
-                  {stats.totalH90plus > 0 ? formatRupiah(stats.totalH90plus) : '-'}
-                </td>
                 <td></td>
               </tr>
             </tfoot>
@@ -1690,11 +1712,18 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   </div>
                   <div>
                     <span className="text-slate-500 dark:text-zinc-400 block font-medium">Kode Rekening:</span>
-                    <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{selectedRecord.kodeRekening || '-'}</span>
+                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                      {getEffectiveKodeRekening(selectedRecord) || selectedRecord.kodeRekening || '-'}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-zinc-400 block font-medium">Sub Belanja:</span>
-                    <span className="font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.subBelanja || '-'}</span>
+                    <span className="text-slate-500 dark:text-zinc-400 block font-medium">Sub Belanja (Jenis Pengadaan):</span>
+                    <span className="font-semibold text-slate-800 dark:text-zinc-200 block">{selectedRecord.subBelanja || '-'}</span>
+                    {getEffectiveKodeRekening(selectedRecord) && (
+                      <span className="inline-block text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50 mt-1 font-semibold">
+                        Kode: {getEffectiveKodeRekening(selectedRecord)}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <span className="text-slate-500 dark:text-zinc-400 block font-medium">Bulan Invoice:</span>
@@ -1727,7 +1756,9 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 </div>
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
                   <span className="text-slate-500 dark:text-zinc-400 block">Jatuh Tempo:</span>
-                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.jatuhTempo || '-'}</span>
+                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">
+                    {selectedRecord.jatuhTempo && selectedRecord.jatuhTempo !== '-' ? selectedRecord.jatuhTempo : (getEffectiveJatuhTempo(selectedRecord) || '-')}
+                  </span>
                 </div>
               </div>
 
@@ -1761,7 +1792,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-700 dark:text-zinc-300">
                   <div>Status Kas: <span className="font-bold text-teal-700 dark:text-teal-400">{selectedRecord.sudahMasukBukuKas ? 'Sudah Masuk (TRUE)' : 'Belum (FALSE)'}</span></div>
                   <div>Tgl Bayar: <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">{formatDateDDMMYYYY(selectedRecord.tglBayar || selectedRecord.tglSpdBukuKas || '')}</span></div>
-                  <div>Umur Hutang: <span className="font-semibold">{selectedRecord.lamaHariHutang || 0} hari</span></div>
+                  <div>Umur Hutang: <span className="font-semibold text-rose-600 dark:text-rose-400 font-mono">{calculateUmurHutang(selectedRecord)} hari</span></div>
                   <div className="col-span-2 sm:col-span-3">No SPD / Buku Kas: <span className="font-mono font-medium">{selectedRecord.noSpdBukuKas || '-'}</span></div>
                 </div>
               </div>
@@ -1928,6 +1959,14 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         ))}
                       </select>
                     )}
+                    {formValues.kodeRekening && (
+                      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
+                        <span className="text-[10px] font-sans text-slate-500 dark:text-zinc-400 font-medium">Kode Rekening Terkait:</span>
+                        <span className="bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50 font-bold">
+                          {formValues.kodeRekening}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Kode Rekening */}
@@ -1980,10 +2019,17 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         const iso = e.target.value;
                         const display = fromInputDate(iso);
                         const month = getMonthNameFromDate(iso);
+                        const effectiveJT = formValues.jatuhTempo || (iso ? addOneMonthToDateStr(iso) : '');
+                        const calculatedUmur = calculateUmurHutang({
+                          jatuhTempo: effectiveJT,
+                          tglInvoice: display,
+                          sisaHutang: formValues.sisaHutang ?? 1
+                        });
                         setFormValues({
                           ...formValues,
                           tglInvoice: display,
-                          bulanInvoice: month
+                          bulanInvoice: month,
+                          lamaHariHutang: calculatedUmur
                         });
                       }}
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-xs"
@@ -2005,24 +2051,23 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       onChange={(e) => {
                         const iso = e.target.value;
                         const display = fromInputDate(iso);
-                        // Hitung hari jika ada tgl invoice
-                        let diffDays = formValues.lamaHariHutang || 0;
-                        if (iso) {
-                          const jtTime = new Date(iso).getTime();
-                          const nowTime = new Date().getTime();
-                          diffDays = Math.max(0, Math.floor((nowTime - jtTime) / (1000 * 60 * 60 * 24)));
-                        }
+                        const effectiveJT = display || (formValues.tglInvoice ? addOneMonthToDateStr(formValues.tglInvoice) : '');
+                        const calculatedUmur = calculateUmurHutang({
+                          jatuhTempo: effectiveJT,
+                          tglInvoice: formValues.tglInvoice,
+                          sisaHutang: formValues.sisaHutang ?? 1
+                        });
                         setFormValues({
                           ...formValues,
                           jatuhTempo: display,
-                          lamaHariHutang: diffDays
+                          lamaHariHutang: calculatedUmur
                         });
                       }}
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-xs"
                     />
                     <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center justify-between">
-                      <span>Umur: <strong>{formValues.lamaHariHutang || 0} hari</strong></span>
-                      <span className="font-mono">{formValues.jatuhTempo || '-'}</span>
+                      <span>Umur: <strong className="text-rose-600 dark:text-rose-400">{formValues.lamaHariHutang || 0} hari</strong></span>
+                      <span className="font-mono">{formValues.jatuhTempo || (formValues.tglInvoice ? `Auto: ${addOneMonthToDateStr(formValues.tglInvoice)}` : '-')}</span>
                     </div>
                   </div>
 

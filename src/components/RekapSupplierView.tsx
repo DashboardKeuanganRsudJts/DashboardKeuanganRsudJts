@@ -1065,8 +1065,16 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
                           <td className="px-3 py-2 font-mono font-bold text-slate-900 dark:text-zinc-100 whitespace-nowrap">
                             {inv.noInvoice || '-'}
                           </td>
-                          <td className="px-3 py-2 max-w-xs truncate text-slate-600 dark:text-zinc-300" title={inv.subBelanja || inv.uraian}>
-                            {inv.subBelanja || inv.uraian}
+                          <td className="px-3 py-2 max-w-xs text-slate-700 dark:text-zinc-200">
+                            <div className="font-semibold text-xs leading-snug truncate" title={inv.subBelanja || inv.uraian}>
+                              {inv.subBelanja || inv.uraian || '-'}
+                            </div>
+                            {inv.kodeRekening && (
+                              <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
+                                <span className="opacity-70 text-[9px] uppercase font-sans">Kode:</span>
+                                <span>{inv.kodeRekening}</span>
+                              </div>
+                            )}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-slate-500 dark:text-zinc-400 font-mono">
                             {inv.tglRekap || inv.tglTandaTerima || '-'}

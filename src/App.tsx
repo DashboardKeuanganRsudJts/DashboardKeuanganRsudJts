@@ -37,13 +37,16 @@ import {
   Sun,
   Moon,
   Menu,
-  Receipt
+  Receipt,
+  UserCog
 } from 'lucide-react';
 import { formatRupiah } from './utils/formatters';
 import { User } from 'firebase/auth';
 import { initFaviconSync, updateAppFavicon } from './utils/faviconHelper';
+import { useUserProfile } from './utils/userProfile';
 import { useTheme } from './context/ThemeContext';
 import { initFirestoreSync } from './services/firestoreSync';
+import { ProfileSettingsModal } from './components/ProfileSettingsModal';
 
 interface AppProps {
   user: User | null;
@@ -56,6 +59,7 @@ interface AppProps {
 
 export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginModal, closeLoginModal }: AppProps) {
   const { theme, isDark, toggleTheme } = useTheme();
+  const profile = useUserProfile(user);
   const [records, setRecords] = useState<PiutangRecord[]>(() => GoogleSheetsService.loadCachedData());
   const [syncConfig, setSyncConfig] = useState<SyncStatusInfo>(() => GoogleSheetsService.loadConfig());
   
@@ -63,6 +67,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Sidebar visibility state
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -331,6 +336,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
         onOpenLoginModal={openLoginModal}
         onOpenQuickAddModal={handleOpenQuickAdd}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
         syncConfig={syncConfig}
       />
 
@@ -462,6 +468,37 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
                 </>
               )}
             </button>
+
+            {/* Profile Settings Button (when user is logged in) */}
+            {user ? (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold border transition ${
+                  isDark 
+                    ? 'bg-[#12181f] hover:bg-[#182129] border-emerald-950/80 text-zinc-200 hover:text-white' 
+                    : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 hover:text-slate-900'
+                }`}
+                title="Buka Pengaturan Profil (Edit Foto, Nama, Email, Password)"
+              >
+                <img
+                  src={profile.photoURL}
+                  alt="Avatar"
+                  className="w-4 h-4 rounded-full object-cover bg-emerald-800 ring-1 ring-emerald-500/50 shrink-0"
+                />
+                <span className="hidden sm:inline max-w-[90px] md:max-w-[120px] truncate">
+                  {profile.displayName}
+                </span>
+                <UserCog className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              </button>
+            ) : (
+              <button
+                onClick={openLoginModal}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-xs transition"
+                title="Masuk / Login Akun"
+              >
+                <span>Masuk</span>
+              </button>
+            )}
           </div>
         </header>
 
@@ -730,6 +767,18 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
+      />
+
+      {/* User Profile Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+        role={effectiveRole}
+        isAdmin={isSuperAdmin}
+        onProfileUpdated={() => {
+          showToast('Profil akun berhasil diperbarui!', 'success');
+        }}
       />
 
     </div>

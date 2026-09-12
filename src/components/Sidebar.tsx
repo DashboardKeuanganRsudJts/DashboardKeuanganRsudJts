@@ -32,11 +32,13 @@ import {
   Database,
   Sun,
   Moon,
-  Receipt
+  Receipt,
+  UserCog
 } from 'lucide-react';
 import { RsudLogo } from './RsudLogo';
 import { User, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { useUserProfile } from '../utils/userProfile';
 import { SyncStatusInfo } from '../types/piutang';
 import { useTheme } from '../context/ThemeContext';
 
@@ -52,6 +54,7 @@ export interface SidebarProps {
   onOpenLoginModal: () => void;
   onOpenQuickAddModal?: () => void;
   onOpenSettingsModal?: () => void;
+  onOpenProfileModal?: () => void;
   syncConfig?: SyncStatusInfo;
 }
 
@@ -67,9 +70,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenLoginModal,
   onOpenQuickAddModal,
   onOpenSettingsModal,
+  onOpenProfileModal,
   syncConfig
 }) => {
   const { theme, isDark, toggleTheme } = useTheme();
+  const profile = useUserProfile(user);
 
   // Collapsible states for main sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -746,6 +751,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isDark ? 'border-emerald-950/80 text-zinc-400' : 'border-slate-200 text-slate-500'
       }`}>
         <div className="flex items-center gap-1">
+          {user && (
+            <button 
+              onClick={onOpenProfileModal} 
+              className={`p-1.5 rounded-lg transition ${
+                isDark ? 'hover:bg-emerald-950/60 text-emerald-400' : 'hover:bg-emerald-50 text-emerald-700'
+              }`} 
+              title="Pengaturan Profil Pengguna (Edit Foto, Nama, Email, Password)"
+            >
+              <UserCog className="w-4 h-4" />
+            </button>
+          )}
+
           <button 
             onClick={onOpenSettingsModal} 
             className={`p-1.5 rounded-lg transition ${
@@ -803,45 +820,72 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 6. BOTTOM-LEFT USER PROFILE / LOGIN BUTTON */}
       <div className={`p-3 border-t ${isDark ? 'border-emerald-950/90 bg-[#070b0c]' : 'border-slate-200 bg-slate-50'}`}>
         {user ? (
-          <div className={`flex items-center justify-between gap-2 p-1.5 rounded-xl transition ${
-            isDark ? 'bg-zinc-900/80 hover:bg-zinc-800 border border-emerald-950/60' : 'bg-white hover:bg-slate-100/80 border border-slate-200/80 shadow-2xs'
+          <div className={`p-2 rounded-xl transition border space-y-2 ${
+            isDark ? 'bg-zinc-900/80 border-emerald-950/60' : 'bg-white border-slate-200/80 shadow-2xs'
           }`}>
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || user.email}&background=059669&color=fff`} 
-                alt="Avatar" 
-                className="w-7 h-7 rounded-full bg-emerald-800 object-cover shrink-0 ring-1 ring-emerald-500/40" 
-              />
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-xs font-semibold truncate block max-w-[100px] ${
+            <div className="flex items-center justify-between gap-2">
+              <div 
+                onClick={onOpenProfileModal}
+                className="flex items-center gap-2.5 min-w-0 cursor-pointer group flex-1"
+                title="Buka Pengaturan Profil Pengguna"
+              >
+                <div className="relative shrink-0">
+                  <img 
+                    src={profile.photoURL} 
+                    alt="Avatar" 
+                    className="w-7 h-7 rounded-full bg-emerald-800 object-cover ring-1 ring-emerald-500/40 group-hover:ring-emerald-400 transition" 
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full ring-1 ring-black"></span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className={`text-xs font-semibold truncate block group-hover:text-emerald-400 transition ${
                     isDark ? 'text-zinc-100' : 'text-slate-900'
                   }`}>
-                    {user.displayName || user.email?.split('@')[0]}
+                    {profile.displayName}
                   </span>
-                  {getRoleBadge(role, isAdmin)}
+                  <span className={`text-[10px] truncate block ${
+                    isDark ? 'text-zinc-400' : 'text-slate-500'
+                  }`}>
+                    {user.email}
+                  </span>
                 </div>
-                <span className={`text-[10px] truncate block max-w-[130px] ${
-                  isDark ? 'text-zinc-400' : 'text-slate-500'
-                }`}>
-                  {user.email}
-                </span>
               </div>
+
+              <button
+                onClick={() => {
+                  signOut(auth).then(() => {
+                    onOpenLoginModal();
+                  });
+                }}
+                className={`p-1.5 rounded-lg transition shrink-0 ${
+                  isDark ? 'text-zinc-400 hover:text-rose-400 hover:bg-zinc-700/50' : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
+                }`}
+                title="Keluar / Logout"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            <button
-              onClick={() => {
-                signOut(auth).then(() => {
-                  onOpenLoginModal();
-                });
-              }}
-              className={`p-1.5 rounded-lg transition shrink-0 ${
-                isDark ? 'text-zinc-400 hover:text-rose-400 hover:bg-zinc-700/50' : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
-              }`}
-              title="Keluar / Logout"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
+            {/* Profile Action & Role Row */}
+            <div className={`flex items-center justify-between pt-1.5 border-t text-[11px] ${
+              isDark ? 'border-zinc-800/80' : 'border-slate-100'
+            }`}>
+              <div>{getRoleBadge(role, isAdmin)}</div>
+
+              <button
+                type="button"
+                onClick={onOpenProfileModal}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition ${
+                  isDark 
+                    ? 'bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-800/50' 
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
+                }`}
+                title="Edit Username, Foto, Email, dan Password"
+              >
+                <UserCog className="w-3 h-3" />
+                <span>Edit Profil</span>
+              </button>
+            </div>
           </div>
         ) : (
           <button
@@ -963,11 +1007,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className={`pt-3 border-t flex flex-col items-center gap-2 ${isDark ? 'border-emerald-950/60' : 'border-slate-200'}`}>
           {user ? (
             <button 
-              onClick={onOpenSettingsModal}
-              className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 flex items-center justify-center text-white font-bold text-xs ring-2 ring-emerald-500/40 shadow-sm"
-              title={user.displayName || user.email || 'User Profile'}
+              onClick={onOpenProfileModal || onOpenSettingsModal}
+              className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 flex items-center justify-center text-white font-bold text-xs ring-2 ring-emerald-500/40 shadow-sm overflow-hidden"
+              title={`${profile.displayName || user.email || 'Pengguna'} - Pengaturan Profil`}
             >
-              {user.displayName ? user.displayName[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : 'U')}
+              <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
             </button>
           ) : (
             <button

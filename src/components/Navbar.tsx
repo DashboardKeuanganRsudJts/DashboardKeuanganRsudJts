@@ -13,14 +13,17 @@ import {
   LogOut,
   Settings,
   LogIn,
-  ShieldAlert
+  ShieldAlert,
+  UserCog
 } from 'lucide-react';
 import { SyncStatusInfo } from '../types/piutang';
 import { formatDateTimeIndo } from '../utils/formatters';
+import { useUserProfile } from '../utils/userProfile';
 import { RsudLogo } from './RsudLogo';
 import { User, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { SettingsModal } from './SettingsModal';
+import { ProfileSettingsModal } from './ProfileSettingsModal';
 
 interface NavbarProps { 
   isAdmin?: boolean;
@@ -40,6 +43,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenLoginModal
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profile = useUserProfile(user);
 
   const getRoleBadge = (r?: string, admin?: boolean) => {
     if (admin || r === 'admin') return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-900">Admin</span>;
@@ -78,15 +83,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             
             {user ? (
               <div className="flex items-center gap-2.5 pl-3 border-l border-emerald-800">
-                <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || user.email}&background=047857&color=fff`} alt={user.displayName || 'User'} className="w-5 h-5 rounded-full bg-emerald-800" />
-                <span className="font-medium text-emerald-100 hidden sm:inline">{user.displayName || user.email}</span>
+                <img src={profile.photoURL} alt={profile.displayName} className="w-5 h-5 rounded-full object-cover bg-emerald-800" />
+                <span className="font-medium text-emerald-100 hidden sm:inline">{profile.displayName}</span>
                 {getRoleBadge(role, isAdmin)}
                 
+                <button 
+                  onClick={() => setIsProfileOpen(true)} 
+                  className="text-emerald-400 hover:text-white transition ml-1" 
+                  title="Pengaturan Profil (Edit Foto, Nama, Email, Password)"
+                >
+                  <UserCog className="w-4 h-4" />
+                </button>
+
                 {(isAdmin || role === 'admin') && (
                   <button 
                     onClick={() => setIsSettingsOpen(true)} 
                     className="text-emerald-400 hover:text-white transition ml-1" 
-                    title="Pengaturan"
+                    title="Pengaturan Sistem"
                   >
                     <Settings className="w-4 h-4" />
                   </button>
@@ -170,6 +183,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
+      />
+
+      <ProfileSettingsModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        user={user}
+        role={role}
+        isAdmin={isAdmin}
       />
     </>
   );
