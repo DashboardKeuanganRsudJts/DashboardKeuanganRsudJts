@@ -292,7 +292,6 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
       'JENIS PENGADAAN',
       'KETERANGAN PENGADAAN',
       'TANGGAL REKAP',
-      'TANGGAL MASUK SPJ',
       'TANGGAL INVOICE',
       'BULAN',
       'NOMOR INVOICE/SPK/PO',

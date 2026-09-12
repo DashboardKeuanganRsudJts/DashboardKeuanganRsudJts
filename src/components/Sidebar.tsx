@@ -126,9 +126,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'rekap_supplier_2026', label: 'REKAP PERSUPLIER TAHUN 2026' },
     { id: 'rekap_supplier_2025', label: 'REKAP PERSUPLIER TAHUN 2025' },
     { id: 'verifikasi_po', label: 'VERIFIKASI PO' },
-    { id: 'rekap_pembelian_invoice', label: 'REKAP PEMBELIAN INVOICE PERBULAN' },
+    { id: 'rekap_pembelian_invoice', label: 'REKAP PEMBELIAN PERBULAN' },
     { id: 'bahan_lap_bulanan', label: 'BAHAN UNTUK LAP BULANAN' },
-    { id: 'rekap_pembayaran_perbulan', label: 'REKAPAN PEMBAYARAN PERBULAN' },
+    { id: 'rekap_pembayaran_perbulan', label: 'REKAP PEMBAYARAN PERBULAN' },
     { id: 'invoice_hutang_2025', label: 'INVOICE HUTANG 2025' },
     { id: 'invoice_hutang_2026', label: 'INVOICE HUTANG 2026' },
     { id: 'database_kode_rekening', label: 'DATA BASE KODE REKENING' }
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const piutangSubmenus = [
     { id: 'perusahaan_asuransi', label: 'Perusahaan & Asuransi' },
     { id: 'listrik_kantin', label: 'Listrik Kantin' },
-    { id: 'semua_rekapan', label: 'Semua Rekapan (10 Penjamin)' }
+    { id: 'semua_rekapan', label: 'Semua Rekapan' }
   ];
 
   

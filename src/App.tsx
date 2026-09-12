@@ -263,7 +263,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
       case 'hutang': return { main: '3. Hutang (BLUD & APBD)', sub: activeSubmenu ? activeSubmenu.replace(/_/g, ' ').toUpperCase() : 'Rekap Pengadaan' };
       case 'perusahaan_asuransi': return { main: '4. Piutang', sub: 'Perusahaan & Asuransi' };
       case 'listrik_kantin': return { main: '4. Piutang', sub: 'Listrik Kantin' };
-      case 'semua_rekapan': return { main: '4. Piutang', sub: 'Semua Rekapan (10 Penjamin)' };
+      case 'semua_rekapan': return { main: '4. Piutang', sub: 'Semua Rekapan' };
       case 'monitoring_ppn': return { main: '5. Monitoring PPN', sub: 'Coretax DJP & Data Hutang 2026' };
       default: return { main: 'Keuangan RSUD Jatisari', sub: 'Dashboard' };
     }

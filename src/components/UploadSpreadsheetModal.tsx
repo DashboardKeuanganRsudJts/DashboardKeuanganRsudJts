@@ -444,7 +444,7 @@ export const UploadSpreadsheetModal: React.FC<UploadSpreadsheetModalProps> = ({
                         <span className="px-2 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-mono">
                           {activeSheet.detectedType === 'perusahaan_asuransi' && 'Piutang Perusahaan & Asuransi'}
                           {activeSheet.detectedType === 'listrik_kantin' && 'Listrik Kantin'}
-                          {activeSheet.detectedType === 'semua_rekapan' && 'Semua Rekapan (10 Penjamin)'}
+                          {activeSheet.detectedType === 'semua_rekapan' && 'Semua Rekapan'}
                           {activeSheet.detectedType === 'rekap_bulanan_2026' && 'Dashboard Rekap Bulanan 2026'}
                           {activeSheet.detectedType === 'piutang_pasien' && 'Rincian Klaim & BPJS Pasien'}
                         </span>
@@ -462,7 +462,7 @@ export const UploadSpreadsheetModal: React.FC<UploadSpreadsheetModalProps> = ({
                         <option value="dashboard_2026">Dashboard Rekap Bulanan 2026</option>
                         <option value="perusahaan_asuransi">Piutang Perusahaan & Asuransi</option>
                         <option value="listrik_kantin">Listrik Kantin</option>
-                        <option value="semua_rekapan">Semua Rekapan (10 Penjamin)</option>
+                        <option value="semua_rekapan">Semua Rekapan</option>
                         <option value="piutang_pasien">Rincian Pasien & BPJS</option>
                       </select>
                     </div>

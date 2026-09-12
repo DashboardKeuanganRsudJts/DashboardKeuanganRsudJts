@@ -43,7 +43,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
   onShowToast, 
   onOpenUploadModal 
 }) => {
-  const [selectedBulanGroup, setSelectedBulanGroup] = useState<string>('AGUSTUS');
+  const [selectedBulanGroup, setSelectedBulanGroup] = useState<string>('JANUARI');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('Semua');
 
@@ -55,6 +55,8 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
   ];
 
+  const BULAN_OPTIONS = [...BULAN_LIST];
+
   const [rekapanGroups, setRekapanGroups] = useState<Record<string, SemuaRekapanGroup>>(() => {
     try {
       return syncSemuaRekapanFromSources();
@@ -64,14 +66,6 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     }
   });
 
-  useEffect(() => {
-    if (selectedBulan && selectedBulan !== 'Semua Bulan') {
-      const upper = selectedBulan.toUpperCase();
-      if (BULAN_LIST.includes(upper)) {
-        setSelectedBulanGroup(upper);
-      }
-    }
-  }, [selectedBulan]);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -113,7 +107,9 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     }
   };
 
-  const currentGroup: SemuaRekapanGroup = rekapanGroups[selectedBulanGroup] || rekapanGroups['AGUSTUS'] || SEMUA_REKAPAN_REAL_GROUPS['AGUSTUS'];
+  const currentGroup: SemuaRekapanGroup = useMemo(() => {
+    return rekapanGroups[selectedBulanGroup] || rekapanGroups['AGUSTUS'] || SEMUA_REKAPAN_REAL_GROUPS['AGUSTUS'];
+  }, [selectedBulanGroup, rekapanGroups]);
 
   // Filter rows
   const filteredRows = useMemo(() => {
@@ -192,7 +188,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     };
 
     const updatedGroups = { ...rekapanGroups };
-    const group = updatedGroups[selectedBulanGroup];
+    const group = updatedGroups[editingRow.bulan];
     if (group) {
       const rowIndex = group.rows.findIndex(r => r.no === editingRow.no);
       if (rowIndex !== -1) {
@@ -246,7 +242,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-white/10 p-2 rounded-xl backdrop-blur-xs border border-white/10 max-w-full">
             <span className="text-xs font-bold text-teal-200 shrink-0">Pilih Bulan:</span>
             <div className="flex flex-wrap gap-1 max-w-full">
-              {BULAN_LIST.map((b) => (
+              {BULAN_OPTIONS.map((b) => (
                 <button
                   key={`rekapan-group-btn-${b}`}
                   onClick={() => setSelectedBulanGroup(b)}
@@ -334,7 +330,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
               onChange={(e) => setSelectedBulanGroup(e.target.value)}
               className="bg-white dark:bg-[#12181f] rounded-md border border-teal-300 dark:border-teal-800 px-2.5 py-1 text-xs text-teal-900 dark:text-teal-200 font-bold focus:ring-2 focus:ring-teal-500 focus:outline-none cursor-pointer"
             >
-              {BULAN_LIST.map((b) => (
+              {BULAN_OPTIONS.map((b) => (
                 <option key={`opt-bulan-${b}`} value={b}>
                   {b} 2026
                 </option>

@@ -44,6 +44,7 @@ import { RekapHutang2026View } from './RekapHutang2026View';
 import { SemuaRekapHutangView } from './SemuaRekapHutangView';
 import DatabaseKodeRekeningView from './DatabaseKodeRekeningView';
 import { aggregateRekapHutang2025, RekapPosBelanjaItem } from '../utils/rekapHutang2025Aggregator';
+import { RekapPembelianPerbulanView } from './RekapPembelianPerbulanView';
 
 const STORAGE_KEY = 'rsud_hutang_blud_apbd_v2025_complete';
 
@@ -734,6 +735,14 @@ export const HutangView: React.FC<HutangViewProps> = ({
         onShowToast={onShowToast}
       />
     );
+  }
+
+  if (currentSubTab === 'rekap_pembelian_invoice') {
+    return <RekapPembelianPerbulanView type="pembelian" />;
+  }
+
+  if (currentSubTab === 'rekap_pembayaran_perbulan') {
+    return <RekapPembelianPerbulanView type="pembayaran" />;
   }
 
   if (currentSubTab === 'database_kode_rekening') {

@@ -37,22 +37,63 @@ export function formatDateIndo(dateStr: string): string {
   }
 }
 
+export function parseAnyDate(dateStr: string): { day: number, month: number, year: number } | null {
+  if (!dateStr || dateStr === '-') return null;
+  const trimmed = dateStr.trim().split('T')[0];
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [y, m, d] = trimmed.split('-');
+    return { day: parseInt(d, 10), month: parseInt(m, 10), year: parseInt(y, 10) };
+  }
+
+  const parts = trimmed.split(/[/.-]/);
+  if (parts.length === 3) {
+    let p1 = parseInt(parts[0], 10);
+    let p2 = parseInt(parts[1], 10);
+    let p3 = parseInt(parts[2], 10);
+
+    if (p3 < 100) p3 += 2000;
+
+    if (p1 > 31) {
+      return { day: p3, month: p2, year: p1 };
+    }
+    
+    if (p1 <= 12 && p2 > 12) {
+      return { day: p2, month: p1, year: p3 }; // M/D/YYYY
+    } else if (p1 > 12 && p2 <= 12) {
+      return { day: p1, month: p2, year: p3 }; // D/M/YYYY
+    } else {
+      // Ambiguous (e.g., 11/03/2026). Assume DD/MM/YYYY in Indonesia.
+      return { day: p1, month: p2, year: p3 };
+    }
+  }
+
+  const d = new Date(trimmed);
+  if (!isNaN(d.getTime())) {
+    return { day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear() };
+  }
+
+  return null;
+}
+
 export function formatDateDDMMYYYY(dateStr: string): string {
   if (!dateStr || dateStr === '-') return '-';
-  try {
-    const parts = dateStr.split('T')[0].split('-');
-    if (parts.length === 3) {
-      return `${parts[2]}-${parts[1]}-${parts[0]}`;
-    }
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  } catch {
-    return dateStr;
+  const parsed = parseAnyDate(dateStr);
+  if (!parsed) return dateStr;
+  
+  const d = String(parsed.day).padStart(2, '0');
+  const m = String(parsed.month).padStart(2, '0');
+  return `${d}/${m}/${parsed.year}`;
+}
+
+export function getMonthNameIndo(dateStr: string): string {
+  const parsed = parseAnyDate(dateStr);
+  if (!parsed) return '';
+  const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+  if (parsed.month >= 1 && parsed.month <= 12) {
+    return months[parsed.month - 1];
   }
+  return '';
 }
 
 export function formatDateTimeIndo(dateTimeStr: string): string {

@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { InvoiceHutang2026Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
-import { formatRupiah } from '../utils/formatters';
+import { formatRupiah, formatDateDDMMYYYY, getMonthNameIndo } from '../utils/formatters';
 import { idbGet, idbSet, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
 import { MASTER_31_POS_BELANJA } from '../utils/rekapHutang2025Aggregator';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
@@ -784,7 +784,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       'JENIS PENGADAAN',
       'KETERANGAN PENGADAAN',
       'TANGGAL REKAP',
-      'TANGGAL MASUK SPJ',
       'TANGGAL INVOICE',
       'BULAN',
       'NOMOR INVOICE/SPK/PO',
@@ -823,7 +822,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         `"${(item.uraian || '').replace(/"/g, '""')}"`,
         `"${(item.subBelanja || '').replace(/"/g, '""')}"`,
         `"${item.tglTandaTerima || ''}"`,
-        `"${item.tglSpbSpk || ''}"`,
         `"${item.tglInvoice || ''}"`,
         `"${item.bulanInvoice || ''}"`,
         `"${(item.noInvoice || '').replace(/"/g, '""')}"`,
@@ -836,7 +834,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         item.sisaHutang,
         item.sudahMasukBukuKas ? 'TRUE' : 'FALSE',
         `"${item.tglSpdBukuKas || ''}"`,
-        `"${item.bulanSpd || ''}"`,
+        `"${getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd || ''}"`,
         `"${(item.noSpdBukuKas || '').replace(/"/g, '""')}"`,
         item.lamaHariHutang || 0,
         belumJt,
@@ -866,7 +864,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       'JENIS PENGADAAN',
       'KETERANGAN PENGADAAN',
       'TANGGAL REKAP',
-      'TANGGAL MASUK SPJ',
       'TANGGAL INVOICE',
       'BULAN',
       'NOMOR INVOICE/SPK/PO',
@@ -905,7 +902,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         item.uraian,
         item.subBelanja,
         item.tglTandaTerima,
-        item.tglSpbSpk,
         item.tglInvoice,
         item.bulanInvoice,
         item.noInvoice,
@@ -918,7 +914,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         item.sisaHutang,
         item.sudahMasukBukuKas ? 'TRUE' : 'FALSE',
         item.tglSpdBukuKas,
-        item.bulanSpd,
+        getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd,
         item.noSpdBukuKas,
         item.lamaHariHutang,
         belumJt,
@@ -1232,9 +1228,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                 <th onClick={() => handleSort('tglRekap')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Rekap">
                   <div className="flex items-center gap-1">TANGGAL REKAP <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglRekap' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('tglMasukSpj')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Masuk SPJ">
-                  <div className="flex items-center gap-1">TANGGAL MASUK SPJ <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglMasukSpj' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
-                </th>
                 <th onClick={() => handleSort('tglInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Invoice">
                   <div className="flex items-center gap-1">TANGGAL INVOICE <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglInvoice' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
@@ -1259,7 +1252,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                 </th>
                 <th className="px-3 py-3 text-center">A</th>
                 <th className="px-3 py-3">TANGGAL BAYAR</th>
-                <th className="px-3 py-3"></th>
+                <th className="px-3 py-3 text-center">BULAN BAYAR</th>
                 <th className="px-4 py-3">NOMOR SP2D</th>
                 <th onClick={() => handleSort('lamaHariHutang')} className="px-3 py-3 text-center cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">UMUR HUTANG <ArrowUpDown className="w-2.5 h-2.5" /></div>
@@ -1315,13 +1308,10 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                         </span>
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                        {item.tglTandaTerima || '-'}
+                        {formatDateDDMMYYYY(item.tglTandaTerima || '')}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                        {item.tglSpbSpk || '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                        {item.tglInvoice || '-'}
+                        {formatDateDDMMYYYY(item.tglInvoice || '')}
                       </td>
                       <td className="px-3 py-2.5 text-slate-700 dark:text-zinc-300 font-semibold text-[10px]">
                         {item.bulanInvoice || '-'}
@@ -1366,10 +1356,10 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                         )}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                        {item.tglSpdBukuKas || '-'}
+                        {formatDateDDMMYYYY(item.tglSpdBukuKas || item.tglBayar || '')}
                       </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 text-[10px] font-semibold">
-                        {item.bulanSpd || '-'}
+                        {getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd || '-'}
                       </td>
                       <td className="px-4 py-2.5 font-mono text-[10.5px] text-slate-700 dark:text-zinc-300 max-w-[200px] truncate" title={item.noSpdBukuKas}>
                         {item.noSpdBukuKas || '-'}
@@ -1440,7 +1430,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
             {/* TOTALS FOOTER */}
             <tfoot className="bg-[#e4f4ed] dark:bg-[#10231c] font-bold text-slate-900 dark:text-white border-t-2 border-teal-400 dark:border-teal-800">
               <tr>
-                <td colSpan={11} className="px-4 py-3 text-right uppercase tracking-wider text-xs">
+                <td colSpan={10} className="px-4 py-3 text-right uppercase tracking-wider text-xs">
                   TOTAL TERFILTER ({filteredItems.length} BARIS):
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-xs text-slate-900 dark:text-zinc-100">
@@ -1600,7 +1590,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
                   <span className="text-slate-500 dark:text-zinc-400 block">Tgl Invoice:</span>
-                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.tglInvoice || '-'}</span>
+                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{formatDateDDMMYYYY(selectedRecord.tglInvoice || '')}</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
                   <span className="text-slate-500 dark:text-zinc-400 block">Jatuh Tempo:</span>
@@ -1608,11 +1598,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                 </div>
                 <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
                   <span className="text-slate-500 dark:text-zinc-400 block">Tgl Rekap:</span>
-                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.tglRekap || selectedRecord.tglTandaTerima || '-'}</span>
-                </div>
-                <div className="bg-slate-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
-                  <span className="text-slate-500 dark:text-zinc-400 block">Tgl Masuk SPJ:</span>
-                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{selectedRecord.tglMasukSpj || selectedRecord.tglSpbSpk || '-'}</span>
+                  <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">{formatDateDDMMYYYY(selectedRecord.tglRekap || selectedRecord.tglTandaTerima || '')}</span>
                 </div>
               </div>
 
@@ -1645,7 +1631,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                 <div className="font-bold text-slate-900 dark:text-white">Informasi Buku Kas & Pembayaran:</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-700 dark:text-zinc-300">
                   <div>Status Kas: <span className="font-bold text-teal-700 dark:text-teal-400">{selectedRecord.sudahMasukBukuKas ? 'Sudah Masuk (TRUE)' : 'Belum (FALSE)'}</span></div>
-                  <div>Tgl Bayar: <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">{selectedRecord.tglBayar || selectedRecord.tglSpdBukuKas || '-'}</span></div>
+                  <div>Tgl Bayar: <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">{formatDateDDMMYYYY(selectedRecord.tglBayar || selectedRecord.tglSpdBukuKas || '')}</span></div>
                   <div>Umur Hutang: <span className="font-semibold">{selectedRecord.lamaHariHutang || 0} hari</span></div>
                   <div className="col-span-2 sm:col-span-3">No SPD / Buku Kas: <span className="font-mono font-medium">{selectedRecord.noSpdBukuKas || '-'}</span></div>
                 </div>
@@ -1971,29 +1957,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                   </div>
 
                   {/* TGL MASUK SPJ (Kalender) */}
-                  <div className="bg-slate-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-slate-200 dark:border-zinc-800 space-y-2">
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold">
-                      Tgl Masuk SPJ (Kalender)
-                    </label>
-                    <input
-                      type="date"
-                      value={toInputDate(formValues.tglMasukSpj || formValues.tglSpbSpk)}
-                      onChange={(e) => {
-                        const display = fromInputDate(e.target.value);
-                        setFormValues({
-                          ...formValues,
-                          tglMasukSpj: display,
-                          tglSpbSpk: display
-                        });
-                      }}
-                      className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-xs"
-                    />
-                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 text-right font-mono">
-                      {formValues.tglMasukSpj || formValues.tglSpbSpk || '-'}
-                    </div>
-                  </div>
-
-                  {/* TGL BAYAR (Kalender) */}
                   <div className="bg-slate-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-slate-200 dark:border-zinc-800 space-y-2">
                     <label className="block text-slate-700 dark:text-zinc-300 font-bold">
                       Tgl Bayar (Kalender)

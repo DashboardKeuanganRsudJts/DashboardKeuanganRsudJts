@@ -64,7 +64,6 @@ interface PerusahaanAsuransiViewProps {
 }
 
 const BULAN_OPTIONS = [
-  'Semua Bulan',
   'Januari',
   'Februari',
   'Maret',
@@ -443,7 +442,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
   }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBulan, setSelectedBulan] = useState('Agustus'); // Default to current month Agustus or Semua Bulan
+  const [selectedBulan, setSelectedBulan] = useState('Januari'); // Default to Januari
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [selectedJenis, setSelectedJenis] = useState('Semua');
   const [selectedKategori, setSelectedKategori] = useState('Semua');
@@ -2246,7 +2245,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                     onChange={(e) => handleSelectMonthInInvoiceModal(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-[#12181f] font-bold text-emerald-950 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   >
-                    {BULAN_OPTIONS.filter(b => b !== 'Semua Bulan').map((b, idx) => (
+                    {BULAN_OPTIONS.map((b, idx) => (
                       <option key={`pa-modal-bulan-${b}-${idx}`} value={b}>{b}</option>
                     ))}
                   </select>
