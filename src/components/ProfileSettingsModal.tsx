@@ -20,7 +20,9 @@ import {
   BadgeCheck,
   Clock,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  Crop as CropIcon,
+  Maximize2
 } from 'lucide-react';
 import { 
   User as FirebaseUser, 
@@ -37,6 +39,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
 import { getEffectiveDisplayName, getEffectiveUserAvatar, setLocalUserProfile } from '../utils/userProfile';
+import { ImageCropModal } from './ImageCropModal';
+import { ImageViewerModal } from './ImageViewerModal';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -84,6 +88,11 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Image Cropper and Fullscreen Viewer states
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [rawImageForCrop, setRawImageForCrop] = useState<string>('');
+  const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -209,8 +218,8 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
     });
   };
 
-  // Handle local file selection for avatar
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle local file selection for avatar: loads image and launches interactive cropper
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -219,21 +228,51 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage('Ukuran file terlalu besar. Maksimal 5 MB.');
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage('Ukuran file terlalu besar. Maksimal 10 MB.');
       return;
     }
 
     try {
       setErrorMessage(null);
       setPhotoFile(file);
-      const compressedDataUrl = await compressImage(file);
-      setPhotoPreview(compressedDataUrl);
-      setPhotoURL(compressedDataUrl);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setRawImageForCrop(result);
+          setIsCropModalOpen(true);
+        }
+      };
+      reader.onerror = () => {
+        setErrorMessage('Gagal membaca file foto profil.');
+      };
+      reader.readAsDataURL(file);
     } catch (err) {
-      console.error('Failed to compress image:', err);
+      console.error('Failed to process image file:', err);
       setErrorMessage('Gagal memproses gambar foto profil.');
     }
+
+    // Reset input value so selecting the same file again triggers onChange
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Open crop modal for current photo
+  const handleOpenCrop = () => {
+    const currentImg = photoPreview || photoURL;
+    if (currentImg) {
+      setRawImageForCrop(currentImg);
+      setIsCropModalOpen(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
+  // Handle completed crop from ImageCropModal
+  const handleCropComplete = (croppedDataUrl: string) => {
+    setPhotoPreview(croppedDataUrl);
+    setPhotoURL(croppedDataUrl);
+    setSuccessMessage('Foto profil berhasil disesuaikan & di-crop. Klik "Simpan Pembaruan Profil" untuk menyimpan perubahan.');
   };
 
   // Preset Avatars
@@ -251,21 +290,19 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
     setSuccessMessage(null);
     setErrorMessage(null);
 
+    const activeUser = auth.currentUser || user;
+    if (!activeUser) {
+      setErrorMessage('Sesi autentikasi pengguna tidak aktif.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       let finalPhotoURL = photoURL;
 
-      // If user uploaded a physical file, try uploading to Firebase Storage first
-      if (photoFile) {
-        try {
-          const fileExt = photoFile.name.split('.').pop() || 'jpg';
-          const avatarStorageRef = ref(storage, `avatars/${user.uid}/profile_${Date.now()}.${fileExt}`);
-          await uploadBytes(avatarStorageRef, photoFile);
-          finalPhotoURL = await getDownloadURL(avatarStorageRef);
-        } catch (storageErr) {
-          console.warn('Firebase Storage upload unavailable or failed, using optimized local/firestore photo:', storageErr);
-          // Fallback to compressed base64 preview
-          finalPhotoURL = photoPreview;
-        }
+      // If user uploaded a file, use the optimized, compressed image
+      if (photoFile && photoPreview) {
+        finalPhotoURL = photoPreview;
       }
 
       // Safe photoURL for Firebase Auth (must be valid http/https and <= 2000 chars)
@@ -273,18 +310,18 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
       const isStandardWebUrl = !!(finalPhotoURL && (finalPhotoURL.startsWith('http://') || finalPhotoURL.startsWith('https://')) && finalPhotoURL.length <= 2000);
       const authPhotoURL = isStandardWebUrl 
         ? finalPhotoURL 
-        : (finalPhotoURL ? `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.trim() || user.email || 'User')}&background=059669&color=fff&size=200&bold=true` : null);
+        : (finalPhotoURL ? `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.trim() || activeUser.email || 'User')}&background=059669&color=fff&size=200&bold=true` : null);
 
-      // Update Firebase Auth Profile (with graceful fallback so auth limits never block profile saves)
+      // Update Firebase Auth Profile on true Firebase User instance
       try {
-        await updateProfile(user, {
+        await updateProfile(activeUser, {
           displayName: displayName.trim() || null,
           photoURL: authPhotoURL
         });
       } catch (authProfileErr: any) {
         console.warn('Firebase Auth updateProfile warning:', authProfileErr);
         try {
-          await updateProfile(user, {
+          await updateProfile(activeUser, {
             displayName: displayName.trim() || null
           });
         } catch (nameErr) {
@@ -293,10 +330,10 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
       }
 
       // Update Firestore user document (Stores the real custom photo, whether storage URL or base64)
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, 'users', activeUser.uid);
       try {
         await setDoc(userDocRef, {
-          email: user.email,
+          email: activeUser.email,
           displayName: displayName.trim(),
           photoURL: finalPhotoURL || '',
           updatedAt: new Date().toISOString()
@@ -306,18 +343,16 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
       }
 
       // Save to localStorage for instant loading, offline support, and immediate display
-      setLocalUserProfile(user.uid, {
+      setLocalUserProfile(activeUser.uid, {
         displayName: displayName.trim(),
         photoURL: finalPhotoURL || ''
       });
 
       // Reload auth current user state if possible
-      if (auth.currentUser) {
-        try {
-          await auth.currentUser.reload();
-        } catch (reloadErr) {
-          console.warn('Could not reload currentUser:', reloadErr);
-        }
+      try {
+        await activeUser.reload();
+      } catch (reloadErr) {
+        console.warn('Could not reload currentUser:', reloadErr);
       }
 
       setPhotoURL(finalPhotoURL);
@@ -353,11 +388,18 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
     setSuccessMessage(null);
     setErrorMessage(null);
 
+    const activeUser = auth.currentUser || user;
+    if (!activeUser) {
+      setErrorMessage('Sesi autentikasi pengguna tidak aktif.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Re-authenticate if user logged in via password and entered password
       if (isPasswordProvider && emailCurrentPassword) {
-        const credential = EmailAuthProvider.credential(user.email || '', emailCurrentPassword);
-        await reauthenticateWithCredential(user, credential);
+        const credential = EmailAuthProvider.credential(activeUser.email || '', emailCurrentPassword);
+        await reauthenticateWithCredential(activeUser, credential);
       }
 
       const targetEmail = newEmail.trim().toLowerCase();
@@ -365,18 +407,18 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
       // Modern Firebase Auth uses verifyBeforeUpdateEmail
       let emailUpdatedImmediately = false;
       try {
-        await verifyBeforeUpdateEmail(user, targetEmail);
+        await verifyBeforeUpdateEmail(activeUser, targetEmail);
         setSuccessMessage(`Email konfirmasi telah dikirim ke ${targetEmail}. Silakan klik tautan di email tersebut untuk menyelesaikan pembaruan alamat email Anda.`);
       } catch (verifyErr: any) {
         console.warn('verifyBeforeUpdateEmail unsupported or failed, trying updateEmail:', verifyErr);
         // Fallback to updateEmail
-        await updateEmail(user, targetEmail);
+        await updateEmail(activeUser, targetEmail);
         emailUpdatedImmediately = true;
       }
 
       if (emailUpdatedImmediately) {
         // Update firestore document
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(db, 'users', activeUser.uid);
         await setDoc(userDocRef, {
           email: targetEmail,
           updatedAt: new Date().toISOString()
@@ -388,8 +430,10 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
         setSuccessMessage('Alamat email berhasil diperbarui!');
       }
 
-      if (auth.currentUser) {
-        await auth.currentUser.reload();
+      try {
+        await activeUser.reload();
+      } catch (reloadErr) {
+        console.warn('Could not reload currentUser:', reloadErr);
       }
       window.dispatchEvent(new Event('user_profile_updated'));
       onProfileUpdated?.();
@@ -424,18 +468,25 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
     setSuccessMessage(null);
     setErrorMessage(null);
 
+    const activeUser = auth.currentUser || user;
+    if (!activeUser) {
+      setErrorMessage('Sesi autentikasi pengguna tidak aktif.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Re-authenticate first if password provider
-      if (isPasswordProvider && user.email) {
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
-        await reauthenticateWithCredential(user, credential);
+      if (isPasswordProvider && activeUser.email) {
+        const credential = EmailAuthProvider.credential(activeUser.email, currentPassword);
+        await reauthenticateWithCredential(activeUser, credential);
       }
 
       // Update password
-      await updatePassword(user, newPassword);
+      await updatePassword(activeUser, newPassword);
 
       // Record update timestamp in firestore
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, 'users', activeUser.uid);
       await setDoc(userDocRef, {
         passwordLastChanged: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -616,17 +667,40 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                     <img
                       src={photoPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName || user.email || 'User')}&background=059669&color=fff&size=200&bold=true`}
                       alt="Avatar Preview"
-                      className="w-24 h-24 rounded-2xl object-cover ring-2 ring-emerald-500/40 shadow-md bg-emerald-900"
+                      className="w-24 h-24 rounded-2xl object-cover ring-2 ring-emerald-500/40 shadow-md bg-emerald-900 cursor-pointer transition hover:scale-[1.02]"
+                      onClick={() => setIsViewerModalOpen(true)}
+                      title="Klik untuk melihat foto dalam tampilan penuh"
                     />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-xs cursor-pointer"
-                      title="Ubah Foto"
-                    >
-                      <Camera className="w-6 h-6 mb-1" />
-                      <span className="text-[10px] font-bold">Ganti Foto</span>
-                    </button>
+
+                    {/* Hover Action Overlay */}
+                    <div className="absolute inset-0 bg-black/65 rounded-2xl flex items-center justify-center gap-1.5 text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-xs p-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsViewerModalOpen(true)}
+                        className="p-1.5 rounded-lg bg-zinc-800/90 hover:bg-emerald-600 transition"
+                        title="Lihat Foto Penuh"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-1.5 rounded-lg bg-zinc-800/90 hover:bg-emerald-600 transition"
+                        title="Unggah Foto Baru"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                      </button>
+                      {(photoPreview || photoURL) && (
+                        <button
+                          type="button"
+                          onClick={handleOpenCrop}
+                          className="p-1.5 rounded-lg bg-zinc-800/90 hover:bg-emerald-600 transition"
+                          title="Sesuaikan / Crop Foto"
+                        >
+                          <CropIcon className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Actions & Preset */}
@@ -650,6 +724,38 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                       >
                         <Upload className="w-3.5 h-3.5 text-emerald-500" />
                         <span>Unggah Foto dari Komputer</span>
+                      </button>
+
+                      {/* Tombol Crop / Atur Posisi Foto */}
+                      {(photoPreview || photoURL) && (
+                        <button
+                          type="button"
+                          onClick={handleOpenCrop}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                            isDark
+                              ? 'bg-emerald-950/40 hover:bg-emerald-950/80 border-emerald-700 text-emerald-300'
+                              : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
+                          }`}
+                          title="Buka alat crop dan atur posisi foto profil"
+                        >
+                          <CropIcon className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Crop & Sesuaikan Posisi</span>
+                        </button>
+                      )}
+
+                      {/* Tombol Lihat Foto Penuh */}
+                      <button
+                        type="button"
+                        onClick={() => setIsViewerModalOpen(true)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                          isDark 
+                            ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border-zinc-700' 
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs'
+                        }`}
+                        title="Tampilkan foto dalam ukuran penuh"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5 text-teal-400" />
+                        <span>Lihat Foto Penuh</span>
                       </button>
 
                       {(photoPreview || photoURL) && (
@@ -1109,6 +1215,26 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
         </div>
 
       </div>
+
+      {/* CROP MODAL */}
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={rawImageForCrop}
+        onClose={() => setIsCropModalOpen(false)}
+        onCropComplete={handleCropComplete}
+        isDark={isDark}
+      />
+
+      {/* FULL-SCREEN PHOTO VIEWER MODAL */}
+      <ImageViewerModal
+        isOpen={isViewerModalOpen}
+        imageUrl={photoPreview || photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName || user.email || 'User')}&background=059669&color=fff&size=512&bold=true`}
+        title="Foto Profil Pengguna"
+        subtitle={displayName ? `${displayName} • ${user.email}` : user.email || undefined}
+        onClose={() => setIsViewerModalOpen(false)}
+        onOpenCrop={(photoPreview || photoURL) ? handleOpenCrop : undefined}
+        isDark={isDark}
+      />
     </div>
   );
 };

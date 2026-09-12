@@ -52,7 +52,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 
     const handleProfileUpdate = () => {
       if (auth.currentUser) {
-        setUser({ ...auth.currentUser } as User);
+        setUser(auth.currentUser);
       }
     };
     window.addEventListener('user_profile_updated', handleProfileUpdate);
