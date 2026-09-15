@@ -1,5 +1,13 @@
 import { PiutangRecord, SyncStatusInfo, KategoriPenjamin, JenisLayanan, StatusKlaim } from '../types/piutang';
 import { calculateUmurHari, INITIAL_RSUD_PIUTANG_DATA, SPREADSHEET_TEMPLATE_HEADERS } from '../data/sampleRsudData';
+import { 
+  PERUSAHAAN_ASURANSI_REAL_DATA, 
+  LISTRIK_KANTIN_REAL_DATA, 
+  SEMUA_REKAPAN_REAL_GROUPS, 
+  REKAP_BULANAN_2026_DATA, 
+  LIST_BULAN_2026 
+} from '../data/spreadsheetData2026';
+import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
 import firebaseConfigData from '../../firebase-applet-config.json';
 
 declare global {
@@ -31,7 +39,8 @@ const STORAGE_KEYS = {
 const DEFAULT_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets.readonly',
   'https://www.googleapis.com/auth/spreadsheets',
-  'https://www.googleapis.com/auth/drive.readonly'
+  'https://www.googleapis.com/auth/drive.readonly',
+  'https://www.googleapis.com/auth/drive.file'
 ].join(' ');
 
 // RSUD Jatisari Default Configuration
@@ -345,65 +354,289 @@ export class GoogleSheetsService {
   }
 
   /**
-   * Create a new RSUD Jatisari Spreadsheet directly on User's Drive
+   * Create a new RSUD Jatisari Spreadsheet directly on User's Drive with all columns from the application
    */
   public static async createRsudTemplateSpreadsheet(
     accessToken: string,
-    sheetTitle: string = 'Data Piutang RSUD Jatisari 2026'
-  ): Promise<{ spreadsheetId: string; spreadsheetUrl: string }> {
+    sheetTitle: string = 'SIM-RS RSUD Jatisari - Master Data Keuangan & Piutang 2026'
+  ): Promise<{ spreadsheetId: string; spreadsheetUrl: string; sheetNames: string[] }> {
+    const makeHeaderRow = (headers: string[]) => ({
+      values: headers.map(h => ({
+        userEnteredValue: { stringValue: h },
+        userEnteredFormat: {
+          textFormat: { bold: true, foregroundColor: { red: 1, green: 1, blue: 1 } },
+          backgroundColor: { red: 0.05, green: 0.45, blue: 0.35 }, // Emerald Hospital Green
+        },
+      })),
+    });
+
+    const toCell = (val: any) => {
+      if (val === null || val === undefined) return { userEnteredValue: { stringValue: '' } };
+      if (typeof val === 'number') return { userEnteredValue: { numberValue: val } };
+      return { userEnteredValue: { stringValue: String(val) } };
+    };
+
+    const cachedPiutang = this.loadCachedData();
+    const piutangList = cachedPiutang && cachedPiutang.length > 0 ? cachedPiutang.slice(0, 50) : INITIAL_RSUD_PIUTANG_DATA;
+
+    // 1. Data Piutang Pasien & Klaim (18 Kolom)
+    const piutangHeaders = [
+      'No Invoice / Surat Tagihan',
+      'No Bukti / Billing',
+      'No SEP / Klaim',
+      'No Rekam Medis (RM)',
+      'Nama Pasien',
+      'Kategori Penjamin',
+      'Nama Detail Penjamin',
+      'Jenis Layanan',
+      'Tanggal Pelayanan (YYYY-MM-DD)',
+      'Tanggal Jatuh Tempo (YYYY-MM-DD)',
+      'Nominal Tagihan (Rp)',
+      'Nominal Dibayar (Rp)',
+      'Sisa Piutang (Rp)',
+      'Status Klaim',
+      'Dokter DPJP',
+      'Ruangan / Poli',
+      'Keterangan / Dispute',
+      'Tanggal Update Terakhir'
+    ];
+    const piutangRows = piutangList.map(item => ({
+      values: [
+        toCell(item.noInvoice || item.noBukti),
+        toCell(item.noBukti),
+        toCell(item.noSepKlaim),
+        toCell(item.noRm),
+        toCell(item.namaPasien),
+        toCell(item.penjamin),
+        toCell(item.namaDetailPenjamin || item.penjamin),
+        toCell(item.jenisLayanan),
+        toCell(item.tanggalPelayanan),
+        toCell(item.tanggalJatuhTempo),
+        toCell(item.nominalTagihan),
+        toCell(item.nominalDibayar),
+        toCell(item.sisaPiutang),
+        toCell(item.statusKlaim),
+        toCell(item.dpjp),
+        toCell(item.ruangan || '-'),
+        toCell(item.keteranganDispute || '-'),
+        toCell(item.tanggalUpdateTerakhir),
+      ],
+    }));
+
+    // 2. Perusahaan & Asuransi (15 Kolom)
+    const perusahaanHeaders = [
+      'Bulan',
+      'No',
+      'Nama Perusahaan / Asuransi',
+      'Jenis Pengobatan',
+      'Tanggal Pengajuan',
+      'Tanggal Jatuh Tempo',
+      'Piutang Lalu (Rp)',
+      'Piutang Bulan Ini (Rp)',
+      'Piutang s.d Bulan Ini (Rp)',
+      'Pajak PPh 23 (Rp)',
+      'Tanggal Pembayaran',
+      'Pembayaran (Rp)',
+      'Sisa Piutang (Rp)',
+      'Status',
+      'Keterangan'
+    ];
+    const perusahaanRows = PERUSAHAAN_ASURANSI_REAL_DATA.slice(0, 40).map(p => ({
+      values: [
+        toCell(p.bulan),
+        toCell(p.no),
+        toCell(p.namaPerusahaan),
+        toCell(p.jenisPengobatan),
+        toCell(p.tanggalPengajuan),
+        toCell(p.tanggalJatuhTempo),
+        toCell(p.piutangLalu),
+        toCell(p.piutangBulanIni),
+        toCell(p.piutangSdBulanIni),
+        toCell(p.pajakPph23),
+        toCell(p.tanggalPembayaran),
+        toCell(p.pembayaran),
+        toCell(p.sisaPiutang),
+        toCell(p.status),
+        toCell(p.keterangan)
+      ],
+    }));
+
+    // 3. Listrik Kantin (10 Kolom)
+    const listrikHeaders = [
+      'Nama Stand',
+      'No',
+      'Bulan',
+      'Piutang (Rp)',
+      'Pembayaran (Rp)',
+      'Sisa Piutang (Rp)',
+      'Tanggal Pembayaran',
+      'Tanggal Jatuh Tempo',
+      'Status',
+      'Keterangan'
+    ];
+    const flatListrik: any[] = [];
+    LISTRIK_KANTIN_REAL_DATA.forEach(stand => {
+      stand.rows.forEach(r => {
+        flatListrik.push({
+          values: [
+            toCell(stand.namaStand),
+            toCell(r.no),
+            toCell(r.bulan),
+            toCell(r.piutang),
+            toCell(r.pembayaran),
+            toCell(r.sisaPiutang),
+            toCell(r.tanggalPembayaran),
+            toCell(r.tanggalJatuhTempo),
+            toCell(r.status),
+            toCell(r.keterangan)
+          ]
+        });
+      });
+    });
+
+    // 4. Semua Rekapan Penjamin (10 Kolom)
+    const semuaRekapanHeaders = [
+      'Grup Bulan',
+      'No',
+      'Nama Penjamin',
+      'Piutang Bulan Lalu (Rp)',
+      'Piutang Bulan Ini (Rp)',
+      'Piutang s.d Bulan Ini (Rp)',
+      'Pembayaran (Rp)',
+      'Sisa Piutang (Rp)',
+      'Status',
+      'Keterangan'
+    ];
+    const flatSemuaRekapan: any[] = [];
+    Object.values(SEMUA_REKAPAN_REAL_GROUPS).forEach(g => {
+      g.rows.forEach(r => {
+        flatSemuaRekapan.push({
+          values: [
+            toCell(r.bulan),
+            toCell(r.no),
+            toCell(r.namaPenjamin),
+            toCell(r.piutangBulanLalu),
+            toCell(r.piutangBulanIni),
+            toCell(r.piutangSdBulanIni),
+            toCell(r.pembayaran),
+            toCell(r.sisaPiutang),
+            toCell(r.status),
+            toCell(r.keterangan)
+          ]
+        });
+      });
+    });
+
+    // 5. Data Hutang & Pengadaan (10 Kolom)
+    const hutangHeaders = [
+      'No',
+      'Nama Rekanan / Vendor',
+      'Bagian / Bidang',
+      'Uraian / Kegiatan',
+      'No Invoice',
+      'Nilai Tagihan (Rp)',
+      'Pembayaran (Rp)',
+      'Sisa Hutang (Rp)',
+      'No SPD Kas',
+      'Keterangan'
+    ];
+    const hutangRows = INITIAL_INVOICE_HUTANG_2026.slice(0, 35).map((h, i) => ({
+      values: [
+        toCell(h.no || i + 1),
+        toCell(h.rekanan || '-'),
+        toCell(h.bagian || h.bidang || '-'),
+        toCell(h.uraian || '-'),
+        toCell(h.noInvoice || '-'),
+        toCell(h.totalInvoiceFix || h.jumlahInvoice || 0),
+        toCell(h.pembayaran || 0),
+        toCell(h.sisaHutang || 0),
+        toCell(h.noSpdBukuKas || '-'),
+        toCell(h.keterangan || '-')
+      ]
+    }));
+
+    // 6. Rekap Bulanan 2026 (8 Kolom)
+    const bulananHeaders = [
+      'Bulan',
+      'Piutang Lalu (Rp)',
+      'Piutang Bulan Ini (Rp)',
+      'Total Piutang (Rp)',
+      'Pembayaran (Rp)',
+      'Sisa Piutang (Rp)',
+      '% Tertagih',
+      'Baris Belum Lunas'
+    ];
+    const bulananRows = LIST_BULAN_2026.map(b => {
+      const d = REKAP_BULANAN_2026_DATA[b];
+      return {
+        values: [
+          toCell(b),
+          toCell(d?.piutangLalu || 0),
+          toCell(d?.piutangBulanIni || 0),
+          toCell(d?.totalPiutang || 0),
+          toCell(d?.pembayaran || 0),
+          toCell(d?.sisaPiutang || 0),
+          toCell(d?.persenTertagih || 0),
+          toCell(d?.barisBelumLunas || 0),
+        ]
+      };
+    });
+
+    const sheetDefinitions = [
+      {
+        title: 'Data Piutang Pasien',
+        headers: piutangHeaders,
+        rows: piutangRows
+      },
+      {
+        title: 'Perusahaan & Asuransi',
+        headers: perusahaanHeaders,
+        rows: perusahaanRows
+      },
+      {
+        title: 'Listrik Kantin',
+        headers: listrikHeaders,
+        rows: flatListrik
+      },
+      {
+        title: 'Semua Rekapan Penjamin',
+        headers: semuaRekapanHeaders,
+        rows: flatSemuaRekapan
+      },
+      {
+        title: 'Data Hutang 2026',
+        headers: hutangHeaders,
+        rows: hutangRows
+      },
+      {
+        title: 'Rekap Bulanan 2026',
+        headers: bulananHeaders,
+        rows: bulananRows
+      }
+    ];
+
     const payload = {
       properties: {
         title: sheetTitle,
       },
-      sheets: [
-        {
-          properties: {
-            title: 'Data Piutang',
-            gridProperties: {
-              frozenRowCount: 1,
-            },
+      sheets: sheetDefinitions.map(def => ({
+        properties: {
+          title: def.title,
+          gridProperties: {
+            frozenRowCount: 1,
           },
-          data: [
-            {
-              startRow: 0,
-              startColumn: 0,
-              rowData: [
-                {
-                  values: SPREADSHEET_TEMPLATE_HEADERS.map(h => ({
-                    userEnteredValue: { stringValue: h },
-                    userEnteredFormat: {
-                      textFormat: { bold: true, foregroundColor: { red: 1, green: 1, blue: 1 } },
-                      backgroundColor: { red: 0.05, green: 0.45, blue: 0.35 }, // Hospital Emerald Green
-                    },
-                  })),
-                },
-                ...INITIAL_RSUD_PIUTANG_DATA.map(item => ({
-                  values: [
-                    { userEnteredValue: { stringValue: item.noInvoice || item.noBukti } },
-                    { userEnteredValue: { stringValue: item.noBukti } },
-                    { userEnteredValue: { stringValue: item.noSepKlaim } },
-                    { userEnteredValue: { stringValue: item.noRm } },
-                    { userEnteredValue: { stringValue: item.namaPasien } },
-                    { userEnteredValue: { stringValue: item.penjamin } },
-                    { userEnteredValue: { stringValue: item.namaDetailPenjamin || item.penjamin } },
-                    { userEnteredValue: { stringValue: item.jenisLayanan } },
-                    { userEnteredValue: { stringValue: item.tanggalPelayanan } },
-                    { userEnteredValue: { stringValue: item.tanggalJatuhTempo } },
-                    { userEnteredValue: { numberValue: item.nominalTagihan } },
-                    { userEnteredValue: { numberValue: item.nominalDibayar } },
-                    { userEnteredValue: { numberValue: item.sisaPiutang } },
-                    { userEnteredValue: { stringValue: item.statusKlaim } },
-                    { userEnteredValue: { stringValue: item.dpjp } },
-                    { userEnteredValue: { stringValue: item.ruangan || '-' } },
-                    { userEnteredValue: { stringValue: item.keteranganDispute || '-' } },
-                    { userEnteredValue: { stringValue: item.tanggalUpdateTerakhir } },
-                  ],
-                })),
-              ],
-            },
-          ],
         },
-      ],
+        data: [
+          {
+            startRow: 0,
+            startColumn: 0,
+            rowData: [
+              makeHeaderRow(def.headers),
+              ...def.rows,
+            ],
+          },
+        ],
+      })),
     };
 
     const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
@@ -416,13 +649,18 @@ export class GoogleSheetsService {
     });
 
     if (!response.ok) {
-      throw new Error(`Gagal membuat Google Spreadsheet baru: ${response.statusText}`);
+      if (response.status === 401) {
+        this.clearStoredToken();
+        throw new Error('Sesi Google OAuth telah kedaluwarsa. Silakan hubungkan ulang akun Google.');
+      }
+      throw new Error(`Gagal membuat Google Spreadsheet baru (${response.status}): ${response.statusText}`);
     }
 
     const data = await response.json();
     return {
       spreadsheetId: data.spreadsheetId,
       spreadsheetUrl: data.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${data.spreadsheetId}/edit`,
+      sheetNames: sheetDefinitions.map(s => s.title)
     };
   }
 

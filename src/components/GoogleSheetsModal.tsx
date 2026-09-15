@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { SyncStatusInfo, PiutangRecord } from '../types/piutang';
 import { GoogleSheetsService } from '../services/googleSheetsService';
+import { SpreadsheetImportService } from '../services/spreadsheetImportService';
 import { formatDateTimeIndo } from '../utils/formatters';
 
 interface GoogleSheetsModalProps {
@@ -44,6 +45,12 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
+  const [createdSpreadsheet, setCreatedSpreadsheet] = useState<{
+    id: string;
+    url: string;
+    title: string;
+    sheets: string[];
+  } | null>(null);
   
   const [previewRows, setPreviewRows] = useState<any[][]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -98,27 +105,56 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
         currentToken = await GoogleSheetsService.requestGoogleAuth();
         setToken(currentToken);
       } catch (err: any) {
-        setErrorMessage('Silakan hubungkan akun Google terlebih dahulu.');
+        setErrorMessage('Silakan hubungkan akun Google terlebih dahulu untuk membuat Spreadsheet di Google Drive.');
         return;
       }
     }
 
     setIsCreatingTemplate(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
+    setCreatedSpreadsheet(null);
+
     try {
-      const title = `SIM-RS RSUD Jatisari - Data Piutang ${new Date().getFullYear()}`;
+      const currentYear = new Date().getFullYear();
+      const title = `SIM-RS RSUD Jatisari - Master Data Keuangan & Piutang ${currentYear}`;
       const result = await GoogleSheetsService.createRsudTemplateSpreadsheet(currentToken, title);
-      setSpreadsheetInput(result.spreadsheetId);
-      setSheetName('Data Piutang');
-      setSuccessMessage(`Berhasil membuat Spreadsheet baru di Google Drive Anda! ID: ${result.spreadsheetId}`);
       
-      // Auto test newly created sheet
-      await handleTestConnection(result.spreadsheetId, 'Data Piutang', currentToken);
-      if (currentToken) fetchDriveFiles(currentToken);
+      setCreatedSpreadsheet({
+        id: result.spreadsheetId,
+        url: result.spreadsheetUrl,
+        title,
+        sheets: result.sheetNames || [
+          'Data Piutang Pasien',
+          'Perusahaan & Asuransi',
+          'Listrik Kantin',
+          'Semua Rekapan Penjamin',
+          'Data Hutang 2026',
+          'Rekap Bulanan 2026'
+        ]
+      });
+
+      setSuccessMessage(`Google Spreadsheet baru berhasil dibuat di Google Drive Anda! Klik tombol "Buka Spreadsheet" untuk melihat dan mengedit.`);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Gagal membuat Google Spreadsheet baru.');
+      setErrorMessage(err.message || 'Gagal membuat Google Spreadsheet baru di Google Drive.');
     } finally {
       setIsCreatingTemplate(false);
+    }
+  };
+
+  const handleDownloadMasterTemplate = () => {
+    try {
+      const blob = SpreadsheetImportService.generateMasterWorkbook();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MASTER_FORMAT_RSUD_JATISARI_${new Date().getFullYear()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setErrorMessage('Gagal mengunduh template Excel: ' + (err.message || 'Unknown error'));
     }
   };
 
@@ -280,27 +316,115 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
             {/* Quick Action: 1-Click Create RSUD Template */}
             <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <div className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                <div className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5 text-xs sm:text-sm">
                   <Sparkles className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                  <span>Belum punya format Google Spreadsheet?</span>
+                  <span>Buat Google Spreadsheet Baru (Sesuai Seluruh Kolom Aplikasi)</span>
                 </div>
-                <p className="text-[11px] text-emerald-800 dark:text-emerald-400/80 mt-0.5">
-                  Buat langsung Google Spreadsheet lengkap dengan 17 kolom standar RSUD Jatisari di Google Drive Anda.
+                <p className="text-[11px] text-emerald-800 dark:text-emerald-400/80 mt-0.5 max-w-md">
+                  Membuat spreadsheet baru langsung di Google Drive Anda lengkap dengan 6 lembar kerja dan semua kolom aplikasi: Piutang Pasien (18 kolom), Perusahaan (15 kolom), Listrik Kantin (10 kolom), Semua Rekapan (10 kolom), Hutang 2026 (10 kolom), dan Rekap Bulanan (8 kolom).
                 </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDownloadMasterTemplate}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 hover:underline cursor-pointer"
+                  >
+                    <FolderDown className="w-3.5 h-3.5" />
+                    <span>Atau unduh template file Excel (.xlsx)</span>
+                  </button>
+                </div>
               </div>
               <button
                 onClick={handleCreateTemplate}
                 disabled={isCreatingTemplate}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-700 dark:bg-emerald-600 text-white font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-500 transition whitespace-nowrap self-start sm:self-center shadow-2xs disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs tracking-wide shadow-md hover:shadow-emerald-600/25 transition-all whitespace-nowrap self-start sm:self-center disabled:opacity-60 cursor-pointer"
+                title="Buat Google Spreadsheet baru dengan seluruh kolom aplikasi ini di Google Drive Anda"
               >
                 {isCreatingTemplate ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
                 ) : (
-                  <Plus className="w-3.5 h-3.5" />
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
                 )}
-                <span>Buat Template di Google Drive</span>
+                <span>{isCreatingTemplate ? 'Membuat Spreadsheet...' : 'Buat Google Spreadsheet Baru'}</span>
               </button>
             </div>
+
+            {/* Created Spreadsheet Success Card */}
+            {createdSpreadsheet && (
+              <div className="p-4 rounded-xl bg-emerald-50/95 dark:bg-emerald-950/40 border-2 border-emerald-500/80 dark:border-emerald-500/60 shadow-md space-y-3 animate-in fade-in duration-300">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                      <Check className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                        {createdSpreadsheet.title}
+                      </h4>
+                      <p className="text-[11px] text-emerald-800 dark:text-emerald-400">
+                        Spreadsheet berhasil dibuat di Google Drive dengan {createdSpreadsheet.sheets.length} lembar kerja lengkap.
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={createdSpreadsheet.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition shrink-0"
+                  >
+                    <span>Buka Spreadsheet</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+
+                <div className="pt-2 border-t border-emerald-200/80 dark:border-emerald-800/60">
+                  <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider block mb-1.5">
+                    Kolom & Lembar Kerja yang Dibuat:
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]">
+                    <div className="p-1.5 rounded bg-white/80 dark:bg-[#12181f] border border-emerald-200 dark:border-emerald-900/50">
+                      <span className="font-semibold block text-slate-800 dark:text-zinc-200">1. Data Piutang Pasien</span>
+                      <span className="text-[10px] text-slate-500">18 Kolom Terstandar</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-white/80 dark:bg-[#12181f] border border-emerald-200 dark:border-emerald-900/50">
+                      <span className="font-semibold block text-slate-800 dark:text-zinc-200">2. Perusahaan & Asuransi</span>
+                      <span className="text-[10px] text-slate-500">15 Kolom Mitra</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-white/80 dark:bg-[#12181f] border border-emerald-200 dark:border-emerald-900/50">
+                      <span className="font-semibold block text-slate-800 dark:text-zinc-200">3. Listrik Kantin</span>
+                      <span className="text-[10px] text-slate-500">10 Kolom Stand</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-white/80 dark:bg-[#12181f] border border-emerald-200 dark:border-emerald-900/50">
+                      <span className="font-semibold block text-slate-800 dark:text-zinc-200">4. Semua Rekapan</span>
+                      <span className="text-[10px] text-slate-500">10 Kolom Penjamin</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-white/80 dark:bg-[#12181f] border border-emerald-200 dark:border-emerald-900/50">
+                      <span className="font-semibold block text-slate-800 dark:text-zinc-200">5. Data Hutang 2026</span>
+                      <span className="text-[10px] text-slate-500">10 Kolom Pengadaan</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-white/80 dark:bg-[#12181f] border border-emerald-200 dark:border-emerald-900/50">
+                      <span className="font-semibold block text-slate-800 dark:text-zinc-200">6. Rekap Bulanan</span>
+                      <span className="text-[10px] text-slate-500">8 Kolom Rekapitulasi</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <span className="text-slate-600 dark:text-zinc-400 text-[11px]">Ingin menggunakan spreadsheet baru ini untuk sinkronisasi otomatis?</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSpreadsheetInput(createdSpreadsheet.id);
+                      setSheetName('Data Piutang Pasien');
+                      handleTestConnection(createdSpreadsheet.id, 'Data Piutang Pasien');
+                    }}
+                    className="px-2.5 py-1 rounded bg-white dark:bg-[#18222c] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-[11px] font-semibold transition self-start sm:self-auto cursor-pointer"
+                  >
+                    Gunakan untuk Sinkronisasi
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* If files from Drive available */}
             {driveFiles.length > 0 && (
