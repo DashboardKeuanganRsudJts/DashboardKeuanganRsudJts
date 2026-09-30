@@ -532,15 +532,15 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border border-slate-800 relative overflow-hidden">
+      <div className="bg-[#0f172a] text-white rounded-xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border border-slate-800 relative overflow-hidden">
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-400 mb-2">
-            <Building2 className="w-4 h-4 text-teal-400" />
-            <span className="uppercase tracking-wider">Sub Bagian Keuangan & Pengadaan BLUD · RSUD Jatisari</span>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-400 mb-2">
+            <Building2 className="w-4 h-4 text-blue-400" />
+            <span className="uppercase tracking-wider font-mono">RSUD JATISARI · SUB BAGIAN KEUANGAN & ANGGARAN BLUD</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-            <CreditCard className="w-7 h-7 text-teal-400 shrink-0" />
-            REKAPITULASI HUTANG BLUD (TA 2025 & 2026)
+            <CreditCard className="w-7 h-7 text-blue-400 shrink-0" />
+            KONSOLIDASI FISKAL HUTANG (TA 2025 & 2026)
           </h2>
           <p className="text-slate-300 text-xs sm:text-sm mt-1.5 max-w-3xl leading-relaxed">
             Ringkasan konsolidasi kewajiban belanja RSUD Jatisari: Saldo Awal Hutang 2025, Penambahan Pengadaan Barjas 2026, Realisasi Pembayaran 2026, Saldo Akhir Per Tahun, serta Analisis Umur Hutang Terlama (Aging).
@@ -552,17 +552,17 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
             <button
               onClick={() => syncAllHutangData(true)}
               disabled={isSyncing}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl text-xs transition flex items-center gap-2 border border-slate-700 disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-lg text-xs transition flex items-center gap-2 border border-slate-700 disabled:opacity-50 cursor-pointer"
               title="Sinkronkan data dari Invoice Hutang 2025 & 2026"
             >
-              <RefreshCw className={`w-4 h-4 text-teal-400 ${isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-blue-400 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>SINKRONISASI DATA</span>
             </button>
           )}
 
           <button
             onClick={handleExportCombinedExcel}
-            className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             title="Export Excel Rekap Hutang"
           >
             <Download className="w-4 h-4" />
@@ -575,7 +575,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* CARD 1: SALDO AWAL HUTANG 2025 */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm relative overflow-hidden transition">
+        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden transition">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Saldo Awal Hutang 2025
@@ -594,31 +594,31 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         </div>
 
         {/* CARD 2: SALDO AWAL HUTANG 2026 / PENAMBAHAN BARJAS 2026 */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm relative overflow-hidden transition">
+        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden transition">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Penambahan Barjas 2026
             </span>
-            <span className="text-[11px] font-mono font-bold text-teal-700 dark:text-teal-400">
+            <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
               TA 2026
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold font-mono text-teal-800 dark:text-teal-400 mt-2 tracking-tight">
+          <div className="text-xl sm:text-2xl font-bold font-mono text-blue-700 dark:text-blue-400 mt-2 tracking-tight">
             {formatRupiah(saldoAwal2026)}
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
             <span className="text-slate-500 dark:text-slate-400">Koreksi: <strong className="text-amber-700 dark:text-amber-400 font-semibold">{formatRupiah(koreksi2026)}</strong></span>
-            <span className="text-slate-500 dark:text-slate-400">Fix: <strong className="text-teal-800 dark:text-teal-300 font-semibold">{formatRupiah(saldoAwal2026 + koreksi2026)}</strong></span>
+            <span className="text-slate-500 dark:text-slate-400">Fix: <strong className="text-blue-700 dark:text-blue-300 font-semibold">{formatRupiah(saldoAwal2026 + koreksi2026)}</strong></span>
           </div>
         </div>
 
         {/* CARD 3: PEMBAYARAN HUTANG 2026 */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm relative overflow-hidden transition">
+        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden transition">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Pembayaran Hutang 2026
             </span>
-            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 font-mono">
               <CheckCircle2 className="w-3.5 h-3.5" /> Realisasi
             </span>
           </div>
@@ -632,12 +632,12 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         </div>
 
         {/* CARD 4: SALDO AKHIR HUTANG PER TAHUN (2025 & 2026) */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm relative overflow-hidden">
+        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Saldo Akhir Hutang (Total)
             </span>
-            <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400">
+            <span className="text-[11px] font-mono font-bold text-rose-700 dark:text-rose-400">
               Sisa Kewajiban
             </span>
           </div>
@@ -645,11 +645,11 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
             {formatRupiah(totalSaldoAkhirSemuaTahun)}
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
+            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800">
               <span className="text-slate-500 dark:text-slate-400 block text-[9.5px]">Sisa TA 2025:</span>
               <span className="font-bold text-rose-700 dark:text-rose-400">{formatRupiah(saldoAkhir2025)}</span>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
+            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800">
               <span className="text-slate-500 dark:text-slate-400 block text-[9.5px]">Sisa TA 2026:</span>
               <span className="font-bold text-rose-700 dark:text-rose-400">{formatRupiah(saldoAkhir2026)}</span>
             </div>

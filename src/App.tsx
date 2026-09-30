@@ -381,26 +381,26 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
               <ChevronRight className="w-3 h-3 opacity-40 hidden sm:inline" />
               <span className={`hidden md:inline font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{breadcrumb.main}</span>
               <ChevronRight className="w-3 h-3 opacity-40 hidden md:inline" />
-              <span className={`font-semibold px-2.5 py-0.5 rounded text-[11px] sm:text-xs truncate max-w-[150px] sm:max-w-none ${
+              <span className={`font-semibold px-2 py-0.5 rounded text-[11px] sm:text-xs truncate max-w-[150px] sm:max-w-none ${
                 isDark 
-                  ? 'text-teal-300 bg-teal-950/70 border border-teal-800/60' 
-                  : 'text-teal-800 bg-teal-50 border border-teal-200/80'
+                  ? 'text-blue-300 bg-blue-950/70 border border-blue-800/60' 
+                  : 'text-blue-800 bg-blue-50 border border-blue-200'
               }`}>
                 {breadcrumb.sub}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Year Selector */}
-            <div className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl border ${
+            <div className={`flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-lg border ${
               isDark ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
-              <Calendar className={`w-3.5 h-3.5 ${isDark ? 'text-teal-400' : 'text-slate-500'}`} />
+              <Calendar className={`w-3.5 h-3.5 ${isDark ? 'text-blue-400' : 'text-slate-500'}`} />
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className={`bg-transparent text-[11px] sm:text-xs font-bold focus:outline-none cursor-pointer ${
+                className={`bg-transparent text-[11px] sm:text-xs font-bold font-mono focus:outline-none cursor-pointer ${
                   isDark ? 'text-slate-200' : 'text-slate-700'
                 }`}
               >
@@ -410,13 +410,13 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             </div>
 
             {/* Month Selector */}
-            <div className={`hidden xs:flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl border ${
+            <div className={`hidden xs:flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-lg border ${
               isDark ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
               <select
                 value={selectedBulan}
                 onChange={(e) => setSelectedBulan(e.target.value)}
-                className={`bg-transparent text-[11px] sm:text-xs font-bold focus:outline-none cursor-pointer ${
+                className={`bg-transparent text-[11px] sm:text-xs font-semibold focus:outline-none cursor-pointer ${
                   isDark ? 'text-slate-200' : 'text-slate-700'
                 }`}
               >
@@ -435,21 +435,21 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             {/* Google Sheets Sync Trigger */}
             <button
               onClick={() => performSync(true)}
-              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 font-medium rounded-xl text-xs transition border ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 font-medium rounded-lg text-xs transition border ${
                 isDark 
-                  ? 'bg-slate-800 hover:bg-slate-700 text-teal-400 border-slate-700' 
+                  ? 'bg-slate-800 hover:bg-slate-700 text-blue-400 border-slate-700' 
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
               }`}
               title="Sinkronisasi Google Sheets"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-teal-600 dark:text-teal-400 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-blue-600 dark:text-blue-400 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Sync</span>
             </button>
 
             {/* Light / Dark Mode Toggle Button */}
             <button
               onClick={toggleTheme}
-              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 font-medium rounded-xl text-xs transition border ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 font-medium rounded-lg text-xs transition border ${
                 isDark 
                   ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' 
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
@@ -473,7 +473,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             {user ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl text-xs font-medium border transition ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2 py-1 rounded-lg text-xs font-medium border transition ${
                   isDark 
                     ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200' 
                     : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
@@ -483,17 +483,17 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
                 <img
                   src={profile.photoURL}
                   alt="Avatar"
-                  className="w-4 h-4 rounded-full object-cover bg-teal-800 ring-1 ring-teal-500/50 shrink-0"
+                  className="w-4 h-4 rounded-full object-cover bg-blue-800 ring-1 ring-blue-500/50 shrink-0"
                 />
                 <span className="hidden sm:inline max-w-[90px] md:max-w-[120px] truncate">
                   {profile.displayName}
                 </span>
-                <UserCog className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                <UserCog className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
               </button>
             ) : (
               <button
                 onClick={openLoginModal}
-                className="flex items-center gap-1.5 px-3 py-1 bg-teal-700 hover:bg-teal-600 text-white font-semibold rounded-xl text-xs shadow-xs transition"
+                className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs shadow-xs transition"
                 title="Masuk / Login Akun"
               >
                 <span>Masuk</span>

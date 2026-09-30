@@ -181,9 +181,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </AnimatePresence>
 
-      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r h-screen md:sticky md:top-0 transition-all duration-300 ease-in-out select-none shrink-0 font-sans shadow-2xl md:shadow-sm overflow-hidden ${
+      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r h-screen md:sticky md:top-0 transition-all duration-300 ease-in-out select-none shrink-0 font-sans shadow-2xl md:shadow-xs overflow-hidden ${
         isDark 
-          ? 'bg-[#0a0d0e] text-zinc-300 border-emerald-950/70' 
+          ? 'bg-[#0f172a] text-slate-300 border-slate-800' 
           : 'bg-white text-slate-700 border-slate-200'
       } ${
         isOpen 
@@ -197,30 +197,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
         
         {/* 1. Header with Logo & Brand Accent */}
         <div className={`p-4 border-b flex items-center justify-between ${
-          isDark ? 'border-emerald-950/80 bg-[#070b0c]' : 'border-slate-100 bg-slate-50/50'
+          isDark ? 'border-slate-800 bg-[#0a0f1d]' : 'border-slate-200 bg-slate-50/80'
         }`}>
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center p-1.5 transition ${
               isDark 
-                ? 'bg-gradient-to-br from-[#061e16] to-[#040e0b] border border-emerald-500/30 shadow-xs' 
-                : 'bg-white border border-slate-200/90 shadow-xs ring-1 ring-emerald-500/20'
+                ? 'bg-slate-800 border border-slate-700 shadow-xs' 
+                : 'bg-white border border-slate-200 shadow-xs'
             }`}>
               <RsudLogo className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className={`font-bold text-sm tracking-tight ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
+                <span className={`font-bold text-sm tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   RSUD Jatisari
                 </span>
-                <span className={`text-[10px] px-1.5 py-0.2 font-bold rounded ${
+                <span className={`text-[10px] px-1.5 py-0.2 font-mono font-bold rounded ${
                   isDark 
-                    ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40' 
-                    : 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-300/80'
+                    ? 'bg-blue-950 text-blue-300 border border-blue-800/60' 
+                    : 'bg-blue-50 text-blue-700 border border-blue-200'
                 }`}>
                   BLUD
                 </span>
               </div>
-              <div className={`text-[11px] font-medium ${isDark ? 'text-emerald-400/80' : 'text-emerald-700'}`}>
+              <div className={`text-[11px] font-medium ${isDark ? 'text-blue-400' : 'text-blue-700'}`}>
                 Sub Bagian Keuangan
               </div>
             </div>
@@ -228,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button 
             onClick={onToggleSidebar}
-            className={`p-1.5 rounded-lg transition transform active:scale-90 ${isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
+            className={`p-1.5 rounded-lg transition transform active:scale-90 ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
             title="Tutup Menu"
           >
             <PanelLeftClose className="w-4 h-4" />
@@ -238,38 +238,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
       {/* 3. Navigation List (Scrollable) */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2.5 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 custom-scrollbar">
         
         {/* SECTION: UTAMA / DASHBOARD */}
         <div>
           <button
             onClick={() => handleItemClick('dashboard_2026')}
-            className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl text-xs font-bold transition group select-none ${
+            className={`w-full h-10 flex items-center justify-between px-2.5 rounded-lg text-xs font-semibold transition group select-none ${
               activeMenu === 'dashboard_2026' 
                 ? (isDark 
-                    ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-700/50 shadow-xs' 
-                    : 'bg-emerald-600 text-white font-bold shadow-sm shadow-emerald-600/20')
+                    ? 'bg-blue-600 text-white font-bold shadow-xs' 
+                    : 'bg-blue-700 text-white font-bold shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
+                    ? 'text-slate-300 hover:text-white hover:bg-slate-800/80 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
             }`}
           >
             <div className="flex items-center gap-2 min-w-0">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
+              <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition ${
                 activeMenu === 'dashboard_2026'
-                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-white/20 text-white')
-                  : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
+                  ? 'bg-white/20 text-white'
+                  : (isDark ? 'bg-slate-800 text-slate-400 group-hover:text-slate-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Layers className="w-3.5 h-3.5" />
               </div>
-              <span className="font-bold tracking-tight uppercase truncate">DASHBOARD UTAMA</span>
+              <span className="font-semibold tracking-tight uppercase truncate">DASHBOARD UTAMA</span>
             </div>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold shrink-0 ${
               activeMenu === 'dashboard_2026'
-                ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-white/20 text-white')
-                : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-600')
+                ? 'bg-white/20 text-white'
+                : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600')
             }`}>
-              Live
+              2026
             </span>
           </button>
         </div>
@@ -457,37 +457,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={() => toggleSection('hutang')}
-            className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
+            className={`w-full h-10 flex items-center justify-between px-2.5 rounded-lg font-semibold text-xs uppercase tracking-tight transition group select-none ${
               expandedSections.hutang || activeMenu === 'hutang'
                 ? (isDark 
-                    ? 'bg-indigo-950/50 text-indigo-300 border border-indigo-800/50 shadow-xs' 
-                    : 'bg-indigo-50 text-indigo-900 border border-indigo-200/90 shadow-xs')
+                    ? 'bg-blue-950/70 text-blue-300 border border-blue-800/60 shadow-xs' 
+                    : 'bg-blue-50 text-blue-900 border border-blue-200 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
+                    ? 'text-slate-300 hover:text-white hover:bg-slate-800/80 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
             }`}
             title="Klik untuk membuka / menutup sub menu Hutang (BLUD & APBD)"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
+              <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition ${
                 expandedSections.hutang || activeMenu === 'hutang'
-                  ? (isDark ? 'bg-indigo-900/80 text-indigo-300' : 'bg-indigo-600 text-white shadow-xs')
-                  : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
+                  ? (isDark ? 'bg-blue-800 text-white' : 'bg-blue-700 text-white shadow-xs')
+                  : (isDark ? 'bg-slate-800 text-slate-400 group-hover:text-slate-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <CreditCard className="w-3.5 h-3.5" />
               </div>
-              <span className="font-bold tracking-tight truncate whitespace-nowrap">3. HUTANG (BLUD & APBD)</span>
+              <span className="font-semibold tracking-tight truncate whitespace-nowrap">3. HUTANG (BLUD & APBD)</span>
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
-              <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-200/80 text-slate-600'
+              <span className={`h-4 min-w-[18px] px-1 rounded flex items-center justify-center text-[10px] font-mono font-bold ${
+                isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
               }`}>
                 {hutangSubmenus.length}
               </span>
               <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
                 expandedSections.hutang 
-                  ? 'rotate-90 text-indigo-600 dark:text-indigo-400 font-bold' 
-                  : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
+                  ? 'rotate-90 text-blue-600 dark:text-blue-400 font-bold' 
+                  : 'text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5'
               }`} />
             </div>
           </button>
@@ -502,8 +502,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
-                  isDark ? 'border-indigo-900/60' : 'border-indigo-200'
+                <div className={`mt-1 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-3.5 ${
+                  isDark ? 'border-blue-900/60' : 'border-blue-200'
                 }`}>
               {hutangSubmenus.map((sub) => {
                 const isSubActive = activeMenu === 'hutang' && (activeSubmenu === sub.id || (!activeSubmenu && sub.id === 'semua_rekap_hutang'));
@@ -512,10 +512,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     key={sub.id}
                     id={`sidebar-submenu-${sub.id}`}
                     onClick={() => handleItemClick('hutang', sub.id)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10.5px] transition truncate flex items-center justify-between ${
+                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-[10.5px] transition truncate flex items-center justify-between ${
                       isSubActive 
-                        ? (isDark ? 'bg-indigo-950/60 text-indigo-300 font-bold border-l-2 border-indigo-500' : 'bg-indigo-50 text-indigo-800 font-bold border-l-2 border-indigo-600')
-                        : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
+                        ? (isDark ? 'bg-blue-950/80 text-blue-300 font-bold border-l-2 border-blue-500' : 'bg-blue-50 text-blue-800 font-bold border-l-2 border-blue-700')
+                        : (isDark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60')
                     }`}
                     title={sub.label}
                   >

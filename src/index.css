@@ -5,14 +5,14 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --color-rsud-green: #0d9488;
-  --color-rsud-blue: #0369a1;
+  --color-rsud-green: #0284c7;
+  --color-rsud-blue: #1e40af;
 }
 
 /* Base styles */
 html {
-  transition: background-color 0.2s ease, color 0.2s ease;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
 }
 
 /* Tabular numbers for financial data accuracy */
@@ -22,13 +22,13 @@ html {
 
 html.dark {
   color-scheme: dark;
-  background-color: #0b0f14;
-  color: #f1f5f9;
+  background-color: #0a0e17;
+  color: #f8fafc;
 }
 
 html.light {
   color-scheme: light;
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
   color: #0f172a;
 }
 
