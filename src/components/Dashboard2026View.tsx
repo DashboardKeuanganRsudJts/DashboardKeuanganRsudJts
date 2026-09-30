@@ -534,67 +534,64 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
     <div className="space-y-6">
       
       {/* 1. EXECUTIVE BANNER */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 dark:from-emerald-950 dark:via-[#07140f] dark:to-teal-950 text-white rounded-2xl p-6 shadow-md border border-emerald-500/30 dark:border-emerald-900/60 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+      <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-800 relative overflow-hidden">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 dark:bg-emerald-500/15 text-white dark:text-emerald-300 border border-white/30 dark:border-emerald-500/40 text-xs font-semibold mb-2 backdrop-blur-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-300 dark:bg-emerald-400 animate-pulse"></span>
-              Sistem Informasi Keuangan BLUD RSUD Jatisari
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-400 mb-2">
+              <Building2 className="w-4 h-4 text-teal-400" />
+              <span className="uppercase tracking-wider">SISTEM KEUANGAN BLUD · RSUD JATISARI KARAWANG</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
-              DASHBOARD SUB BAGIAN KEUANGAN RSUD JATISARI 2026
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+              DASHBOARD EKSEKUTIF KEUANGAN 2026
             </h1>
-            <p className="text-xs lg:text-sm text-emerald-50 dark:text-emerald-100/80 mt-1 max-w-3xl leading-relaxed">
-              Uang Rumah Sakit Bukan Uang Kami, Tapi Kenapa Kami yang Pusing? 💸🤕
+            <p className="text-xs lg:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
+              Monitoring terpadu 4 pilar keuangan: Realisasi Pendapatan Fungsional, Pengeluaran Operasional, Saldo Kewajiban Hutang, dan Piutang Pelayanan Pasien/Klaim.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 bg-black/20 dark:bg-black/40 p-3 rounded-2xl border border-white/20 dark:border-emerald-900/40 backdrop-blur-md shadow-sm">
-            <div className="text-left pr-2">
-              <div className="text-[10px] text-emerald-200 dark:text-emerald-300/80 uppercase font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 dark:bg-emerald-400 animate-pulse"></span>
-                <span>Update Terakhir</span>
+          <div className="flex flex-wrap items-center gap-3 bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-xs">
+            <div className="text-left pr-2 font-mono">
+              <div className="text-[10px] text-teal-400 uppercase font-semibold">
+                Update Terakhir
               </div>
-              <div className="text-xs font-bold text-white font-mono mt-0.5">{lastUpdatedTime} WIB</div>
+              <div className="text-xs font-bold text-white mt-0.5">{lastUpdatedTime} WIB</div>
             </div>
-            <div className="h-8 w-px bg-white/30 dark:bg-emerald-900/60"></div>
+            <div className="h-7 w-px bg-slate-700"></div>
             <button
               onClick={() => refreshAllData(true)}
               disabled={isRefreshing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 dark:bg-emerald-900/50 hover:bg-white/30 dark:hover:bg-emerald-800 text-white text-xs font-medium transition border border-white/20 dark:border-emerald-700/50 shadow-2xs backdrop-blur-sm disabled:opacity-60 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-xs font-medium transition shadow-xs disabled:opacity-60 cursor-pointer"
               title="Perbarui data secara langsung"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-emerald-100 dark:text-emerald-300 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? 'Memperbarui...' : 'Refresh'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Memperbarui...' : 'Refresh Data'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 2. TOP 4 CORE EXECUTIVE METRICS (As Requested) */}
+      {/* 2. TOP 4 CORE EXECUTIVE METRICS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* CARD 1: PENDAPATAN BLUD */}
         <div 
           onClick={() => onNavigateTab('pendapatan_blud')}
-          className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm hover:shadow-md hover:border-teal-400 dark:hover:border-emerald-700/80 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-teal-500/80 transition cursor-pointer group relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 dark:bg-emerald-950/40 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">1. Pendapatan BLUD (2026)</span>
-            <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-emerald-950/80 text-teal-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition border border-teal-100 dark:border-emerald-800/40">
-              <TrendingUp className="w-4 h-4" />
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">1. Pendapatan BLUD (2026)</span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-teal-800/40">
+              <TrendingUp className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2 tracking-tight">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight">
             {formatRupiah(totalPendapatanRealisasiBulanIni)}
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
-            <span className="text-teal-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+            <span className="text-teal-700 dark:text-teal-400 font-semibold flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Realisasi Ags: {persenPendapatanRealisasi}%
             </span>
-            <span className="text-slate-400 dark:text-zinc-400 group-hover:text-teal-600 dark:group-hover:text-emerald-300 flex items-center font-medium">
+            <span className="text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 flex items-center font-medium">
               Rincian <ChevronRight className="w-3 h-3 ml-0.5" />
             </span>
           </div>
@@ -603,23 +600,22 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 2: PENGELUARAN BLUD */}
         <div 
           onClick={() => onNavigateTab('pengeluaran_blud')}
-          className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm hover:shadow-md hover:border-rose-400 dark:hover:border-rose-700/80 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-rose-400 transition cursor-pointer group relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 dark:bg-rose-950/30 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">2. Pengeluaran BLUD (2026)</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:scale-110 transition border border-rose-100 dark:border-rose-800/40">
-              <TrendingDown className="w-4 h-4" />
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">2. Pengeluaran BLUD (2026)</span>
+            <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-rose-800/40">
+              <TrendingDown className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2 tracking-tight">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight">
             {formatRupiah(totalPengeluaranBulanIni)}
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
             <span className="text-rose-700 dark:text-rose-400 font-semibold flex items-center gap-1">
               <Activity className="w-3.5 h-3.5" /> {countPosPengeluaran} Pos Realisasi
             </span>
-            <span className="text-slate-400 dark:text-zinc-400 group-hover:text-rose-600 dark:group-hover:text-rose-300 flex items-center font-medium">
+            <span className="text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-400 flex items-center font-medium">
               Rincian <ChevronRight className="w-3 h-3 ml-0.5" />
             </span>
           </div>
@@ -628,28 +624,27 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 3: KESELURUHAN SALDO AKHIR HUTANG (2025 + 2026) */}
         <div 
           onClick={() => onNavigateTab('hutang')}
-          className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-700/80 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-slate-400 transition cursor-pointer group relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 dark:bg-indigo-950/30 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">3. Saldo Akhir Hutang (2025 + 2026)</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition border border-indigo-100 dark:border-indigo-800/40">
-              <CreditCard className="w-4 h-4" />
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">3. Saldo Akhir Hutang (2025+2026)</span>
+            <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <CreditCard className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-indigo-950 dark:text-indigo-200 mt-2 tracking-tight">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight">
             {formatRupiah(totalHutangKeseluruhan)}
           </div>
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
-            <span>2025: <strong className="text-slate-700 dark:text-zinc-300 font-semibold">{formatRupiah(sisaHutang2025)}</strong></span>
+          <div className="flex items-center gap-1.5 mt-1 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+            <span>'25: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{formatRupiah(sisaHutang2025)}</strong></span>
             <span>•</span>
-            <span>2026: <strong className="text-slate-700 dark:text-zinc-300 font-semibold">{formatRupiah(sisaHutang2026)}</strong></span>
+            <span>'26: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{formatRupiah(sisaHutang2026)}</strong></span>
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
-            <span className="text-indigo-700 dark:text-indigo-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> {jumlahRekananHutang} Rekanan Pengadaan
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+            <span className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> {jumlahRekananHutang} Rekanan
             </span>
-            <span className="text-slate-400 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 flex items-center font-medium">
+            <span className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 flex items-center font-medium">
               Rincian <ChevronRight className="w-3 h-3 ml-0.5" />
             </span>
           </div>
@@ -658,23 +653,22 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 4: SISA PIUTANG DARI SEMUA TAGIHAN TERBARU */}
         <div 
           onClick={() => onNavigateTab('perusahaan_asuransi')}
-          className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-teal-500/80 transition cursor-pointer group relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 dark:bg-emerald-950/40 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">4. Sisa Piutang Semua Tagihan</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition border border-emerald-100 dark:border-emerald-800/40">
-              <FileSpreadsheet className="w-4 h-4" />
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">4. Sisa Piutang Semua Tagihan</span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-teal-800/40">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-2 tracking-tight">
+          <div className="text-2xl font-bold font-mono text-teal-800 dark:text-teal-300 mt-2 tracking-tight">
             {formatRupiah(totalSisaPiutangTerbaruSemuaTagihan)}
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
-            <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+            <span className="text-teal-700 dark:text-teal-400 font-semibold flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" /> Outstanding Terkini
             </span>
-            <span className="text-slate-400 dark:text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 flex items-center font-medium">
+            <span className="text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 flex items-center font-medium">
               Rincian <ChevronRight className="w-3 h-3 ml-0.5" />
             </span>
           </div>
@@ -682,35 +676,30 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
 
       </div>
 
-      {/* QUICK ACCESS: MODUL BARU MONITORING PPN 2026 */}
+      {/* QUICK ACCESS: MODUL MONITORING PPN 2026 */}
       <div 
         onClick={() => onNavigateTab('monitoring_ppn')}
-        className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 dark:from-emerald-950 dark:via-teal-950 dark:to-indigo-950 p-4 sm:p-5 rounded-2xl text-white shadow-md border border-emerald-400/30 dark:border-emerald-700/50 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.005] group flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        className="bg-white dark:bg-[#0f172a] p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 cursor-pointer hover:border-teal-500/80 transition shadow-xs group flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-white/15 dark:bg-emerald-500/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 border border-white/20 group-hover:scale-105 transition">
-            <Receipt className="w-6 h-6 text-emerald-200" />
+          <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/40">
+            <Receipt className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-emerald-200 dark:text-emerald-300 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Modul Baru Terintegrasi 2026
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-bold">
-                Coretax & Rekonsiliasi SP2D
-              </span>
+            <div className="text-xs font-semibold text-teal-700 dark:text-teal-400 uppercase tracking-wide">
+              Modul Terintegrasi 2026 · Coretax DJP & SP2D
             </div>
-            <h4 className="text-base sm:text-lg font-black tracking-tight mt-0.5 text-white">
-              Sistem Monitoring PPN 2026 (Faktur Coretax DJP & Data Hutang)
+            <h4 className="text-base font-bold text-slate-900 dark:text-white">
+              Sistem Monitoring PPN 2026 (Faktur Pajak vs Invoice Hutang)
             </h4>
-            <p className="text-xs text-emerald-100/80 dark:text-zinc-300 mt-0.5">
-              Otomasi pencocokan Faktur Pajak Coretax vs Invoice Hutang, deteksi selisih tarif PPN 11%, dan pelacakan status pelunasan SP2D.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Pencocokan Faktur Pajak Coretax vs Invoice Hutang, deteksi selisih tarif PPN 11%, dan verifikasi SP2D.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-          <span className="px-4 py-2 rounded-xl bg-white dark:bg-emerald-500 text-emerald-900 dark:text-slate-950 font-black text-xs shadow-md group-hover:bg-emerald-50 transition flex items-center gap-1">
+          <span className="px-3.5 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-600 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1">
             Buka Monitoring PPN <ChevronRight className="w-3.5 h-3.5" />
           </span>
         </div>
