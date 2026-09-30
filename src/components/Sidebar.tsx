@@ -250,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     ? 'bg-teal-950/70 text-teal-300 border border-teal-700/60 shadow-xs' 
                     : 'bg-teal-700 text-white font-bold shadow-xs')
                 : (isDark 
-                    ? 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent' 
+                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
             }`}
           >
@@ -258,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 activeMenu === 'dashboard_2026'
                   ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-white/20 text-white')
-                  : (isDark ? 'bg-slate-800 text-slate-400 group-hover:text-slate-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
+                  : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Layers className="w-3.5 h-3.5" />
               </div>
@@ -267,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
               activeMenu === 'dashboard_2026'
                 ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-white/20 text-white')
-                : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600')
+                : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-600')
             }`}>
               Live
             </span>
