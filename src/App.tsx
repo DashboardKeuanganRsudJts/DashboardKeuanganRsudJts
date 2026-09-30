@@ -344,17 +344,17 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
         
         {/* Top Header Bar */}
-        <header className={`h-14 px-3 sm:px-6 flex items-center justify-between shrink-0 z-10 border-b transition-colors duration-300 ${
+        <header className={`h-14 px-3 sm:px-6 flex items-center justify-between shrink-0 z-10 border-b transition-colors duration-200 ${
           isDark 
-            ? 'bg-[#0d1216]/95 border-emerald-950/70 shadow-md shadow-black/40 backdrop-blur-md' 
-            : 'bg-white/95 border-slate-200 shadow-2xs backdrop-blur-md'
+            ? 'bg-[#0f172a]/95 border-slate-800 shadow-sm backdrop-blur-md' 
+            : 'bg-white/95 border-slate-200 shadow-xs backdrop-blur-md'
         }`}>
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile Hamburger Menu Toggle */}
             <button 
               onClick={() => setIsSidebarOpen(true)}
               className={`p-2 rounded-xl transition md:hidden shrink-0 ${
-                isDark ? 'text-zinc-300 hover:text-white hover:bg-zinc-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                isDark ? 'text-slate-300 hover:text-white hover:bg-slate-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
               title="Buka Menu Navigasi"
               aria-label="Buka Menu Navigasi"
@@ -367,7 +367,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
               <button 
                 onClick={() => setIsSidebarOpen(true)}
                 className={`hidden md:flex p-1.5 rounded-lg transition mr-1 ${
-                  isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                  isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
                 }`}
                 title="Buka Menu Samping"
               >
@@ -376,15 +376,15 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             )}
 
             {/* Responsive Breadcrumb */}
-            <div className={`flex items-center gap-1.5 sm:gap-2 text-xs font-medium min-w-0 ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
-              <span className={`hidden sm:inline ${isDark ? 'text-zinc-400' : 'text-slate-400'}`}>RSUD Jatisari</span>
-              <ChevronRight className="w-3 h-3 opacity-50 hidden sm:inline" />
-              <span className={`hidden md:inline font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{breadcrumb.main}</span>
-              <ChevronRight className="w-3 h-3 opacity-50 hidden md:inline" />
-              <span className={`font-bold px-2 sm:px-2.5 py-0.5 rounded-md border text-[11px] sm:text-xs truncate max-w-[140px] sm:max-w-none ${
+            <div className={`flex items-center gap-1.5 sm:gap-2 text-xs font-medium min-w-0 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <span className={`hidden sm:inline ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>RSUD Jatisari</span>
+              <ChevronRight className="w-3 h-3 opacity-40 hidden sm:inline" />
+              <span className={`hidden md:inline font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{breadcrumb.main}</span>
+              <ChevronRight className="w-3 h-3 opacity-40 hidden md:inline" />
+              <span className={`font-semibold px-2.5 py-0.5 rounded text-[11px] sm:text-xs truncate max-w-[150px] sm:max-w-none ${
                 isDark 
-                  ? 'text-emerald-300 bg-emerald-950/70 border-emerald-800/50 shadow-xs' 
-                  : 'text-emerald-800 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300/80 shadow-xs'
+                  ? 'text-teal-300 bg-teal-950/70 border border-teal-800/60' 
+                  : 'text-teal-800 bg-teal-50 border border-teal-200/80'
               }`}>
                 {breadcrumb.sub}
               </span>
@@ -393,66 +393,66 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
 
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Year Selector */}
-            <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl border ${
-              isDark ? 'bg-[#12181f] border-emerald-950/80' : 'bg-slate-100 border-slate-200'
+            <div className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl border ${
+              isDark ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
-              <Calendar className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-slate-500'}`} />
+              <Calendar className={`w-3.5 h-3.5 ${isDark ? 'text-teal-400' : 'text-slate-500'}`} />
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className={`bg-transparent text-[11px] sm:text-xs font-bold focus:outline-none cursor-pointer ${
-                  isDark ? 'text-zinc-200' : 'text-slate-700'
+                  isDark ? 'text-slate-200' : 'text-slate-700'
                 }`}
               >
-                <option value="2026" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>2026</option>
-                <option value="2025" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>2025</option>
+                <option value="2026" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>2026</option>
+                <option value="2025" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>2025</option>
               </select>
             </div>
 
-            {/* Month Selector - hidden on very small screens or compact */}
-            <div className={`hidden xs:flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl border ${
-              isDark ? 'bg-[#12181f] border-emerald-950/80' : 'bg-slate-100 border-slate-200'
+            {/* Month Selector */}
+            <div className={`hidden xs:flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl border ${
+              isDark ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
               <select
                 value={selectedBulan}
                 onChange={(e) => setSelectedBulan(e.target.value)}
                 className={`bg-transparent text-[11px] sm:text-xs font-bold focus:outline-none cursor-pointer ${
-                  isDark ? 'text-zinc-200' : 'text-slate-700'
+                  isDark ? 'text-slate-200' : 'text-slate-700'
                 }`}
               >
-                <option value="Semua Bulan" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Semua Bulan</option>
-                <option value="Agustus" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Agustus (Aktif)</option>
-                <option value="Juli" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Juli</option>
-                <option value="Juni" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Juni</option>
-                <option value="Mei" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Mei</option>
-                <option value="April" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>April</option>
-                <option value="Maret" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Maret</option>
-                <option value="Februari" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Februari</option>
-                <option value="Januari" className={isDark ? 'bg-[#12181f] text-zinc-100' : 'bg-white text-slate-800'}>Januari</option>
+                <option value="Semua Bulan" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Semua Bulan</option>
+                <option value="Agustus" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Agustus (Aktif)</option>
+                <option value="Juli" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Juli</option>
+                <option value="Juni" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Juni</option>
+                <option value="Mei" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Mei</option>
+                <option value="April" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>April</option>
+                <option value="Maret" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Maret</option>
+                <option value="Februari" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Februari</option>
+                <option value="Januari" className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}>Januari</option>
               </select>
             </div>
 
             {/* Google Sheets Sync Trigger */}
             <button
               onClick={() => performSync(true)}
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 font-medium rounded-xl text-xs transition border ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 font-medium rounded-xl text-xs transition border ${
                 isDark 
-                  ? 'bg-[#12181f] hover:bg-[#182129] text-emerald-300 border-emerald-950/80' 
+                  ? 'bg-slate-800 hover:bg-slate-700 text-teal-400 border-slate-700' 
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
               }`}
               title="Sinkronisasi Google Sheets"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-emerald-500 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-teal-600 dark:text-teal-400 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Sync</span>
             </button>
 
             {/* Light / Dark Mode Toggle Button */}
             <button
               onClick={toggleTheme}
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 font-semibold rounded-xl text-xs transition border ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 font-medium rounded-xl text-xs transition border ${
                 isDark 
-                  ? 'bg-gradient-to-r from-emerald-950 to-teal-950 hover:from-emerald-900 hover:to-teal-900 text-amber-300 border-emerald-800/50 shadow-sm' 
-                  : 'bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border-emerald-200 shadow-2xs'
+                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
               }`}
               title={isDark ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
             >
@@ -463,37 +463,37 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
                 </>
               ) : (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-emerald-700" />
+                  <Moon className="w-3.5 h-3.5 text-slate-600" />
                   <span className="hidden md:inline">Gelap</span>
                 </>
               )}
             </button>
 
-            {/* Profile Settings Button (when user is logged in) */}
+            {/* Profile Settings Button */}
             {user ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-semibold border transition ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl text-xs font-medium border transition ${
                   isDark 
-                    ? 'bg-[#12181f] hover:bg-[#182129] border-emerald-950/80 text-zinc-200 hover:text-white' 
-                    : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 hover:text-slate-900'
+                    ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200' 
+                    : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
                 }`}
                 title="Buka Pengaturan Profil (Edit Foto, Nama, Email, Password)"
               >
                 <img
                   src={profile.photoURL}
                   alt="Avatar"
-                  className="w-4 h-4 rounded-full object-cover bg-emerald-800 ring-1 ring-emerald-500/50 shrink-0"
+                  className="w-4 h-4 rounded-full object-cover bg-teal-800 ring-1 ring-teal-500/50 shrink-0"
                 />
                 <span className="hidden sm:inline max-w-[90px] md:max-w-[120px] truncate">
                   {profile.displayName}
                 </span>
-                <UserCog className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <UserCog className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
               </button>
             ) : (
               <button
                 onClick={openLoginModal}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-xs transition"
+                className="flex items-center gap-1.5 px-3 py-1 bg-teal-700 hover:bg-teal-600 text-white font-semibold rounded-xl text-xs shadow-xs transition"
                 title="Masuk / Login Akun"
               >
                 <span>Masuk</span>

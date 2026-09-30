@@ -293,8 +293,23 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   onShowToast
 }) => {
   const isUserLoggedIn = Boolean(user);
-  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || role === 'admin');
-  const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || role === 'pic_hutang');
+  const emailLower = (user?.email || '').toLowerCase().trim();
+  const roleLower = (role || '').toLowerCase().trim();
+  const isSuperAdmin = isUserLoggedIn && (Boolean(isAdmin) || role === 'admin' || roleLower === 'admin');
+
+  // Exclusion for roles belonging to other modules or viewer
+  const isExcludedFromHutang = ['viewer', 'pic_piutang', 'pic_pajak', 'pic_ppn', 'pic_pendapatan', 'pic_pengeluaran'].includes(roleLower);
+
+  // Tombol Import Spreadsheet HANYA tampil untuk PIC Hutang saja (atau Super Admin jika tidak sedang preview sebagai role lain)
+  const isPicHutang = isUserLoggedIn && !isExcludedFromHutang && (
+    role === 'pic_hutang' ||
+    roleLower === 'pic_hutang' ||
+    emailLower.includes('pic_hutang') ||
+    emailLower.includes('hutang') ||
+    isSuperAdmin
+  );
+
+  const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || isPicHutang);
 
   // State for dataset - initialize with in-memory singleton or localStorage cache first, then load from IndexedDB
   const [data, setData] = useState<InvoiceHutang2025Record[]>(() => {
@@ -1104,14 +1119,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Import Excel */}
-          {isPicHutangOrAdmin && (
+          {/* Import Spreadsheet (Hanya Tampil untuk PIC Hutang Saja) */}
+          {isPicHutang && (
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-emerald-400/50"
-              title="Import Data dari File Excel (.xlsx, .xls, .csv)"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-emerald-400/50"
+              title="Import Spreadsheet (Google Sheets & Excel) - Khusus PIC Hutang"
             >
-              <UploadCloud className="w-3.5 h-3.5" /> Import Excel
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
+              <span>Import Spreadsheet</span>
             </button>
           )}
 

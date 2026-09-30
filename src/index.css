@@ -3,19 +3,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
-  --color-rsud-green: #5cb346;
-  --color-rsud-blue: #026cb6;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-rsud-green: #0d9488;
+  --color-rsud-blue: #0369a1;
 }
 
 /* Base styles */
 html {
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Tabular numbers for financial data accuracy */
+.tabular-nums, table, td, th {
+  font-variant-numeric: tabular-nums;
 }
 
 html.dark {
   color-scheme: dark;
-  background-color: #080b0d;
+  background-color: #0b0f14;
   color: #f1f5f9;
 }
 
