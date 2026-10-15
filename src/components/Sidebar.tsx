@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r h-screen md:sticky md:top-0 transition-all duration-300 ease-in-out select-none shrink-0 font-sans shadow-2xl md:shadow-sm overflow-hidden ${
         isDark 
-          ? 'bg-[#0b1320] text-slate-200 border-slate-800' 
+          ? 'bg-[#0a0d0e] text-zinc-300 border-emerald-950/70' 
           : 'bg-white text-slate-700 border-slate-200'
       } ${
         isOpen 
@@ -197,30 +197,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
         
         {/* 1. Header with Logo & Brand Accent */}
         <div className={`p-4 border-b flex items-center justify-between ${
-          isDark ? 'border-slate-800/80 bg-[#090f1a]' : 'border-slate-100 bg-slate-50/50'
+          isDark ? 'border-emerald-950/80 bg-[#070b0c]' : 'border-slate-100 bg-slate-50/50'
         }`}>
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center p-1.5 transition ${
               isDark 
-                ? 'bg-gradient-to-br from-[#0c1f38] to-[#071324] border border-blue-500/30 shadow-xs' 
+                ? 'bg-gradient-to-br from-[#061e16] to-[#040e0b] border border-emerald-500/30 shadow-xs' 
                 : 'bg-white border border-slate-200/90 shadow-xs ring-1 ring-emerald-500/20'
             }`}>
               <RsudLogo className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className={`font-bold text-sm tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <span className={`font-bold text-sm tracking-tight ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
                   RSUD Jatisari
                 </span>
                 <span className={`text-[10px] px-1.5 py-0.2 font-bold rounded ${
                   isDark 
-                    ? 'bg-blue-950/80 text-blue-400 border border-blue-800/50' 
+                    ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40' 
                     : 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-300/80'
                 }`}>
                   BLUD
                 </span>
               </div>
-              <div className={`text-[11px] font-medium ${isDark ? 'text-blue-400' : 'text-emerald-700'}`}>
+              <div className={`text-[11px] font-medium ${isDark ? 'text-emerald-400/80' : 'text-emerald-700'}`}>
                 Sub Bagian Keuangan
               </div>
             </div>
@@ -228,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button 
             onClick={onToggleSidebar}
-            className={`p-1.5 rounded-lg transition transform active:scale-90 ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
+            className={`p-1.5 rounded-lg transition transform active:scale-90 ${isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
             title="Tutup Menu"
           >
             <PanelLeftClose className="w-4 h-4" />
@@ -247,8 +247,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl text-xs font-bold transition group select-none ${
               activeMenu === 'dashboard_2026' 
                 ? (isDark 
-                    ? 'bg-[#0a0d0e] text-emerald-400 border border-emerald-950/80 shadow-xs' 
-                    : 'bg-slate-900 text-white font-bold shadow-xs')
+                    ? 'bg-teal-950/70 text-teal-300 border border-teal-700/60 shadow-xs' 
+                    : 'bg-teal-700 text-white font-bold shadow-xs')
                 : (isDark 
                     ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
@@ -257,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 activeMenu === 'dashboard_2026'
-                  ? (isDark ? 'bg-zinc-900 text-emerald-400' : 'bg-white/20 text-white')
+                  ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-white/20 text-white')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Layers className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
               activeMenu === 'dashboard_2026'
-                ? (isDark ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40' : 'bg-white/20 text-white')
+                ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-white/20 text-white')
                 : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-600')
             }`}>
               Live
@@ -728,19 +728,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="px-3 pt-2 pb-2">
         <div className={`p-3 rounded-xl border relative overflow-hidden ${
           isDark 
-            ? 'bg-gradient-to-b from-[#0f1d33] to-[#091222] border-blue-900/40 shadow-inner' 
+            ? 'bg-gradient-to-b from-[#061510] to-[#030d09] border-emerald-950/80 shadow-inner' 
             : 'bg-gradient-to-br from-emerald-50 via-teal-50/40 to-blue-50/40 border-emerald-200/80 shadow-xs'
         }`}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-blue-500" /> RSUD Jatisari
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-emerald-500" /> RSUD Jatisari
             </span>
-            <span className={`text-[9px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>v2026.8</span>
+            <span className={`text-[9px] ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>v2026.8</span>
           </div>
-          <div className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <div className={`text-xs font-bold ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
             Sistem Keuangan BLUD
           </div>
-          <p className={`text-[10px] mt-0.5 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+          <p className={`text-[10px] mt-0.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
             Sinkronisasi otomatis real-time Google Sheets & database terpadu.
           </p>
         </div>
@@ -748,14 +748,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* 5. Bottom Icons Bar & Theme Switcher */}
       <div className={`px-3 py-1.5 flex items-center justify-between border-t ${
-        isDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500'
+        isDark ? 'border-emerald-950/80 text-zinc-400' : 'border-slate-200 text-slate-500'
       }`}>
         <div className="flex items-center gap-1">
           {user && (
             <button 
               onClick={onOpenProfileModal} 
               className={`p-1.5 rounded-lg transition ${
-                isDark ? 'hover:bg-slate-800 text-blue-400' : 'hover:bg-emerald-50 text-emerald-700'
+                isDark ? 'hover:bg-emerald-950/60 text-emerald-400' : 'hover:bg-emerald-50 text-emerald-700'
               }`} 
               title="Pengaturan Profil Pengguna (Edit Foto, Nama, Email, Password)"
             >
@@ -766,7 +766,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button 
             onClick={onOpenSettingsModal} 
             className={`p-1.5 rounded-lg transition ${
-              isDark ? 'hover:bg-slate-800 hover:text-slate-200' : 'hover:bg-slate-100 hover:text-slate-800'
+              isDark ? 'hover:bg-zinc-800 hover:text-zinc-200' : 'hover:bg-slate-100 hover:text-slate-800'
             }`} 
             title="Pengaturan Sistem & Tema"
           >
@@ -776,7 +776,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button 
             onClick={() => window.dispatchEvent(new Event('rsud_data_updated'))} 
             className={`p-1.5 rounded-lg transition ${
-              isDark ? 'hover:bg-slate-800 hover:text-slate-200' : 'hover:bg-slate-100 hover:text-slate-800'
+              isDark ? 'hover:bg-zinc-800 hover:text-zinc-200' : 'hover:bg-slate-100 hover:text-slate-800'
             }`} 
             title="Muat Ulang Data"
           >
@@ -788,10 +788,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={toggleTheme}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition ${
               isDark 
-                ? 'bg-slate-800/80 hover:bg-slate-700/80 text-amber-300 border border-slate-700' 
+                ? 'bg-emerald-950/50 hover:bg-emerald-900/60 text-amber-300 border border-emerald-800/40' 
                 : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
             }`}
-            title={isDark ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
+            title={isDark ? 'Beralih ke Mode Terang (RSUD Green-Blue)' : 'Beralih ke Mode Gelap (Hitam-Hijau)'}
           >
             {isDark ? (
               <>
@@ -809,16 +809,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md border ${
           isDark 
-            ? 'text-emerald-400 bg-slate-800/80 border-slate-700' 
+            ? 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40' 
             : 'text-emerald-700 bg-emerald-50 border-emerald-200'
         }`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>Online</span>
         </div>
       </div>
 
       {/* 6. BOTTOM-LEFT USER PROFILE / LOGIN BUTTON */}
-      <div className={`p-3 border-t ${isDark ? 'border-slate-800 bg-[#090f1a]' : 'border-slate-200 bg-slate-50'}`}>
+      <div className={`p-3 border-t ${isDark ? 'border-emerald-950/90 bg-[#070b0c]' : 'border-slate-200 bg-slate-50'}`}>
         {user ? (
           <div className={`p-2 rounded-xl transition border space-y-2 ${
             isDark ? 'bg-zinc-900/80 border-emerald-950/60' : 'bg-white border-slate-200/80 shadow-2xs'
@@ -890,13 +890,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ) : (
           <button
             onClick={onOpenLoginModal}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/30 transition transform active:scale-98 group"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs shadow-md transition transform active:scale-98 group"
           >
             <div className="flex items-center gap-2">
-              <LogIn className="w-4 h-4 text-emerald-100 group-hover:translate-x-0.5 transition" />
+              <LogIn className="w-4 h-4 text-white group-hover:translate-x-0.5 transition" />
               <span>Login / Masuk PIC</span>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/20 text-white">Auth</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/25 text-white font-mono">Auth</span>
           </button>
         )}
       </div>
@@ -923,8 +923,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleItemClick('dashboard_2026')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'dashboard_2026' 
-                ? (isDark ? 'bg-[#026cb6] text-white shadow-md shadow-blue-900/50 border border-blue-400/50' : 'bg-[#026cb6] text-white shadow-md shadow-blue-600/30')
-                : (isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600')
+                ? (isDark ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
             }`}
             title="Dashboard Utama"
           >
@@ -936,7 +936,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'pendapatan_blud' 
                 ? (isDark ? 'bg-teal-950/60 text-teal-400 border border-teal-500/40 shadow-sm shadow-teal-950' : 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-md shadow-teal-500/30')
-                : (isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
             }`}
             title="Pendapatan BLUD"
           >
@@ -948,7 +948,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'pengeluaran_blud' 
                 ? (isDark ? 'bg-rose-950/60 text-rose-400 border border-rose-500/40 shadow-sm shadow-rose-950' : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/30')
-                : (isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
             }`}
             title="Pengeluaran BLUD"
           >
@@ -960,7 +960,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'hutang' 
                 ? (isDark ? 'bg-indigo-950/60 text-indigo-400 border border-indigo-500/40 shadow-sm shadow-indigo-950' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/30')
-                : (isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
             }`}
             title="Hutang BLUD & APBD"
           >
@@ -972,7 +972,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               ['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu) 
                 ? (isDark ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/30')
-                : (isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
             }`}
             title="Piutang & Klaim"
           >
@@ -984,7 +984,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'monitoring_ppn' 
                 ? (isDark ? 'bg-gradient-to-tr from-emerald-950 to-indigo-950 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 text-white shadow-md shadow-emerald-500/30')
-                : (isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
             }`}
             title="Monitoring PPN 2026"
           >
@@ -996,7 +996,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={toggleTheme}
           className={`p-2.5 rounded-xl mb-3 transition ${
-            isDark ? 'text-amber-400 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-100 hover:text-emerald-700'
+            isDark ? 'text-amber-400 hover:bg-zinc-800' : 'text-slate-600 hover:bg-slate-100 hover:text-emerald-700'
           }`}
           title={isDark ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
         >
@@ -1004,7 +1004,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
 
         {/* Bottom Profile / Login Icon */}
-        <div className={`pt-3 border-t flex flex-col items-center gap-2 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+        <div className={`pt-3 border-t flex flex-col items-center gap-2 ${isDark ? 'border-emerald-950/60' : 'border-slate-200'}`}>
           {user ? (
             <button 
               onClick={onOpenProfileModal || onOpenSettingsModal}
