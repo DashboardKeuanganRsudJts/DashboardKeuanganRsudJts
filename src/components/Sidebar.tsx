@@ -247,18 +247,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl text-xs font-bold transition group select-none ${
               activeMenu === 'dashboard_2026' 
                 ? (isDark 
-                    ? 'bg-[#026cb6] text-white font-bold shadow-md shadow-blue-900/50 border border-blue-400/50' 
-                    : 'bg-[#026cb6] text-white font-bold shadow-md shadow-blue-600/30')
+                    ? 'bg-[#0a0d0e] text-emerald-400 border border-emerald-950/80 shadow-xs' 
+                    : 'bg-slate-900 text-white font-bold shadow-xs')
                 : (isDark 
-                    ? 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent' 
+                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
             }`}
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 activeMenu === 'dashboard_2026'
-                  ? 'bg-white/20 text-white'
-                  : (isDark ? 'bg-slate-800 text-slate-400 group-hover:text-slate-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
+                  ? (isDark ? 'bg-zinc-900 text-emerald-400' : 'bg-white/20 text-white')
+                  : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Layers className="w-3.5 h-3.5" />
               </div>
@@ -266,10 +266,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
               activeMenu === 'dashboard_2026'
-                ? 'bg-white/20 text-white font-bold'
-                : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40' : 'bg-white/20 text-white')
+                : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-600')
             }`}>
-              2026
+              Live
             </span>
           </button>
         </div>
