@@ -542,7 +542,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
               <span className="uppercase tracking-wider">SISTEM KEUANGAN BLUD · RSUD JATISARI KARAWANG</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-              DASHBOARD EKSEKUTIF KEUANGAN 2026
+              DASHBOARD SUBBAG KEUANGAN 2026
             </h1>
             <p className="text-xs lg:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
               Monitoring terpadu 4 pilar keuangan: Realisasi Pendapatan Fungsional, Pengeluaran Operasional, Saldo Kewajiban Hutang, dan Piutang Pelayanan Pasien/Klaim.
