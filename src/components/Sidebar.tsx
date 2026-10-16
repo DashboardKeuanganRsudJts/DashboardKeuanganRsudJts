@@ -248,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               activeMenu === 'dashboard_2026' 
                 ? (isDark 
                     ? 'bg-teal-950/70 text-teal-300 border border-teal-700/60 shadow-xs' 
-                    : 'bg-teal-700 text-white font-bold shadow-xs')
+                    : 'bg-teal-50 text-teal-900 border border-teal-200/90 shadow-xs')
                 : (isDark 
                     ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
@@ -257,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 activeMenu === 'dashboard_2026'
-                  ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-white/20 text-white')
+                  ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-teal-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Layers className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
               activeMenu === 'dashboard_2026'
-                ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-white/20 text-white')
+                ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-teal-100 text-teal-800 border border-teal-200/60')
                 : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-600')
             }`}>
               Live
@@ -372,7 +372,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               expandedSections.pengeluaran || activeMenu === 'pengeluaran_blud'
                 ? (isDark 
                     ? 'bg-rose-950/50 text-rose-300 border border-rose-800/50 shadow-xs' 
-                    : 'bg-rose-50 text-rose-900 border border-rose-200/90 shadow-xs')
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
                 : (isDark 
                     ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
@@ -382,7 +382,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 expandedSections.pengeluaran || activeMenu === 'pengeluaran_blud'
-                  ? (isDark ? 'bg-rose-900/80 text-rose-300' : 'bg-rose-600 text-white shadow-xs')
+                  ? (isDark ? 'bg-rose-900/80 text-rose-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <TrendingDown className="w-3.5 h-3.5" />
@@ -391,13 +391,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-200/80 text-slate-600'
+                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-emerald-100 text-emerald-800'
               }`}>
                 {pengeluaranSubmenus.length + 1}
               </span>
               <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
                 expandedSections.pengeluaran 
-                  ? 'rotate-90 text-rose-600 dark:text-rose-400 font-bold' 
+                  ? 'rotate-90 text-emerald-600 dark:text-rose-400 font-bold' 
                   : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
               }`} />
             </div>
@@ -414,7 +414,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="overflow-hidden"
               >
                 <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-1 border-l-2 ml-4 ${
-                  isDark ? 'border-rose-900/60' : 'border-rose-200'
+                  isDark ? 'border-rose-900/60' : 'border-emerald-200'
                 }`}>
               <button
                 onClick={() => handleItemClick('pengeluaran_blud')}
@@ -422,8 +422,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   activeMenu === 'pengeluaran_blud' && !activeSubmenu 
                     ? (isDark 
                         ? 'bg-rose-950/80 text-rose-200 font-bold border border-rose-700/50' 
-                        : 'bg-rose-600 text-white font-bold shadow-xs')
-                    : (isDark ? 'text-zinc-300 hover:text-rose-300 hover:bg-zinc-800/60' : 'text-slate-600 hover:text-rose-800 hover:bg-rose-50/70')
+                        : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
+                    : (isDark ? 'text-zinc-300 hover:text-rose-300 hover:bg-zinc-800/60' : 'text-slate-600 hover:text-emerald-800 hover:bg-emerald-50/70')
                 }`}
               >
                 <span className="truncate">Rekap Pengeluaran BLUD</span>
@@ -438,7 +438,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => handleItemClick('pengeluaran_blud', sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                       isSubActive 
-                        ? (isDark ? 'bg-rose-950/60 text-rose-300 font-bold border-l-2 border-rose-500' : 'bg-rose-50 text-rose-800 font-bold border-l-2 border-rose-600')
+                        ? (isDark ? 'bg-rose-950/60 text-rose-300 font-bold border-l-2 border-rose-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
                         : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
                     }`}
                   >
@@ -460,8 +460,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
               expandedSections.hutang || activeMenu === 'hutang'
                 ? (isDark 
-                    ? 'bg-indigo-950/50 text-indigo-300 border border-indigo-800/50 shadow-xs' 
-                    : 'bg-indigo-50 text-indigo-900 border border-indigo-200/90 shadow-xs')
+                    ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-800/50 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
                 : (isDark 
                     ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
@@ -471,7 +471,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 expandedSections.hutang || activeMenu === 'hutang'
-                  ? (isDark ? 'bg-indigo-900/80 text-indigo-300' : 'bg-indigo-600 text-white shadow-xs')
+                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <CreditCard className="w-3.5 h-3.5" />
@@ -480,13 +480,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-200/80 text-slate-600'
+                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-emerald-100 text-emerald-800'
               }`}>
                 {hutangSubmenus.length}
               </span>
               <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
                 expandedSections.hutang 
-                  ? 'rotate-90 text-indigo-600 dark:text-indigo-400 font-bold' 
+                  ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
                   : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
               }`} />
             </div>
@@ -503,7 +503,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="overflow-hidden"
               >
                 <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
-                  isDark ? 'border-indigo-900/60' : 'border-indigo-200'
+                  isDark ? 'border-emerald-900/60' : 'border-emerald-200'
                 }`}>
               {hutangSubmenus.map((sub) => {
                 const isSubActive = activeMenu === 'hutang' && (activeSubmenu === sub.id || (!activeSubmenu && sub.id === 'semua_rekap_hutang'));
@@ -514,7 +514,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => handleItemClick('hutang', sub.id)}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10.5px] transition truncate flex items-center justify-between ${
                       isSubActive 
-                        ? (isDark ? 'bg-indigo-950/60 text-indigo-300 font-bold border-l-2 border-indigo-500' : 'bg-indigo-50 text-indigo-800 font-bold border-l-2 border-indigo-600')
+                        ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
                         : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
                     }`}
                     title={sub.label}
@@ -613,7 +613,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               expandedSections.monitoring_ppn || activeMenu === 'monitoring_ppn'
                 ? (isDark 
                     ? 'bg-gradient-to-r from-emerald-950/80 via-teal-950/70 to-indigo-950/80 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-950/50' 
-                    : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 text-white font-black shadow-md shadow-emerald-600/30')
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
                 : (isDark 
                     ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
@@ -623,7 +623,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 expandedSections.monitoring_ppn || activeMenu === 'monitoring_ppn'
-                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-white/20 text-white shadow-xs')
+                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Receipt className="w-3.5 h-3.5" />
@@ -660,61 +660,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 type="button"
                 onClick={() => handleItemClick('monitoring_ppn', 'monitoring')}
-                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                   (!activeSubmenu || activeSubmenu === 'monitoring')
-                    ? (isDark ? 'text-white bg-zinc-800/80 shadow-xs' : 'text-slate-800 bg-white shadow-sm ring-1 ring-slate-200')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50')
+                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
+                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${(!activeSubmenu || activeSubmenu === 'monitoring') ? 'bg-indigo-500' : (isDark ? 'bg-zinc-600' : 'bg-slate-300')}`}></div>
-                  <span className="truncate">Dashboard Terintegrasi</span>
-                </div>
+                <span className="truncate">Dashboard Terintegrasi</span>
+                <ChevronRight className="w-3 h-3 opacity-60" />
               </button>
               
               <button
                 type="button"
                 onClick={() => handleItemClick('monitoring_ppn', 'coretax')}
-                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                   activeSubmenu === 'coretax'
-                    ? (isDark ? 'text-white bg-zinc-800/80 shadow-xs' : 'text-slate-800 bg-white shadow-sm ring-1 ring-slate-200')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50')
+                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
+                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${activeSubmenu === 'coretax' ? 'bg-indigo-500' : (isDark ? 'bg-zinc-600' : 'bg-slate-300')}`}></div>
-                  <span className="truncate">Data Coretax</span>
-                </div>
+                <span className="truncate">Data Coretax</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleItemClick('monitoring_ppn', 'hutang')}
-                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                   activeSubmenu === 'hutang'
-                    ? (isDark ? 'text-white bg-zinc-800/80 shadow-xs' : 'text-slate-800 bg-white shadow-sm ring-1 ring-slate-200')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50')
+                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
+                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${activeSubmenu === 'hutang' ? 'bg-indigo-500' : (isDark ? 'bg-zinc-600' : 'bg-slate-300')}`}></div>
-                  <span className="truncate">Data Hutang SP2D</span>
-                </div>
+                <span className="truncate">Data Hutang SP2D</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleItemClick('monitoring_ppn', 'audit')}
-                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
                   activeSubmenu === 'audit'
-                    ? (isDark ? 'text-white bg-zinc-800/80 shadow-xs' : 'text-slate-800 bg-white shadow-sm ring-1 ring-slate-200')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50')
+                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
+                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${activeSubmenu === 'audit' ? 'bg-rose-500' : (isDark ? 'bg-zinc-600' : 'bg-slate-300')}`}></div>
-                  <span className="truncate">Audit & Selisih</span>
-                </div>
+                <span className="truncate">Audit & Selisih</span>
               </button>
                 </div>
               </motion.div>

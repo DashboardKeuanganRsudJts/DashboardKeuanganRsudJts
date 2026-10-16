@@ -175,10 +175,10 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white dark:bg-[#0f172a] p-5 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-white dark:bg-[#0f172a] p-5 rounded-xl shadow-xs border border-emerald-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1 font-mono">
-            <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1 font-mono">
+            <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="uppercase tracking-wider">RSUD JATISARI · AUDIT PEMBUKUAN BLUD</span>
           </div>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight uppercase">
@@ -196,12 +196,12 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
               placeholder="Cari rekening / uraian..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-4 py-2 bg-emerald-50/40 dark:bg-slate-900 border border-emerald-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <button 
             onClick={handleExportExcel}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-xs transition"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold shadow-xs transition"
           >
             <FileSpreadsheet className="w-4 h-4" /> Export Excel
           </button>
@@ -209,19 +209,19 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-xs border border-emerald-200 dark:border-slate-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-slate-800 text-slate-100 font-bold border-b border-slate-700">
+            <thead className="bg-[#e6f4ea] dark:bg-[#1a382b] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45]">
               <tr>
-                <th className="px-3 py-3 border-r border-slate-700 text-center w-12 text-slate-400 font-mono">NO</th>
-                <th className="px-4 py-3 border-r border-slate-700">KODE REKENING</th>
-                <th className="px-4 py-3 border-r border-slate-700">URAIAN</th>
-                <th className="px-4 py-3 border-r border-slate-700 text-right bg-slate-900">2025</th>
+                <th className="px-3 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45] text-center w-12 text-[#13422d]/70 dark:text-[#a6ecc8]/70 font-mono">NO</th>
+                <th className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45]">KODE REKENING</th>
+                <th className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45]">URAIAN</th>
+                <th className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45] text-right bg-[#d8eedf] dark:bg-[#142d22]">2025</th>
                 {MONTHS.map(m => (
-                  <th key={m} className="px-4 py-3 border-r border-slate-700 text-right">{m}</th>
+                  <th key={m} className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45] text-right">{m}</th>
                 ))}
-                <th className="px-4 py-3 text-right bg-blue-950 text-blue-200 font-extrabold">TOTAL</th>
+                <th className="px-4 py-3 text-right bg-emerald-800 text-white font-extrabold">TOTAL</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">

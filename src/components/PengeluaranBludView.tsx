@@ -279,15 +279,15 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-rose-50 via-red-50/70 to-pink-50 dark:from-slate-950 dark:via-[#1a0a0f] dark:to-rose-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-rose-200 dark:border-rose-900/60">
+      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 text-xs font-semibold mb-2 border border-rose-300 dark:border-rose-500/30">
-            <TrendingDown className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" /> Sub Bagian Keuangan • Pengeluaran Belanja BLUD
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-emerald-800">
+            <TrendingDown className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Sub Bagian Keuangan • Pengeluaran Belanja BLUD
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Laporan Pengeluaran BLUD RSUD Jatisari
           </h2>
-          <p className="text-slate-600 dark:text-rose-200/80 text-xs mt-1 max-w-2xl leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-300 text-xs mt-1 max-w-2xl leading-relaxed">
             Realisasi pengeluaran kas belanja pegawai, obat-obatan/BMHP, utilitas operasional, dan belanja modal alkes.
           </p>
         </div>
@@ -295,7 +295,7 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
         {isPicPengeluaranOrAdmin && (
           <button
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-rose-500/40"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
           >
             <Plus className="w-4 h-4" /> Entri Pengeluaran Baru
           </button>
@@ -303,15 +303,15 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
       </div>
 
       {/* 2. Submenu Navigation Tabs */}
-      <div className="bg-white dark:bg-[#0d1216] p-2 rounded-2xl border border-slate-200 dark:border-emerald-950/80 shadow-sm overflow-x-auto custom-scrollbar flex items-center gap-1.5">
+      <div className="bg-white dark:bg-[#0d1216] p-2 rounded-2xl border border-emerald-200 dark:border-emerald-950/80 shadow-xs overflow-x-auto custom-scrollbar flex items-center gap-1.5">
         {submenus.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setCurrentSubTab(tab.id)}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
               currentSubTab === tab.id 
-                ? 'bg-rose-600 text-white shadow-sm' 
-                : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-emerald-700 text-white shadow-xs' 
+                : 'text-slate-600 dark:text-zinc-400 hover:bg-emerald-50 dark:hover:bg-zinc-800 hover:text-emerald-900 dark:hover:text-white'
             }`}
           >
             {tab.label}

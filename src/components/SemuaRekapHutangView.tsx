@@ -532,17 +532,17 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-[#0f172a] text-white rounded-xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border border-slate-800 relative overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border border-emerald-200 dark:border-slate-800 relative overflow-hidden">
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-400 mb-2">
-            <Building2 className="w-4 h-4 text-blue-400" />
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
+            <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="uppercase tracking-wider font-mono">RSUD JATISARI · SUB BAGIAN KEUANGAN & ANGGARAN BLUD</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-            <CreditCard className="w-7 h-7 text-blue-400 shrink-0" />
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+            <CreditCard className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
             KONSOLIDASI FISKAL HUTANG (TA 2025 & 2026)
           </h2>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1.5 max-w-3xl leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1.5 max-w-3xl leading-relaxed">
             Ringkasan konsolidasi kewajiban belanja RSUD Jatisari: Saldo Awal Hutang 2025, Penambahan Pengadaan Barjas 2026, Realisasi Pembayaran 2026, Saldo Akhir Per Tahun, serta Analisis Umur Hutang Terlama (Aging).
           </p>
         </div>
@@ -552,17 +552,17 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
             <button
               onClick={() => syncAllHutangData(true)}
               disabled={isSyncing}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-lg text-xs transition flex items-center gap-2 border border-slate-700 disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2.5 bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-800 dark:text-emerald-300 font-semibold rounded-lg text-xs transition flex items-center gap-2 border border-emerald-300 dark:border-slate-700 disabled:opacity-50 cursor-pointer shadow-2xs"
               title="Sinkronkan data dari Invoice Hutang 2025 & 2026"
             >
-              <RefreshCw className={`w-4 h-4 text-blue-400 ${isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-emerald-600 dark:text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>SINKRONISASI DATA</span>
             </button>
           )}
 
           <button
             onClick={handleExportCombinedExcel}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-lg text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             title="Export Excel Rekap Hutang"
           >
             <Download className="w-4 h-4" />
@@ -666,7 +666,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 rounded-lg">
+                <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded-lg">
                   <BarChart3 className="w-4 h-4" />
                 </span>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
@@ -810,13 +810,13 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-xl bg-slate-100 dark:bg-zinc-800 p-1 text-xs">
+            <div className="inline-flex rounded-xl bg-emerald-50 dark:bg-zinc-800 p-1 text-xs border border-emerald-200/70 dark:border-transparent">
               <button
                 onClick={() => setTopAgingFilter('belum_lunas')}
                 className={`px-3 py-1 rounded-lg font-bold transition ${
                   topAgingFilter === 'belum_lunas'
-                    ? 'bg-white dark:bg-[#0d1216] text-rose-600 dark:text-rose-400 shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                    ? 'bg-white dark:bg-[#0d1216] text-rose-700 dark:text-rose-400 shadow-xs border border-emerald-200/50 dark:border-transparent'
+                    : 'text-emerald-900/70 dark:text-zinc-400 hover:text-emerald-950'
                 }`}
               >
                 Hanya Belum Lunas
@@ -825,8 +825,8 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
                 onClick={() => setTopAgingFilter('semua')}
                 className={`px-3 py-1 rounded-lg font-bold transition ${
                   topAgingFilter === 'semua'
-                    ? 'bg-white dark:bg-[#0d1216] text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                    ? 'bg-white dark:bg-[#0d1216] text-emerald-900 dark:text-white shadow-xs border border-emerald-200/50 dark:border-transparent'
+                    : 'text-emerald-900/70 dark:text-zinc-400 hover:text-emerald-950'
                 }`}
               >
                 Semua Invoice
@@ -835,9 +835,9 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-emerald-200 dark:border-zinc-800">
           <table className="w-full text-xs text-left border-collapse">
-            <thead className="bg-slate-100/90 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-zinc-800">
+            <thead className="bg-[#e6f4ea] dark:bg-zinc-900 text-[#13422d] dark:text-zinc-300 font-bold uppercase text-[10px] tracking-wider border-b border-emerald-200 dark:border-zinc-800">
               <tr>
                 <th className="px-3 py-3 text-center w-14">PERINGKAT</th>
                 <th className="px-4 py-3">REKANAN / NAMA VENDOR</th>
@@ -997,13 +997,13 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
 
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             {/* Year Tab */}
-            <div className="inline-flex rounded-xl bg-slate-100 dark:bg-zinc-800 p-1 text-xs">
+            <div className="inline-flex rounded-xl bg-emerald-50 dark:bg-zinc-800 p-1 text-xs border border-emerald-200/70 dark:border-transparent">
               <button
                 onClick={() => setActiveYearTab('semua')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition ${
                   activeYearTab === 'semua'
-                    ? 'bg-white dark:bg-[#0d1216] text-indigo-600 dark:text-indigo-400 shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400'
+                    ? 'bg-white dark:bg-[#0d1216] text-emerald-800 dark:text-emerald-400 shadow-xs border border-emerald-200/50 dark:border-transparent'
+                    : 'text-emerald-900/70 dark:text-zinc-400 hover:text-emerald-950'
                 }`}
               >
                 Semua Tahun
@@ -1012,8 +1012,8 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
                 onClick={() => setActiveYearTab('2025')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition ${
                   activeYearTab === '2025'
-                    ? 'bg-white dark:bg-[#0d1216] text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400'
+                    ? 'bg-white dark:bg-[#0d1216] text-teal-800 dark:text-teal-400 shadow-xs border border-emerald-200/50 dark:border-transparent'
+                    : 'text-emerald-900/70 dark:text-zinc-400 hover:text-emerald-950'
                 }`}
               >
                 TA 2025
@@ -1022,8 +1022,8 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
                 onClick={() => setActiveYearTab('2026')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition ${
                   activeYearTab === '2026'
-                    ? 'bg-white dark:bg-[#0d1216] text-emerald-600 dark:text-emerald-400 shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400'
+                    ? 'bg-white dark:bg-[#0d1216] text-emerald-700 dark:text-emerald-400 shadow-xs border border-emerald-200/50 dark:border-transparent'
+                    : 'text-emerald-900/70 dark:text-zinc-400 hover:text-emerald-950'
                 }`}
               >
                 TA 2026
@@ -1034,7 +1034,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
             <select
               value={statusFilter}
               onChange={(e: any) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200"
+              className="px-3 py-1.5 bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200 shadow-2xs"
             >
               <option value="semua">Semua Status</option>
               <option value="belum_lunas">Hanya Belum Lunas</option>
@@ -1043,37 +1043,37 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
 
             {/* Search Input */}
             <div className="relative w-44 sm:w-52">
-              <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-emerald-600/60 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Cari uraian / kode..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200"
+                className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200 shadow-2xs"
               />
             </div>
 
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1 transition"
+              className="px-3 py-1.5 bg-white dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-zinc-700 text-emerald-800 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1 transition border border-emerald-200 dark:border-zinc-700 shadow-2xs"
               title="Cetak Tabel"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-3.5 h-3.5 text-emerald-700 dark:text-zinc-300" />
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-emerald-200 dark:border-slate-800">
           <table className="w-full text-xs text-left border-collapse">
-            <thead className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-200 dark:border-slate-700 uppercase text-[10.5px] tracking-wide">
+            <thead className="bg-[#e6f4ea] dark:bg-slate-800/90 text-[#13422d] dark:text-slate-200 font-bold border-b border-emerald-200 dark:border-slate-700 uppercase text-[10.5px] tracking-wide">
               <tr>
-                <th className="px-3 py-3.5 text-center w-12 border-r border-slate-200 dark:border-slate-700 text-slate-500">NO</th>
-                <th className="px-3 py-3.5 text-center w-20 border-r border-slate-200 dark:border-slate-700">TAHUN</th>
-                <th className="px-4 py-3.5 border-r border-slate-200 dark:border-slate-700">URAIAN / POS BELANJA</th>
-                <th className="px-4 py-3.5 text-right border-r border-slate-200 dark:border-slate-700">SALDO AWAL (TAGIHAN)</th>
-                <th className="px-4 py-3.5 text-right border-r border-slate-200 dark:border-slate-700">KOREKSI</th>
-                <th className="px-4 py-3.5 text-right border-r border-slate-200 dark:border-slate-700">PEMBAYARAN</th>
-                <th className="px-4 py-3.5 text-right border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">SALDO AKHIR</th>
+                <th className="px-3 py-3.5 text-center w-12 border-r border-emerald-200 dark:border-slate-700 text-[#13422d]/70 dark:text-slate-400">NO</th>
+                <th className="px-3 py-3.5 text-center w-20 border-r border-emerald-200 dark:border-slate-700">TAHUN</th>
+                <th className="px-4 py-3.5 border-r border-emerald-200 dark:border-slate-700">URAIAN / POS BELANJA</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700">SALDO AWAL (TAGIHAN)</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700">KOREKSI</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700">PEMBAYARAN</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700 bg-emerald-50/50 dark:bg-slate-900/50">SALDO AKHIR</th>
                 <th className="px-3 py-3.5 text-center w-24">STATUS</th>
               </tr>
             </thead>

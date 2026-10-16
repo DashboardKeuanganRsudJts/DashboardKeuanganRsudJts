@@ -304,7 +304,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
 
   return (
     <div className={`flex h-screen w-full overflow-hidden font-sans transition-colors duration-300 ${
-      isDark ? 'bg-[#080b0d] text-slate-100' : 'bg-[#f8fafc] text-slate-800'
+      isDark ? 'bg-[#080b0d] text-slate-100' : 'bg-emerald-50/20 text-slate-800'
     }`}>
       
       {/* Toast Notification */}
@@ -347,14 +347,14 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
         <header className={`h-14 px-3 sm:px-6 flex items-center justify-between shrink-0 z-10 border-b transition-colors duration-200 ${
           isDark 
             ? 'bg-[#0a0d0e]/95 border-emerald-950/70 shadow-sm backdrop-blur-md' 
-            : 'bg-white/95 border-slate-200 shadow-xs backdrop-blur-md'
+            : 'bg-white/95 border-emerald-100 shadow-xs backdrop-blur-md'
         }`}>
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile Hamburger Menu Toggle */}
             <button 
               onClick={() => setIsSidebarOpen(true)}
               className={`p-2 rounded-xl transition md:hidden shrink-0 ${
-                isDark ? 'text-zinc-300 hover:text-white hover:bg-zinc-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                isDark ? 'text-zinc-300 hover:text-white hover:bg-zinc-800' : 'text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50'
               }`}
               title="Buka Menu Navigasi"
               aria-label="Buka Menu Navigasi"
@@ -367,7 +367,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
               <button 
                 onClick={() => setIsSidebarOpen(true)}
                 className={`hidden md:flex p-1.5 rounded-lg transition mr-1 ${
-                  isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                  isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-emerald-700 hover:text-emerald-950 hover:bg-emerald-50'
                 }`}
                 title="Buka Menu Samping"
               >
@@ -376,15 +376,15 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             )}
 
             {/* Responsive Breadcrumb */}
-            <div className={`flex items-center gap-1.5 sm:gap-2 text-xs font-medium min-w-0 ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
-              <span className={`hidden sm:inline ${isDark ? 'text-zinc-400' : 'text-slate-400'}`}>RSUD Jatisari</span>
+            <div className={`flex items-center gap-1.5 sm:gap-2 text-xs font-medium min-w-0 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+              <span className={`hidden sm:inline ${isDark ? 'text-zinc-400' : 'text-emerald-700/80 font-medium'}`}>RSUD Jatisari</span>
               <ChevronRight className="w-3 h-3 opacity-40 hidden sm:inline" />
-              <span className={`hidden md:inline font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{breadcrumb.main}</span>
+              <span className={`hidden md:inline font-semibold ${isDark ? 'text-zinc-200' : 'text-emerald-900'}`}>{breadcrumb.main}</span>
               <ChevronRight className="w-3 h-3 opacity-40 hidden md:inline" />
               <span className={`font-semibold px-2 py-0.5 rounded text-[11px] sm:text-xs truncate max-w-[150px] sm:max-w-none ${
                 isDark 
                   ? 'text-emerald-300 bg-emerald-950/70 border border-emerald-800/60' 
-                  : 'text-blue-800 bg-blue-50 border border-blue-200'
+                  : 'text-emerald-800 bg-emerald-50 border border-emerald-200'
               }`}>
                 {breadcrumb.sub}
               </span>
@@ -394,14 +394,14 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Year Selector */}
             <div className={`flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-lg border ${
-              isDark ? 'bg-[#070b0c] border-emerald-950/80 text-zinc-200' : 'bg-slate-100 border-slate-200 text-slate-700'
+              isDark ? 'bg-[#070b0c] border-emerald-950/80 text-zinc-200' : 'bg-emerald-50/60 border-emerald-200 text-emerald-950'
             }`}>
-              <Calendar className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-slate-500'}`} />
+              <Calendar className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`} />
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className={`bg-transparent text-[11px] sm:text-xs font-bold font-mono focus:outline-none cursor-pointer ${
-                  isDark ? 'text-zinc-200' : 'text-slate-700'
+                  isDark ? 'text-zinc-200' : 'text-emerald-950'
                 }`}
               >
                 <option value="2026" className={isDark ? 'bg-[#0a0d0e] text-zinc-100' : 'bg-white text-slate-800'}>2026</option>
@@ -411,13 +411,13 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
 
             {/* Month Selector */}
             <div className={`hidden xs:flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-lg border ${
-              isDark ? 'bg-[#070b0c] border-emerald-950/80 text-zinc-200' : 'bg-slate-100 border-slate-200 text-slate-700'
+              isDark ? 'bg-[#070b0c] border-emerald-950/80 text-zinc-200' : 'bg-emerald-50/60 border-emerald-200 text-emerald-950'
             }`}>
               <select
                 value={selectedBulan}
                 onChange={(e) => setSelectedBulan(e.target.value)}
                 className={`bg-transparent text-[11px] sm:text-xs font-semibold focus:outline-none cursor-pointer ${
-                  isDark ? 'text-zinc-200' : 'text-slate-700'
+                  isDark ? 'text-zinc-200' : 'text-emerald-950'
                 }`}
               >
                 <option value="Semua Bulan" className={isDark ? 'bg-[#0a0d0e] text-zinc-100' : 'bg-white text-slate-800'}>Semua Bulan</option>
@@ -438,11 +438,11 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
               className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 font-medium rounded-lg text-xs transition border ${
                 isDark 
                   ? 'bg-[#070b0c] hover:bg-zinc-800 text-emerald-400 border-emerald-950/80' 
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                  : 'bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
               }`}
               title="Sinkronisasi Google Sheets"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-emerald-500 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Sync</span>
             </button>
 
@@ -452,7 +452,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
               className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 font-medium rounded-lg text-xs transition border ${
                 isDark 
                   ? 'bg-[#070b0c] hover:bg-zinc-800 text-zinc-200 border-emerald-950/80' 
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                  : 'bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
               }`}
               title={isDark ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
             >
@@ -463,7 +463,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
                 </>
               ) : (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-slate-600" />
+                  <Moon className="w-3.5 h-3.5 text-emerald-700" />
                   <span className="hidden md:inline">Gelap</span>
                 </>
               )}
@@ -476,24 +476,24 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
                 className={`flex items-center gap-1.5 sm:gap-2 px-2 py-1 rounded-lg text-xs font-medium border transition ${
                   isDark 
                     ? 'bg-[#070b0c] hover:bg-zinc-800 border-emerald-950/80 text-zinc-200' 
-                    : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                    : 'bg-emerald-50/60 hover:bg-emerald-100 border-emerald-200 text-emerald-900'
                 }`}
                 title="Buka Pengaturan Profil (Edit Foto, Nama, Email, Password)"
               >
                 <img
                   src={profile.photoURL}
                   alt="Avatar"
-                  className="w-4 h-4 rounded-full object-cover bg-blue-800 ring-1 ring-blue-500/50 shrink-0"
+                  className="w-4 h-4 rounded-full object-cover bg-emerald-800 ring-1 ring-emerald-500/50 shrink-0"
                 />
                 <span className="hidden sm:inline max-w-[90px] md:max-w-[120px] truncate">
                   {profile.displayName}
                 </span>
-                <UserCog className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <UserCog className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
               </button>
             ) : (
               <button
                 onClick={openLoginModal}
-                className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs shadow-xs transition"
+                className="flex items-center gap-1.5 px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-lg text-xs shadow-xs transition"
                 title="Masuk / Login Akun"
               >
                 <span>Masuk</span>
@@ -503,11 +503,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
         </header>
 
         {/* Dynamic Main Body Scroll Area */}
-        <main className={`flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-24 md:pb-8 custom-scrollbar ${
-          activeMenu === 'listrik_kantin' 
-            ? (isDark ? '' : 'bg-gradient-to-br from-red-50/80 via-orange-50/50 to-orange-50/20') 
-            : ''
-        }`}>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-24 md:pb-8 custom-scrollbar bg-emerald-50/15 dark:bg-transparent">
           
           {/* 1. DASHBOARD UTAMA */}
           {activeMenu === 'dashboard_2026' && (

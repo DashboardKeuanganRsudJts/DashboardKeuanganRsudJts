@@ -1093,15 +1093,15 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-emerald-900 to-slate-950 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-teal-700/50">
+      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold mb-2 border border-teal-400/30">
-            <FileSpreadsheet className="w-3.5 h-3.5 text-teal-300" /> DATA MASTER INVOICE 2026
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-teal-500/20 text-emerald-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-teal-400/30">
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 dark:text-teal-300" /> DATA MASTER INVOICE 2026
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             INVOICE HUTANG TAHUN 2026
           </h2>
-          <p className="text-teal-100/80 text-xs mt-1 max-w-2xl leading-relaxed">
+          <p className="text-slate-600 dark:text-teal-100/80 text-xs mt-1 max-w-2xl leading-relaxed">
             Data detail buku register faktur/invoice pengadaan barang, obat-obatan, BMHP, dan jasa Rumah Sakit Umum Daerah Jatisari TA 2026. Total tercatat {data.length} transaksi invoice.
           </p>
         </div>
@@ -1111,10 +1111,10 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           {isPicHutang && (
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-emerald-400/50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-600/50"
               title="Import Spreadsheet (Google Sheets & Excel) - Khusus PIC Hutang"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
               <span>Import Spreadsheet</span>
             </button>
           )}
@@ -1122,7 +1122,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           {/* Export Excel (.xlsx) */}
           <button
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700/90 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-emerald-500/50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
             title="Download Format Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel
@@ -1131,42 +1131,42 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           {/* Template Excel */}
           <button
             onClick={() => downloadInvoiceHutangExcelTemplate(2026)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-950/80 hover:bg-teal-900 text-teal-200 font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-teal-700/50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-teal-950/80 dark:hover:bg-teal-900 text-emerald-800 dark:text-teal-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-teal-700/50 transition transform active:scale-95"
             title="Download Template Format Excel Kosong / Contoh (26 Kolom Lengkap)"
           >
-            <Download className="w-3.5 h-3.5 text-teal-400" /> Template Excel
+            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-teal-400" /> Template Excel
           </button>
 
           {/* Export CSV */}
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-slate-600"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-800 dark:text-white font-semibold rounded-xl text-xs border border-emerald-200 dark:border-slate-600 transition transform active:scale-95"
             title="Download CSV"
           >
-            <Download className="w-3.5 h-3.5" /> CSV
+            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-slate-300" /> CSV
           </button>
 
           {/* Print */}
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-slate-600"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-900 dark:text-white font-semibold rounded-xl text-xs border border-emerald-200 dark:border-slate-600 transition transform active:scale-95 shadow-2xs"
             title="Cetak Tabel"
           >
-            <Printer className="w-3.5 h-3.5" /> Cetak
+            <Printer className="w-3.5 h-3.5 text-emerald-700 dark:text-slate-300" /> Cetak
           </button>
 
           {isPicHutangOrAdmin && (
             <>
               <button
                 onClick={handleRefreshNominal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-sky-950/80 hover:bg-sky-900 text-sky-200 font-semibold rounded-xl text-xs shadow-md transition border border-sky-800/60"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-sky-950/80 dark:hover:bg-sky-900 text-emerald-800 dark:text-sky-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-sky-800/60 transition"
                 title="Kalkulasi ulang (refresh) nominal seluruh invoice"
               >
-                <RefreshCw className="w-3.5 h-3.5" /> Refresh Nominal
+                <RefreshCw className="w-3.5 h-3.5 text-emerald-700 dark:text-sky-300" /> Refresh Nominal
               </button>
               <button
                 onClick={handleOpenAdd}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-400 hover:bg-teal-300 text-slate-950 font-black rounded-xl text-xs shadow-md transition transform active:scale-95"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95"
               >
                 <Plus className="w-4 h-4" /> Entri Invoice
               </button>

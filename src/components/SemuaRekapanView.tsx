@@ -257,24 +257,24 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header & Group Selector Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-emerald-950 text-white rounded-2xl p-6 shadow-md border border-teal-800/60">
+      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs border border-emerald-200 dark:border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/30 text-xs font-semibold mb-2">
-              <Layers className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold mb-2">
+              <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Sheet: Semua_Rekapan</span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Semua Rekapan Piutang Pelayanan RSUD 2026
             </h1>
-            <p className="text-xs text-teal-100/80 mt-1">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
               Rekapitulasi 10 kelompok penjamin: BPJS, Kemenkes, Karawang Sehat, Global Fund, Skrining TB/TCM, Perusahaan & Asuransi, Sewa Lahan, dan Utilitas Listrik.
             </p>
           </div>
 
           {/* Month Group Selector */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-white/10 p-2 rounded-xl backdrop-blur-xs border border-white/10 max-w-full">
-            <span className="text-xs font-bold text-teal-200 shrink-0">Pilih Bulan:</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-emerald-50/60 dark:bg-white/10 p-2 rounded-xl border border-emerald-200 dark:border-white/10 max-w-full">
+            <span className="text-xs font-bold text-emerald-800 dark:text-teal-200 shrink-0">Pilih Bulan:</span>
             <div className="flex flex-wrap gap-1 max-w-full">
               {BULAN_OPTIONS.map((b) => (
                 <button
@@ -282,8 +282,8 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
                   onClick={() => setSelectedBulanGroup(b)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
                     selectedBulanGroup === b
-                      ? 'bg-teal-600 text-white shadow-sm ring-1 ring-white/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/10'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-white hover:bg-emerald-100/60 dark:hover:bg-white/10'
                   }`}
                 >
                   {b.slice(0, 3)}
@@ -295,18 +295,18 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
       </div>
 
       {/* 2. Group Total KPI Banner - Exact matching Screenshot 4 */}
-      <div className="bg-teal-900 text-white rounded-xl p-4 shadow-sm border border-teal-800">
+      <div className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-950 dark:text-white rounded-xl p-4 shadow-xs border border-emerald-200 dark:border-emerald-800">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           
           <div className="flex items-center gap-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider bg-teal-800 px-3 py-1.5 rounded-lg border border-teal-700">
+            <span className="text-xs font-extrabold uppercase tracking-wider bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-xs">
               GRUP BULAN: {selectedBulanGroup} 2026
             </span>
             {isAdmin && (
               <button
                 onClick={handleResetToMaster}
                 title="Perbarui / Muat Ulang Data 12 Bulan"
-                className="text-[11px] font-medium text-teal-300 hover:text-white bg-teal-800/60 hover:bg-teal-800 px-2.5 py-1 rounded-md border border-teal-700/60 transition"
+                className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 px-2.5 py-1 rounded-md border border-emerald-300 dark:border-emerald-700/60 transition"
               >
                 Sinkronkan Data Master
               </button>
@@ -315,22 +315,22 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 text-right">
             <div>
-              <div className="text-[11px] text-teal-200 font-semibold uppercase">Piutang S/D Bulan Ini</div>
-              <div className="text-lg md:text-xl font-extrabold font-mono text-white">
+              <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold uppercase">Piutang S/D Bulan Ini</div>
+              <div className="text-lg md:text-xl font-extrabold font-mono text-emerald-900 dark:text-white">
                 {formatRupiah(currentGroup.totalPiutangSdBulanIni)}
               </div>
             </div>
 
             <div>
-              <div className="text-[11px] text-teal-200 font-semibold uppercase">Pembayaran</div>
-              <div className="text-lg md:text-xl font-extrabold font-mono text-emerald-300">
+              <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold uppercase">Pembayaran</div>
+              <div className="text-lg md:text-xl font-extrabold font-mono text-emerald-700 dark:text-emerald-400">
                 {formatRupiah(currentGroup.totalPembayaran)}
               </div>
             </div>
 
             <div>
-              <div className="text-[11px] text-teal-200 font-semibold uppercase">Sisa Piutang</div>
-              <div className="text-lg md:text-xl font-extrabold font-mono text-rose-300">
+              <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold uppercase">Sisa Piutang</div>
+              <div className="text-lg md:text-xl font-extrabold font-mono text-rose-600 dark:text-rose-400">
                 {formatRupiah(currentGroup.totalSisaPiutang)}
               </div>
             </div>

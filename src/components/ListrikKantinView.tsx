@@ -564,32 +564,32 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-[#4a1111] via-[#3a0d0d] to-[#260606] dark:from-[#2a0808] dark:via-[#1c0404] dark:to-[#0f0202] text-white rounded-2xl p-6 shadow-md border border-red-900/50 dark:border-red-950">
+      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs border border-emerald-200 dark:border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/50 dark:bg-red-950/80 text-amber-200 border border-amber-500/30 text-xs font-semibold">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold">
+                <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Sheet: Listrik_Kantin ({stands.length} Stand Terdaftar)</span>
               </div>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 font-medium">
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 font-medium">
                 Aktif Sinkron 2026
               </span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-sm">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
               Monitoring & Pengelolaan Piutang Listrik Kantin RSUD
             </h1>
-            <p className="text-xs text-red-100/80 mt-1 max-w-2xl">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-2xl">
               Pencatatan pemakaian listrik bulanan seluruh penyewa stand kantin food court RSUD: Ayam Geprek, Bu Aas, Bu Nenden, Teh Dewi, Pak Suan, Bu Rini, Pak Riska.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* Update / Input Tagihan Button (like Perusahaan Asuransi) */}
+            {/* Update / Input Tagihan Button */}
             {isPicPiutangOrAdmin && (
               <button
                 onClick={handleOpenNewTagihan}
-                className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md active:scale-95"
+                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Update / Input Tagihan</span>
@@ -600,7 +600,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
             {onOpenUploadModal && isPicPiutangOrAdmin && (
               <button
                 onClick={onOpenUploadModal}
-                className="px-3 py-2 bg-amber-900/90 hover:bg-amber-800 text-amber-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-amber-700/60 shadow-2xs"
+                className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
                 title="Upload spreadsheet file XLSX / CSV"
               >
                 <UploadCloud className="w-3.5 h-3.5" />
@@ -608,20 +608,9 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               </button>
             )}
 
-            {isSuperAdmin && (
-              <button
-                onClick={handleResetToScreenshots}
-                className="px-3 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 border border-slate-700"
-                title="Reset ke data asli 7 Screenshot"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Data</span>
-              </button>
-            )}
-
             <button
               onClick={handleExportExcel}
-              className="px-3 py-2 bg-amber-900 hover:bg-amber-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-amber-700 shadow-2xs"
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-2xs"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Ekspor Excel</span>
@@ -629,7 +618,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
 
             <button
               onClick={() => window.print()}
-              className="px-3 py-2 bg-white dark:bg-[#1f100a] text-slate-900 dark:text-amber-100 hover:bg-amber-50 dark:hover:bg-[#2b170e] dark:border dark:border-amber-900/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
+              className="px-3 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak</span>

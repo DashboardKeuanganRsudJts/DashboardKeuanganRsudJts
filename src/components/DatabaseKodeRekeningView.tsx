@@ -39,15 +39,15 @@ export default function DatabaseKodeRekeningView({ onShowToast }: DatabaseKodeRe
   return (
     <div className="space-y-6">
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-emerald-900 to-slate-950 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-teal-700/50">
+      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold mb-2 border border-teal-400/30">
-            <Database className="w-3.5 h-3.5 text-teal-300" /> DATABASE KODE REKENING
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-teal-500/20 text-emerald-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-teal-400/30">
+            <Database className="w-3.5 h-3.5 text-emerald-700 dark:text-teal-300" /> DATABASE KODE REKENING
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             DATABASE KODE REKENING & URAIAN
           </h2>
-          <p className="text-emerald-100/80 text-xs mt-1 max-w-2xl leading-relaxed font-medium">
+          <p className="text-slate-600 dark:text-emerald-100/80 text-xs mt-1 max-w-2xl leading-relaxed font-medium">
             Database ini menjadi patokan dan penghubung untuk semua data pada menu Hutang.
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function DatabaseKodeRekeningView({ onShowToast }: DatabaseKodeRe
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-slate-600"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
             title="Download CSV"
           >
             <Download className="w-3.5 h-3.5" /> Export CSV

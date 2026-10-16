@@ -1321,18 +1321,18 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
     <div className="space-y-4 pb-12" ref={dropdownRef}>
       
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-emerald-950 text-white rounded-2xl p-6 shadow-md border border-teal-800/60">
+      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/30 text-xs font-semibold mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold mb-2">
               <Building className="w-3.5 h-3.5" />
               <span>Sheet: Perusahaan_Asuransi (Januari - Desember 2026)</span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
               <span>Daftar Piutang Perusahaan & Asuransi 2026</span>
             </h1>
-            <p className="text-xs text-teal-100/80 mt-1 max-w-3xl">
-              Memantau <strong>{masterPartners.length} mitra korporasi & asuransi</strong> di <strong>semua 12 bulan (Januari s.d. Desember)</strong>. Dilengkapi fitur <strong>Pendaftaran Rekanan Baru</strong>, <strong>Pilihan Daftar Rekanan saat Entri Invoice</strong>, dan <strong>Drop Down Nomor Invoice Masuk</strong>.
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-3xl">
+              Memantau <strong className="text-slate-800 dark:text-white">{masterPartners.length} mitra korporasi & asuransi</strong> di <strong className="text-slate-800 dark:text-white">semua 12 bulan (Januari s.d. Desember)</strong>. Dilengkapi fitur <strong>Pendaftaran Rekanan Baru</strong>, <strong>Pilihan Daftar Rekanan saat Entri Invoice</strong>, dan <strong>Drop Down Nomor Invoice Masuk</strong>.
             </p>
           </div>
 
@@ -1389,7 +1389,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
             {isOnlyAdminPiutang && (
               <button
                 onClick={handleResetToEmptyAllMonths}
-                className="px-3 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-rose-700/50"
+                className="px-3 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-rose-200 dark:border-rose-700/50"
                 title="Kosongkan seluruh data tagihan contoh di semua bulan (Jan - Des)"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -1399,7 +1399,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
             <button
               onClick={handleExportExcel}
-              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-600"
+              className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-emerald-800 dark:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 dark:border-slate-600"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Ekspor Excel</span>
@@ -1407,7 +1407,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
             <button
               onClick={() => window.print()}
-              className="px-3 py-2 bg-white text-emerald-950 hover:bg-emerald-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
+              className="px-3 py-2 bg-white text-emerald-950 hover:bg-emerald-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 shadow-2xs"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak</span>

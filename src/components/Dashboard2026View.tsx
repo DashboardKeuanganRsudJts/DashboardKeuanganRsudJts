@@ -534,29 +534,29 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
     <div className="space-y-6">
       
       {/* 1. EXECUTIVE BANNER */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-800 relative overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 sm:p-7 shadow-xs border border-slate-200 dark:border-slate-800 relative overflow-hidden">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-400 mb-2">
-              <Building2 className="w-4 h-4 text-teal-400" />
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-700 dark:text-teal-400 mb-2">
+              <Building2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
               <span className="uppercase tracking-wider">SISTEM KEUANGAN BLUD · RSUD JATISARI KARAWANG</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               DASHBOARD SUBBAG KEUANGAN 2026
             </h1>
-            <p className="text-xs lg:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
+            <p className="text-xs lg:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-3xl leading-relaxed">
               Monitoring terpadu 4 pilar keuangan: Realisasi Pendapatan Fungsional, Pengeluaran Operasional, Saldo Kewajiban Hutang, dan Piutang Pelayanan Pasien/Klaim.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-xs">
+          <div className="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
             <div className="text-left pr-2 font-mono">
-              <div className="text-[10px] text-teal-400 uppercase font-semibold">
+              <div className="text-[10px] text-teal-700 dark:text-teal-400 uppercase font-semibold">
                 Update Terakhir
               </div>
-              <div className="text-xs font-bold text-white mt-0.5">{lastUpdatedTime} WIB</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">{lastUpdatedTime} WIB</div>
             </div>
-            <div className="h-7 w-px bg-slate-700"></div>
+            <div className="h-7 w-px bg-slate-200 dark:bg-slate-700"></div>
             <button
               onClick={() => refreshAllData(true)}
               disabled={isRefreshing}

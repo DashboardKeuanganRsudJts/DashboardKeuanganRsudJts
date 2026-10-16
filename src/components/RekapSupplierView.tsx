@@ -506,30 +506,29 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 text-white rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border border-indigo-500/30 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold mb-2 border border-indigo-400/30">
-            <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-emerald-800">
+            <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Rekapitulasi Kewajiban Hutang Vendor Rekanan RSUD</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-            <Receipt className="w-7 h-7 text-indigo-400 shrink-0" />
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+            <Receipt className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
             REKAP PERSUPLIER TAHUN {year}
           </h2>
-          <p className="text-indigo-200/90 text-xs sm:text-sm mt-1.5 max-w-3xl leading-relaxed">
+          <p className="text-slate-600 dark:text-emerald-200/90 text-xs sm:text-sm mt-1.5 max-w-3xl leading-relaxed">
             Data otomatis terakumulasi berdasarkan nama vendor pada <strong>INVOICE HUTANG {year}</strong>. 
             Menampilkan total tagihan per rekanan, realisasi pembayaran, saldo sisa hutang, dan rincian umur hutang secara real-time.
           </p>
 
-          <div className="flex items-center gap-3 mt-3 text-xs text-indigo-300/80">
+          <div className="flex items-center gap-3 mt-3 text-xs text-slate-500 dark:text-emerald-300/80">
             <span className="flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               Tersinkronisasi otomatis dengan {invoices.length} baris invoice
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <Clock className="w-3.5 h-3.5 text-emerald-600" />
               Pembaruan terakhir: {lastSyncTime} WIB
             </span>
           </div>
@@ -539,7 +538,7 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
           <button
             onClick={() => syncData(true)}
             disabled={isLoading}
-            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg transition transform active:scale-95 flex items-center gap-2 border border-indigo-400/40 disabled:opacity-50 cursor-pointer"
+            className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95 flex items-center gap-2 border border-emerald-600/40 disabled:opacity-50 cursor-pointer"
             title={`Sinkronkan ulang data dari INVOICE HUTANG ${year}`}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -548,7 +547,7 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
 
           <button
             onClick={handleExportExcel}
-            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg transition transform active:scale-95 flex items-center gap-2 border border-emerald-400/40 cursor-pointer"
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95 flex items-center gap-2 border border-emerald-500/40 cursor-pointer"
             title="Export Excel Rekap Persupplier"
           >
             <Download className="w-4 h-4" />
@@ -755,10 +754,10 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
 
             <button
               onClick={handlePrint}
-              className="px-3 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+              className="px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-zinc-700 text-emerald-800 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-200 dark:border-zinc-700 shadow-2xs"
               title="Cetak Tabel Rekap Supplier"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-3.5 h-3.5 text-emerald-700 dark:text-zinc-300" />
             </button>
 
             <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 pl-1">
@@ -807,7 +806,7 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
                       <td className="px-4 py-3 border-r border-slate-200 dark:border-zinc-800">
                         <div className="font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                           <span>{sup.namaVendor}</span>
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
                             {sup.sumberAnggaran}
                           </span>
                         </div>

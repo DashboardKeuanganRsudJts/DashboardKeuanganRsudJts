@@ -793,15 +793,15 @@ export const HutangView: React.FC<HutangViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-indigo-50 via-blue-50/70 to-slate-50 dark:from-slate-950 dark:via-[#0e1222] dark:to-indigo-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-indigo-200 dark:border-indigo-900/60">
+      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 text-xs font-semibold mb-2 border border-indigo-300 dark:border-indigo-500/30">
-            <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Sub Bagian Keuangan & Pengadaan
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-emerald-800">
+            <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Sub Bagian Keuangan & Pengadaan
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {getSubmenuTitle()}
           </h2>
-          <p className="text-slate-600 dark:text-indigo-200/80 text-xs mt-1 max-w-2xl leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-300 text-xs mt-1 max-w-2xl leading-relaxed">
             Pencatatan kewajiban pembayaran belanja barang/jasa medik, obat-obatan, dan pihak ketiga RSUD Jatisari.
           </p>
         </div>
@@ -810,13 +810,13 @@ export const HutangView: React.FC<HutangViewProps> = ({
           <div className="flex gap-2">
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-emerald-500/40"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-500/40"
             >
               <FileSpreadsheet className="w-4 h-4" /> Import Excel
             </button>
             <button
               onClick={handleOpenAdd}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-indigo-500/40"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-600/40"
             >
               <Plus className="w-4 h-4" /> Entri Data Hutang
             </button>
