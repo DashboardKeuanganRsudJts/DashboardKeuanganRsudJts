@@ -782,15 +782,15 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
                 </span>
               </div>
 
-              <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-x-auto max-h-72 bg-slate-900/95 text-[11px] shadow-inner">
+              <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-x-auto max-h-72 bg-white dark:bg-slate-900/95 text-[11px] shadow-xs">
                 <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-950 text-slate-300 font-semibold border-b border-zinc-800 sticky top-0 z-10 text-[10px] uppercase tracking-wider">
+                  <thead className="bg-emerald-100/90 dark:bg-slate-950 text-emerald-950 dark:text-slate-300 font-semibold border-b border-emerald-300 dark:border-zinc-800 sticky top-0 z-10 text-[10px] uppercase tracking-wider">
                     <tr>
                       {INVOICE_HUTANG_EXCEL_COLUMNS.map((colName, cIdx) => (
                         <th 
                           key={cIdx} 
-                          className={`px-3 py-2.5 whitespace-nowrap border-r border-zinc-800/80 last:border-r-0 ${
-                            colName.includes('BULAN') ? 'text-teal-300' :
+                          className={`px-3 py-2.5 whitespace-nowrap border-r border-emerald-200/60 dark:border-zinc-800/80 last:border-r-0 ${
+                            colName.includes('BULAN') ? 'text-teal-700 dark:text-teal-300' :
                             colName.includes('JUMLAH') || colName.includes('NILAI') || colName.includes('DIBAYAR') || colName.includes('SISA') || colName.includes('KOREKSI') || colName.includes('Hari') || colName.includes('JT') ? 'text-right' : ''
                           }`}
                         >
@@ -799,7 +799,7 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800/60 text-slate-200">
+                  <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-slate-800 dark:text-slate-200">
                     {parsedRecords.slice(0, 5).map((row, i) => (
                       <tr key={i} className="hover:bg-zinc-800/50 transition">
                         {/* 1. NO */}

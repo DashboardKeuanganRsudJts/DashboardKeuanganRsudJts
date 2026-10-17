@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { theme, isDark, toggleTheme } = useTheme();
   const profile = useUserProfile(user);
 
-  // Collapsible states for main sections
+  // Collapsible states for main sections (Accordion mode: only one open at a time)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     pendapatan: false,
     pengeluaran: false,
@@ -85,27 +85,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
     monitoring_ppn: false,
   });
 
-  // Auto-expand section on mount or when activeMenu or activeSubmenu changes
+  // Helper to determine if a section is currently the active route/menu
+  const isSectionActive = (section: 'pendapatan' | 'pengeluaran' | 'hutang' | 'piutang' | 'monitoring_ppn') => {
+    if (section === 'pendapatan') return activeMenu === 'pendapatan_blud';
+    if (section === 'pengeluaran') return activeMenu === 'pengeluaran_blud';
+    if (section === 'hutang') return activeMenu === 'hutang';
+    if (section === 'piutang') return ['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu);
+    if (section === 'monitoring_ppn') return activeMenu === 'monitoring_ppn';
+    return false;
+  };
+
+  // Auto-expand active section and close all other sections (Accordion behavior)
   useEffect(() => {
-    if (activeMenu === 'pendapatan_blud') {
-      setExpandedSections(prev => ({ ...prev, pendapatan: true }));
-    } else if (activeMenu === 'pengeluaran_blud') {
-      setExpandedSections(prev => ({ ...prev, pengeluaran: true }));
-    } else if (activeMenu === 'hutang') {
-      setExpandedSections(prev => ({ ...prev, hutang: true }));
-    } else if (['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu)) {
-      setExpandedSections(prev => ({ ...prev, piutang: true }));
-    } else if (activeMenu === 'monitoring_ppn') {
-      setExpandedSections(prev => ({ ...prev, monitoring_ppn: true }));
-    }
+    let currentSection = '';
+    if (activeMenu === 'pendapatan_blud') currentSection = 'pendapatan';
+    else if (activeMenu === 'pengeluaran_blud') currentSection = 'pengeluaran';
+    else if (activeMenu === 'hutang') currentSection = 'hutang';
+    else if (['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu)) currentSection = 'piutang';
+    else if (activeMenu === 'monitoring_ppn') currentSection = 'monitoring_ppn';
+
+    setExpandedSections({
+      pendapatan: currentSection === 'pendapatan',
+      pengeluaran: currentSection === 'pengeluaran',
+      hutang: currentSection === 'hutang',
+      piutang: currentSection === 'piutang',
+      monitoring_ppn: currentSection === 'monitoring_ppn',
+    });
   }, [activeMenu, activeSubmenu]);
 
-  const toggleSection = (key: string, e?: React.MouseEvent) => {
+  // Accordion toggle: opening one section automatically closes all previous sections
+  const toggleSection = (section: 'pendapatan' | 'pengeluaran' | 'hutang' | 'piutang' | 'monitoring_ppn', e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSections(prev => {
+      const isCurrentlyOpen = !!prev[section];
+      if (!isCurrentlyOpen) {
+        return {
+          pendapatan: section === 'pendapatan',
+          pengeluaran: section === 'pengeluaran',
+          hutang: section === 'hutang',
+          piutang: section === 'piutang',
+          monitoring_ppn: section === 'monitoring_ppn',
+        };
+      } else {
+        return {
+          ...prev,
+          [section]: false,
+        };
+      }
+    });
+  };
+
+  // Header click handler: opens dropdown, closes others, and selects menu
+  const handleSectionHeaderClick = (
+    section: 'pendapatan' | 'pengeluaran' | 'hutang' | 'piutang' | 'monitoring_ppn',
+    targetMenu: string,
+    targetSubmenu?: string
+  ) => {
+    setExpandedSections({
+      pendapatan: section === 'pendapatan',
+      pengeluaran: section === 'pengeluaran',
+      hutang: section === 'hutang',
+      piutang: section === 'piutang',
+      monitoring_ppn: section === 'monitoring_ppn',
+    });
+    handleItemClick(targetMenu, targetSubmenu);
   };
 
   const handleItemClick = (menu: string, submenu?: string) => {
+    let targetSection = '';
+    if (menu === 'pendapatan_blud') targetSection = 'pendapatan';
+    else if (menu === 'pengeluaran_blud') targetSection = 'pengeluaran';
+    else if (menu === 'hutang') targetSection = 'hutang';
+    else if (['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(menu)) targetSection = 'piutang';
+    else if (menu === 'monitoring_ppn') targetSection = 'monitoring_ppn';
+
+    // Accordion: ensure only target section is open
+    setExpandedSections({
+      pendapatan: targetSection === 'pendapatan',
+      pengeluaran: targetSection === 'pengeluaran',
+      hutang: targetSection === 'hutang',
+      piutang: targetSection === 'piutang',
+      monitoring_ppn: targetSection === 'monitoring_ppn',
+    });
+
     onSelectMenu(menu, submenu);
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       onToggleSidebar();
@@ -243,21 +305,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* SECTION: UTAMA / DASHBOARD */}
         <div>
           <button
-            onClick={() => handleItemClick('dashboard_2026')}
+            onClick={() => {
+              setExpandedSections({
+                pendapatan: false,
+                pengeluaran: false,
+                hutang: false,
+                piutang: false,
+                monitoring_ppn: false,
+              });
+              handleItemClick('dashboard_2026');
+            }}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl text-xs font-bold transition group select-none ${
               activeMenu === 'dashboard_2026' 
                 ? (isDark 
-                    ? 'bg-teal-950/70 text-teal-300 border border-teal-700/60 shadow-xs' 
-                    : 'bg-teal-50 text-teal-900 border border-teal-200/90 shadow-xs')
+                    ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent font-medium' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium')
             }`}
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
                 activeMenu === 'dashboard_2026'
-                  ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-teal-600 text-white shadow-xs')
+                  ? (isDark ? 'bg-emerald-900/90 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Layers className="w-3.5 h-3.5" />
@@ -266,8 +337,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
               activeMenu === 'dashboard_2026'
-                ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-teal-100 text-teal-800 border border-teal-200/60')
-                : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-600')
+                ? (isDark ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                : (isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-100 text-slate-500')
             }`}>
               Live
             </span>
@@ -278,22 +349,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             type="button"
-            onClick={() => toggleSection('pendapatan')}
+            onClick={() => handleSectionHeaderClick('pendapatan', 'pendapatan_blud')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
-              expandedSections.pendapatan || activeMenu === 'pendapatan_blud'
+              isSectionActive('pendapatan')
                 ? (isDark 
-                    ? 'bg-teal-950/50 text-teal-300 border border-teal-800/50 shadow-xs' 
-                    : 'bg-teal-50 text-teal-900 border border-teal-200/90 shadow-xs')
+                    ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent font-medium' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium')
             }`}
-            title="Klik untuk membuka / menutup sub menu Pendapatan BLUD"
+            title="Klik untuk membuka / memilih Pendapatan BLUD"
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
-                expandedSections.pendapatan || activeMenu === 'pendapatan_blud'
-                  ? (isDark ? 'bg-teal-900/80 text-teal-300' : 'bg-teal-600 text-white shadow-xs')
+                isSectionActive('pendapatan')
+                  ? (isDark ? 'bg-emerald-900/90 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <TrendingUp className="w-3.5 h-3.5" />
@@ -302,15 +373,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-200/80 text-slate-600'
+                isSectionActive('pendapatan')
+                  ? (isDark ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                  : (isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-100 text-slate-500')
               }`}>
                 {pendapatanSubmenus.length + 1}
               </span>
-              <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                expandedSections.pendapatan 
-                  ? 'rotate-90 text-teal-600 dark:text-teal-400 font-bold' 
-                  : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
-              }`} />
+              <span
+                onClick={(e) => toggleSection('pendapatan', e)}
+                className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                title="Buka/Tutup Sub Menu"
+              >
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  expandedSections.pendapatan 
+                    ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
+                    : (isSectionActive('pendapatan') ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5')
+                }`} />
+              </span>
             </div>
           </button>
 
@@ -324,39 +403,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-1 border-l-2 ml-4 ${
-                  isDark ? 'border-teal-900/60' : 'border-teal-200'
+                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
+                  isDark ? 'border-zinc-800' : 'border-slate-200'
                 }`}>
-              <button
-                onClick={() => handleItemClick('pendapatan_blud')}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                  activeMenu === 'pendapatan_blud' && !activeSubmenu 
-                    ? (isDark 
-                        ? 'bg-teal-950/80 text-teal-200 font-bold border border-teal-700/50' 
-                        : 'bg-teal-600 text-white font-bold shadow-xs')
-                    : (isDark ? 'text-zinc-300 hover:text-teal-300 hover:bg-zinc-800/60' : 'text-slate-600 hover:text-teal-800 hover:bg-teal-50/70')
-                }`}
-              >
-                <span className="truncate">Rekap Pendapatan BLUD</span>
-                <ChevronRight className="w-3 h-3 opacity-60" />
-              </button>
+                  {(() => {
+                    const isRekapActive = activeMenu === 'pendapatan_blud' && !activeSubmenu;
+                    return (
+                      <button
+                        onClick={() => handleItemClick('pendapatan_blud')}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isRekapActive 
+                            ? (isDark 
+                                ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' 
+                                : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isRekapActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">Rekap Pendapatan BLUD</span>
+                        </div>
+                        <ChevronRight className={`w-3 h-3 ${isRekapActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-zinc-700'}`} />
+                      </button>
+                    );
+                  })()}
 
-              {pendapatanSubmenus.map((sub) => {
-                const isSubActive = activeMenu === 'pendapatan_blud' && activeSubmenu === sub.id;
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => handleItemClick('pendapatan_blud', sub.id)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                      isSubActive 
-                        ? (isDark ? 'bg-teal-950/60 text-teal-300 font-bold border-l-2 border-teal-500' : 'bg-teal-50 text-teal-800 font-bold border-l-2 border-teal-600')
-                        : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                    }`}
-                  >
-                    <span className="truncate">{sub.label}</span>
-                  </button>
-                );
-              })}
+                  {pendapatanSubmenus.map((sub) => {
+                    const isSubActive = activeMenu === 'pendapatan_blud' && activeSubmenu === sub.id;
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => handleItemClick('pendapatan_blud', sub.id)}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isSubActive 
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isSubActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">{sub.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -367,22 +457,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             type="button"
-            onClick={() => toggleSection('pengeluaran')}
+            onClick={() => handleSectionHeaderClick('pengeluaran', 'pengeluaran_blud')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
-              expandedSections.pengeluaran || activeMenu === 'pengeluaran_blud'
+              isSectionActive('pengeluaran')
                 ? (isDark 
-                    ? 'bg-rose-950/50 text-rose-300 border border-rose-800/50 shadow-xs' 
-                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
+                    ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent font-medium' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium')
             }`}
-            title="Klik untuk membuka / menutup sub menu Pengeluaran BLUD"
+            title="Klik untuk membuka / memilih Pengeluaran BLUD"
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
-                expandedSections.pengeluaran || activeMenu === 'pengeluaran_blud'
-                  ? (isDark ? 'bg-rose-900/80 text-rose-300' : 'bg-emerald-600 text-white shadow-xs')
+                isSectionActive('pengeluaran')
+                  ? (isDark ? 'bg-emerald-900/90 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <TrendingDown className="w-3.5 h-3.5" />
@@ -391,15 +481,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-emerald-100 text-emerald-800'
+                isSectionActive('pengeluaran')
+                  ? (isDark ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                  : (isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-100 text-slate-500')
               }`}>
                 {pengeluaranSubmenus.length + 1}
               </span>
-              <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                expandedSections.pengeluaran 
-                  ? 'rotate-90 text-emerald-600 dark:text-rose-400 font-bold' 
-                  : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
-              }`} />
+              <span
+                onClick={(e) => toggleSection('pengeluaran', e)}
+                className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                title="Buka/Tutup Sub Menu"
+              >
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  expandedSections.pengeluaran 
+                    ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
+                    : (isSectionActive('pengeluaran') ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5')
+                }`} />
+              </span>
             </div>
           </button>
 
@@ -413,39 +511,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-1 border-l-2 ml-4 ${
-                  isDark ? 'border-rose-900/60' : 'border-emerald-200'
+                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
+                  isDark ? 'border-zinc-800' : 'border-slate-200'
                 }`}>
-              <button
-                onClick={() => handleItemClick('pengeluaran_blud')}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                  activeMenu === 'pengeluaran_blud' && !activeSubmenu 
-                    ? (isDark 
-                        ? 'bg-rose-950/80 text-rose-200 font-bold border border-rose-700/50' 
-                        : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                    : (isDark ? 'text-zinc-300 hover:text-rose-300 hover:bg-zinc-800/60' : 'text-slate-600 hover:text-emerald-800 hover:bg-emerald-50/70')
-                }`}
-              >
-                <span className="truncate">Rekap Pengeluaran BLUD</span>
-                <ChevronRight className="w-3 h-3 opacity-60" />
-              </button>
+                  {(() => {
+                    const isRekapActive = activeMenu === 'pengeluaran_blud' && !activeSubmenu;
+                    return (
+                      <button
+                        onClick={() => handleItemClick('pengeluaran_blud')}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isRekapActive 
+                            ? (isDark 
+                                ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' 
+                                : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isRekapActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">Rekap Pengeluaran BLUD</span>
+                        </div>
+                        <ChevronRight className={`w-3 h-3 ${isRekapActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-zinc-700'}`} />
+                      </button>
+                    );
+                  })()}
 
-              {pengeluaranSubmenus.map((sub) => {
-                const isSubActive = activeMenu === 'pengeluaran_blud' && activeSubmenu === sub.id;
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => handleItemClick('pengeluaran_blud', sub.id)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                      isSubActive 
-                        ? (isDark ? 'bg-rose-950/60 text-rose-300 font-bold border-l-2 border-rose-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                        : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                    }`}
-                  >
-                    <span className="truncate">{sub.label}</span>
-                  </button>
-                );
-              })}
+                  {pengeluaranSubmenus.map((sub) => {
+                    const isSubActive = activeMenu === 'pengeluaran_blud' && activeSubmenu === sub.id;
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => handleItemClick('pengeluaran_blud', sub.id)}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isSubActive 
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isSubActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">{sub.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -456,22 +565,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             type="button"
-            onClick={() => toggleSection('hutang')}
+            onClick={() => handleSectionHeaderClick('hutang', 'hutang', 'semua_rekap_hutang')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
-              expandedSections.hutang || activeMenu === 'hutang'
+              isSectionActive('hutang')
                 ? (isDark 
-                    ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-800/50 shadow-xs' 
-                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
+                    ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent font-medium' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium')
             }`}
-            title="Klik untuk membuka / menutup sub menu Hutang (BLUD & APBD)"
+            title="Klik untuk membuka / memilih Hutang (BLUD & APBD)"
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
-                expandedSections.hutang || activeMenu === 'hutang'
-                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
+                isSectionActive('hutang')
+                  ? (isDark ? 'bg-emerald-900/90 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <CreditCard className="w-3.5 h-3.5" />
@@ -480,15 +589,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-emerald-100 text-emerald-800'
+                isSectionActive('hutang')
+                  ? (isDark ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                  : (isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-100 text-slate-500')
               }`}>
                 {hutangSubmenus.length}
               </span>
-              <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                expandedSections.hutang 
-                  ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
-                  : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
-              }`} />
+              <span
+                onClick={(e) => toggleSection('hutang', e)}
+                className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                title="Buka/Tutup Sub Menu"
+              >
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  expandedSections.hutang 
+                    ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
+                    : (isSectionActive('hutang') ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5')
+                }`} />
+              </span>
             </div>
           </button>
 
@@ -503,26 +620,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="overflow-hidden"
               >
                 <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
-                  isDark ? 'border-emerald-900/60' : 'border-emerald-200'
+                  isDark ? 'border-zinc-800' : 'border-slate-200'
                 }`}>
-              {hutangSubmenus.map((sub) => {
-                const isSubActive = activeMenu === 'hutang' && (activeSubmenu === sub.id || (!activeSubmenu && sub.id === 'semua_rekap_hutang'));
-                return (
-                  <button
-                    key={sub.id}
-                    id={`sidebar-submenu-${sub.id}`}
-                    onClick={() => handleItemClick('hutang', sub.id)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10.5px] transition truncate flex items-center justify-between ${
-                      isSubActive 
-                        ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                        : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                    }`}
-                    title={sub.label}
-                  >
-                    <span className="truncate">{sub.label}</span>
-                  </button>
-                );
-              })}
+                  {hutangSubmenus.map((sub) => {
+                    const isSubActive = activeMenu === 'hutang' && (activeSubmenu === sub.id || (!activeSubmenu && sub.id === 'semua_rekap_hutang'));
+                    return (
+                      <button
+                        key={sub.id}
+                        id={`sidebar-submenu-${sub.id}`}
+                        onClick={() => handleItemClick('hutang', sub.id)}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10.5px] transition truncate flex items-center justify-between ${
+                          isSubActive 
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                        title={sub.label}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isSubActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">{sub.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -533,22 +653,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             type="button"
-            onClick={() => toggleSection('piutang')}
+            onClick={() => handleSectionHeaderClick('piutang', 'perusahaan_asuransi')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
-              expandedSections.piutang || ['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu)
+              isSectionActive('piutang')
                 ? (isDark 
-                    ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-800/50 shadow-xs' 
-                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
+                    ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent font-medium' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium')
             }`}
-            title="Klik untuk membuka / menutup sub menu Piutang & Klaim"
+            title="Klik untuk membuka / memilih Piutang & Klaim"
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
-                expandedSections.piutang || ['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu)
-                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
+                isSectionActive('piutang')
+                  ? (isDark ? 'bg-emerald-900/90 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -557,15 +677,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-200/80 text-slate-600'
+                isSectionActive('piutang')
+                  ? (isDark ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                  : (isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-100 text-slate-500')
               }`}>
                 {piutangSubmenus.length}
               </span>
-              <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                expandedSections.piutang 
-                  ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
-                  : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
-              }`} />
+              <span
+                onClick={(e) => toggleSection('piutang', e)}
+                className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                title="Buka/Tutup Sub Menu"
+              >
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  expandedSections.piutang 
+                    ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
+                    : (isSectionActive('piutang') ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5')
+                }`} />
+              </span>
             </div>
           </button>
 
@@ -579,25 +707,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-1 border-l-2 ml-4 ${
-                  isDark ? 'border-emerald-900/60' : 'border-emerald-200'
+                <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
+                  isDark ? 'border-zinc-800' : 'border-slate-200'
                 }`}>
-              {piutangSubmenus.map((sub) => {
-                const isSubActive = activeMenu === sub.id;
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => handleItemClick(sub.id)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                      isSubActive 
-                        ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                        : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                    }`}
-                  >
-                    <span className="truncate">{sub.label}</span>
-                  </button>
-                );
-              })}
+                  {piutangSubmenus.map((sub) => {
+                    const isSubActive = activeMenu === sub.id;
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => handleItemClick(sub.id)}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isSubActive 
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isSubActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">{sub.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -608,22 +739,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             type="button"
-            onClick={() => toggleSection('monitoring_ppn')}
+            onClick={() => handleSectionHeaderClick('monitoring_ppn', 'monitoring_ppn', 'monitoring')}
             className={`w-full h-11 flex items-center justify-between px-2.5 rounded-xl font-bold text-xs uppercase tracking-tight transition group select-none ${
-              expandedSections.monitoring_ppn || activeMenu === 'monitoring_ppn'
+              isSectionActive('monitoring_ppn')
                 ? (isDark 
-                    ? 'bg-gradient-to-r from-emerald-950/80 via-teal-950/70 to-indigo-950/80 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-950/50' 
-                    : 'bg-emerald-50 text-emerald-900 border border-emerald-200/90 shadow-xs')
+                    ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60 shadow-xs' 
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-xs')
                 : (isDark 
-                    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent')
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent font-medium' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium')
             }`}
-            title="Klik untuk membuka / menutup sub menu Sistem Monitoring PPN 2026"
+            title="Klik untuk membuka / memilih Sistem Monitoring PPN 2026"
           >
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition ${
-                expandedSections.monitoring_ppn || activeMenu === 'monitoring_ppn'
-                  ? (isDark ? 'bg-emerald-900/80 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
+                isSectionActive('monitoring_ppn')
+                  ? (isDark ? 'bg-emerald-900/90 text-emerald-300' : 'bg-emerald-600 text-white shadow-xs')
                   : (isDark ? 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200' : 'bg-slate-100 text-slate-500 group-hover:text-slate-700')
               }`}>
                 <Receipt className="w-3.5 h-3.5" />
@@ -632,15 +763,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-1">
               <span className={`h-5 min-w-[20px] px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-200/80 text-slate-600'
+                isSectionActive('monitoring_ppn')
+                  ? (isDark ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                  : (isDark ? 'bg-zinc-800/90 text-zinc-400' : 'bg-slate-100 text-slate-500')
               }`}>
                 4
               </span>
-              <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                expandedSections.monitoring_ppn
-                  ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
-                  : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5'
-              }`} />
+              <span
+                onClick={(e) => toggleSection('monitoring_ppn', e)}
+                className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                title="Buka/Tutup Sub Menu"
+              >
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  expandedSections.monitoring_ppn
+                    ? 'rotate-90 text-emerald-600 dark:text-emerald-400 font-bold' 
+                    : (isSectionActive('monitoring_ppn') ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5')
+                }`} />
+              </span>
             </div>
           </button>
           
@@ -657,54 +796,86 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className={`mt-1.5 pl-3 pr-1 py-1 space-y-0.5 border-l-2 ml-4 ${
                   isDark ? 'border-zinc-800' : 'border-slate-200'
                 }`}>
-              <button
-                type="button"
-                onClick={() => handleItemClick('monitoring_ppn', 'monitoring')}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                  (!activeSubmenu || activeSubmenu === 'monitoring')
-                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                }`}
-              >
-                <span className="truncate">Dashboard Terintegrasi</span>
-                <ChevronRight className="w-3 h-3 opacity-60" />
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => handleItemClick('monitoring_ppn', 'coretax')}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                  activeSubmenu === 'coretax'
-                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                }`}
-              >
-                <span className="truncate">Data Coretax</span>
-              </button>
+                  {(() => {
+                    const isMonActive = activeMenu === 'monitoring_ppn' && (!activeSubmenu || activeSubmenu === 'monitoring');
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => handleItemClick('monitoring_ppn', 'monitoring')}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isMonActive
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isMonActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">Dashboard Terintegrasi</span>
+                        </div>
+                        <ChevronRight className={`w-3 h-3 ${isMonActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-zinc-700'}`} />
+                      </button>
+                    );
+                  })()}
+                  
+                  {(() => {
+                    const isCoretaxActive = activeMenu === 'monitoring_ppn' && activeSubmenu === 'coretax';
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => handleItemClick('monitoring_ppn', 'coretax')}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isCoretaxActive
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isCoretaxActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">Data Coretax</span>
+                        </div>
+                      </button>
+                    );
+                  })()}
 
-              <button
-                type="button"
-                onClick={() => handleItemClick('monitoring_ppn', 'hutang')}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                  activeSubmenu === 'hutang'
-                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                }`}
-              >
-                <span className="truncate">Data Hutang SP2D</span>
-              </button>
+                  {(() => {
+                    const isHutangSubActive = activeMenu === 'monitoring_ppn' && activeSubmenu === 'hutang';
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => handleItemClick('monitoring_ppn', 'hutang')}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isHutangSubActive
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isHutangSubActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">Data Hutang SP2D</span>
+                        </div>
+                      </button>
+                    );
+                  })()}
 
-              <button
-                type="button"
-                onClick={() => handleItemClick('monitoring_ppn', 'audit')}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
-                  activeSubmenu === 'audit'
-                    ? (isDark ? 'bg-emerald-950/60 text-emerald-300 font-bold border-l-2 border-emerald-500' : 'bg-emerald-50 text-emerald-800 font-bold border-l-2 border-emerald-600')
-                    : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60')
-                }`}
-              >
-                <span className="truncate">Audit & Selisih</span>
-              </button>
+                  {(() => {
+                    const isAuditActive = activeMenu === 'monitoring_ppn' && activeSubmenu === 'audit';
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => handleItemClick('monitoring_ppn', 'audit')}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition truncate flex items-center justify-between ${
+                          isAuditActive
+                            ? (isDark ? 'bg-emerald-950/70 text-emerald-300 font-bold border-l-[3px] border-emerald-500 shadow-2xs' : 'bg-emerald-50 text-emerald-800 font-bold border-l-[3px] border-emerald-600 shadow-2xs')
+                            : (isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 font-medium' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 font-medium')
+                        }`}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 mr-2 ${isAuditActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-zinc-700'}`}></span>
+                          <span className="truncate">Audit & Selisih</span>
+                        </div>
+                      </button>
+                    );
+                  })()}
                 </div>
               </motion.div>
             )}
@@ -912,8 +1083,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleItemClick('dashboard_2026')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
               activeMenu === 'dashboard_2026' 
-                ? (isDark ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/30')
-                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 shadow-sm' : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800')
             }`}
             title="Dashboard Utama"
           >
@@ -923,9 +1094,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => handleItemClick('pendapatan_blud')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
-              activeMenu === 'pendapatan_blud' 
-                ? (isDark ? 'bg-teal-950/60 text-teal-400 border border-teal-500/40 shadow-sm shadow-teal-950' : 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-md shadow-teal-500/30')
-                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
+              isSectionActive('pendapatan')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 shadow-sm' : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800')
             }`}
             title="Pendapatan BLUD"
           >
@@ -935,9 +1106,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => handleItemClick('pengeluaran_blud')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
-              activeMenu === 'pengeluaran_blud' 
-                ? (isDark ? 'bg-rose-950/60 text-rose-400 border border-rose-500/40 shadow-sm shadow-rose-950' : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/30')
-                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
+              isSectionActive('pengeluaran')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 shadow-sm' : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800')
             }`}
             title="Pengeluaran BLUD"
           >
@@ -947,9 +1118,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => handleItemClick('hutang')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
-              activeMenu === 'hutang' 
-                ? (isDark ? 'bg-indigo-950/60 text-indigo-400 border border-indigo-500/40 shadow-sm shadow-indigo-950' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/30')
-                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
+              isSectionActive('hutang')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 shadow-sm' : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800')
             }`}
             title="Hutang BLUD & APBD"
           >
@@ -959,9 +1130,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => handleItemClick('perusahaan_asuransi')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
-              ['perusahaan_asuransi', 'listrik_kantin', 'semua_rekapan'].includes(activeMenu) 
-                ? (isDark ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/30')
-                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
+              isSectionActive('piutang')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 shadow-sm' : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800')
             }`}
             title="Piutang & Klaim"
           >
@@ -971,9 +1142,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => handleItemClick('monitoring_ppn')}
             className={`p-3 rounded-xl transition w-full flex justify-center ${
-              activeMenu === 'monitoring_ppn' 
-                ? (isDark ? 'bg-gradient-to-tr from-emerald-950 to-indigo-950 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950' : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 text-white shadow-md shadow-emerald-500/30')
-                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400' : 'hover:bg-slate-100 text-slate-600')
+              isSectionActive('monitoring_ppn')
+                ? (isDark ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 shadow-sm' : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30')
+                : (isDark ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800')
             }`}
             title="Monitoring PPN 2026"
           >

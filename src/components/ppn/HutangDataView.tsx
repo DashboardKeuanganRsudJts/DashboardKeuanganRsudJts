@@ -87,25 +87,25 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
       {/* Live Google Sheets Integration Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-5 shadow-lg border border-slate-800">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-400 via-emerald-400 via-amber-400 to-purple-500"></div>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white p-5 shadow-md border border-teal-200 dark:border-teal-900/60">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 via-emerald-400 via-cyan-400 to-teal-600"></div>
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-500 to-cyan-400 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-500 to-teal-400 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
               <FileSpreadsheet className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-extrabold text-white tracking-tight">
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
                   DATA HUTANG & REALISASI SP2D (GOOGLE SHEETS)
                 </h2>
-                <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/40">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-500/40">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Live Sync Connected
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                 Data master pembayaran hutang RSUD Jatisari 2026. Nomor Invoice & SP2D otomatis disinkronkan dari Google Sheets.
               </p>
             </div>
@@ -116,7 +116,7 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
               <button
                 onClick={() => onSyncGoogleSheets()}
                 disabled={isSyncing}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white shadow-md shadow-teal-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Google Sheets'}</span>
@@ -127,10 +127,10 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
               href={sheetUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all hover:scale-[1.02]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-teal-200 dark:border-slate-700 shadow-2xs transition-all hover:scale-[1.02]"
               title="Buka Spreadsheet di Google Sheets"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+              <ExternalLink className="w-3.5 h-3.5 text-teal-600 dark:text-blue-400" />
               <span>Buka Sheet</span>
             </a>
 
@@ -138,17 +138,17 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
               <>
                 <button
                   onClick={onOpenUpload}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all hover:scale-[1.02]"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white border border-teal-200 dark:border-slate-700 shadow-2xs transition-all hover:scale-[1.02]"
                 >
-                  <Upload className="w-3.5 h-3.5" />
+                  <Upload className="w-3.5 h-3.5 text-teal-600" />
                   <span>Upload / Paste</span>
                 </button>
 
                 <button
                   onClick={onAddRecord}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-900 transition-all hover:scale-[1.02]"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-sm transition-all hover:scale-[1.02]"
                 >
-                  <Plus className="w-3.5 h-3.5 text-blue-600" />
+                  <Plus className="w-3.5 h-3.5 text-white" />
                   <span>Tambah Manual</span>
                 </button>
               </>
@@ -157,24 +157,24 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
         </div>
 
         {/* Sync Info Strip */}
-        <div className="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-400">
+        <div className="mt-4 pt-3 border-t border-teal-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-slate-400 font-medium">Link Terhubung:</span>
-            <span className="font-mono text-cyan-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700 truncate max-w-xs sm:max-w-md">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Link Terhubung:</span>
+            <span className="font-mono text-teal-900 dark:text-cyan-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-teal-200 dark:border-slate-700 truncate max-w-xs sm:max-w-md shadow-2xs">
               {sheetUrl}
             </span>
             <button
               onClick={() => setShowUrlEditor(!showUrlEditor)}
-              className="text-[11px] text-cyan-400 hover:underline font-semibold"
+              className="text-[11px] text-teal-700 dark:text-cyan-400 hover:underline font-semibold"
             >
               {showUrlEditor ? 'Tutup' : 'Ubah Link'}
             </button>
           </div>
 
           {lastSyncedAt && (
-            <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Terakhir disinkronkan: <b className="text-slate-200">{lastSyncedAt}</b></span>
+            <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Terakhir disinkronkan: <b className="text-slate-800 dark:text-slate-200">{lastSyncedAt}</b></span>
             </div>
           )}
         </div>
@@ -278,17 +278,17 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[1000px]">
-            <thead>
-              <tr className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white font-bold text-[11px] uppercase tracking-wider select-none">
-                <th className="py-3.5 px-3 text-center w-12 text-slate-300">No</th>
-                <th className="py-3.5 px-3.5 bg-indigo-800/80 text-white font-extrabold shadow-inner whitespace-nowrap">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold text-[11px] uppercase tracking-wider select-none border-b-2 border-emerald-300 dark:border-emerald-900/60">
+                <th className="py-3.5 px-3 text-center w-12 text-slate-600 dark:text-slate-300">No</th>
+                <th className="py-3.5 px-3.5 bg-teal-200/90 dark:bg-indigo-800/80 text-teal-950 dark:text-white font-extrabold shadow-inner whitespace-nowrap">
                   Nomor Invoice (Kunci Rekonsiliasi)
                 </th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Tanggal Invoice</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Vendor / Rekanan</th>
                 <th className="py-3.5 px-3 text-right whitespace-nowrap">Nilai Invoice (Rp)</th>
                 <th className="py-3.5 px-3 text-center whitespace-nowrap">Status Pembayaran</th>
-                <th className="py-3.5 px-3.5 bg-blue-800/80 text-white font-extrabold shadow-inner whitespace-nowrap">
+                <th className="py-3.5 px-3.5 bg-emerald-200/90 dark:bg-blue-800/80 text-emerald-950 dark:text-white font-extrabold shadow-inner whitespace-nowrap">
                   Nomor SP2D
                 </th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Tanggal Bayar</th>

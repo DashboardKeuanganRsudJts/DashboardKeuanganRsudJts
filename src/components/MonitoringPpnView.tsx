@@ -210,26 +210,21 @@ export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       {/* Top Banner Navigation & App Bar */}
-      <div className="bg-white dark:bg-[#0f1418] rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-md p-5 sm:p-6 overflow-hidden relative">
-        <div className="h-1.5 absolute top-0 left-0 right-0 bg-gradient-to-r from-rose-500 via-orange-400 via-amber-400 via-lime-500 via-emerald-500 via-cyan-400 via-blue-500 to-purple-500"></div>
-
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 rounded-2xl border border-teal-200 dark:border-teal-900/60 shadow-md p-5 sm:p-6 overflow-hidden relative">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
           {/* Left Title & Identity */}
           <div className="flex items-center gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+            <div className="w-13 h-13 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20 shrink-0">
               <Receipt className="w-7 h-7" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  MONITORING PPN 2026
-                </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-indigo-500/20 text-slate-800 dark:text-zinc-200 font-extrabold border border-slate-300 dark:border-zinc-700 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  Coretax DJP & Data Hutang RSUD Jatisari
-                </span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-teal-300 dark:border-teal-500/30">
+                <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Sub Bagian Keuangan • Coretax DJP & PPN
               </div>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                MONITORING PPN 2026
+              </h1>
+              <p className="text-xs text-slate-600 dark:text-teal-200/80 mt-1 max-w-2xl leading-relaxed">
                 Sistem Rekonsiliasi Otomatis & Pelacakan Status Pelunasan SP2D Faktur Pajak Tahun Anggaran 2026
               </p>
             </div>

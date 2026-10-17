@@ -1321,18 +1321,18 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
     <div className="space-y-4 pb-12" ref={dropdownRef}>
       
       {/* 1. Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md border border-teal-200 dark:border-teal-900/60">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold mb-2">
-              <Building className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-500/30 text-xs font-semibold mb-2">
+              <Building className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
               <span>Sheet: Perusahaan_Asuransi (Januari - Desember 2026)</span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
               <span>Daftar Piutang Perusahaan & Asuransi 2026</span>
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-3xl">
-              Memantau <strong className="text-slate-800 dark:text-white">{masterPartners.length} mitra korporasi & asuransi</strong> di <strong className="text-slate-800 dark:text-white">semua 12 bulan (Januari s.d. Desember)</strong>. Dilengkapi fitur <strong>Pendaftaran Rekanan Baru</strong>, <strong>Pilihan Daftar Rekanan saat Entri Invoice</strong>, dan <strong>Drop Down Nomor Invoice Masuk</strong>.
+            <p className="text-xs text-slate-600 dark:text-teal-200/80 mt-1 max-w-3xl leading-relaxed">
+              Memantau <strong className="text-slate-900 dark:text-white">{masterPartners.length} mitra korporasi & asuransi</strong> di <strong className="text-slate-900 dark:text-white">semua 12 bulan (Januari s.d. Desember)</strong>. Dilengkapi fitur <strong>Pendaftaran Rekanan Baru</strong>, <strong>Pilihan Daftar Rekanan saat Entri Invoice</strong>, dan <strong>Drop Down Nomor Invoice Masuk</strong>.
             </p>
           </div>
 
@@ -1546,18 +1546,18 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
         <div className="overflow-x-auto min-h-[480px] max-h-[640px]">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="sticky top-0 z-20">
-              <tr className="bg-emerald-950 dark:bg-[#081b22] text-white font-semibold border-b-2 border-emerald-800 dark:border-emerald-900/60 text-[11px]">
-                <th className="py-3 px-2 text-center w-12 border-r border-emerald-900/60">No</th>
-                <th className="py-3 px-3.5 min-w-[290px] max-w-[350px] border-r border-emerald-900/60">Nama Perusahaan / Asuransi & No. Invoice</th>
-                <th className="py-3 px-3 border-r border-emerald-900/60">Jenis Layanan</th>
-                <th className="py-3 px-3 text-right border-r border-emerald-900/60">Piutang Lalu</th>
-                <th className="py-3 px-3 text-right border-r border-emerald-900/60">Piutang Bulan Ini</th>
-                <th className="py-3 px-3 text-right font-bold border-r border-teal-800 bg-teal-950 text-teal-100">Piutang s.d Bulan Ini</th>
-                <th className="py-3 px-3 border-r border-emerald-900/60">Tgl Bayar</th>
-                <th className="py-3 px-3 text-right border-r border-emerald-900/60">Pembayaran</th>
-                <th className="py-3 px-3 text-right font-bold border-r border-rose-900 bg-rose-950 text-rose-100">Sisa Piutang</th>
+              <tr className="bg-emerald-100 dark:bg-[#081b22] text-emerald-950 dark:text-white font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
+                <th className="py-3 px-2 text-center w-12 border-r border-emerald-200 dark:border-emerald-900/60">No</th>
+                <th className="py-3 px-3.5 min-w-[290px] max-w-[350px] border-r border-emerald-200 dark:border-emerald-900/60">Nama Perusahaan / Asuransi & No. Invoice</th>
+                <th className="py-3 px-3 border-r border-emerald-200 dark:border-emerald-900/60">Jenis Layanan</th>
+                <th className="py-3 px-3 text-right border-r border-emerald-200 dark:border-emerald-900/60">Piutang Lalu</th>
+                <th className="py-3 px-3 text-right border-r border-emerald-200 dark:border-emerald-900/60">Piutang Bulan Ini</th>
+                <th className="py-3 px-3 text-right font-bold border-r border-emerald-300 bg-emerald-200/60 dark:bg-teal-950 text-emerald-950 dark:text-teal-100">Piutang s.d Bulan Ini</th>
+                <th className="py-3 px-3 border-r border-emerald-200 dark:border-emerald-900/60">Tgl Bayar</th>
+                <th className="py-3 px-3 text-right border-r border-emerald-200 dark:border-emerald-900/60">Pembayaran</th>
+                <th className="py-3 px-3 text-right font-bold border-r border-rose-200 bg-rose-50 dark:bg-rose-950 text-rose-900 dark:text-rose-100">Sisa Piutang</th>
                 {isOnlyAdminPiutang && (
-                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-950 dark:bg-[#081b22] z-10">Aksi</th>
+                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-100 dark:bg-[#081b22] z-10">Aksi</th>
                 )}
               </tr>
             </thead>

@@ -534,17 +534,17 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
     <div className="space-y-6">
       
       {/* 1. EXECUTIVE BANNER */}
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 sm:p-7 shadow-xs border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 sm:p-7 shadow-md border border-teal-200 dark:border-teal-900/60 relative overflow-hidden">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-700 dark:text-teal-400 mb-2">
-              <Building2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-teal-300 dark:border-teal-500/30">
+              <Building2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
               <span className="uppercase tracking-wider">SISTEM KEUANGAN BLUD · RSUD JATISARI KARAWANG</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               DASHBOARD SUBBAG KEUANGAN 2026
             </h1>
-            <p className="text-xs lg:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-3xl leading-relaxed">
+            <p className="text-xs lg:text-sm text-slate-600 dark:text-teal-200/80 mt-1 max-w-3xl leading-relaxed">
               Monitoring terpadu 4 pilar keuangan: Realisasi Pendapatan Fungsional, Pengeluaran Operasional, Saldo Kewajiban Hutang, dan Piutang Pelayanan Pasien/Klaim.
             </p>
           </div>
@@ -584,7 +584,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
               <TrendingUp className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight">
+          <div className="text-lg sm:text-xl font-bold font-mono text-teal-700 dark:text-teal-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalPendapatanRealisasiBulanIni)}
           </div>
           <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
@@ -608,7 +608,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
               <TrendingDown className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight">
+          <div className="text-lg sm:text-xl font-bold font-mono text-rose-700 dark:text-rose-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalPengeluaranBulanIni)}
           </div>
           <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
@@ -632,12 +632,12 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
               <CreditCard className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight">
+          <div className="text-lg sm:text-xl font-bold font-mono text-slate-800 dark:text-slate-200 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalHutangKeseluruhan)}
           </div>
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-[9px] font-mono text-slate-500 dark:text-slate-400">
             <span>'25: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{formatRupiah(sisaHutang2025)}</strong></span>
-            <span>•</span>
+            <span className="opacity-50">•</span>
             <span>'26: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{formatRupiah(sisaHutang2026)}</strong></span>
           </div>
           <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
@@ -661,7 +661,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
               <FileSpreadsheet className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-teal-800 dark:text-teal-300 mt-2 tracking-tight">
+          <div className="text-lg sm:text-xl font-bold font-mono text-teal-700 dark:text-teal-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalSisaPiutangTerbaruSemuaTagihan)}
           </div>
           <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
@@ -709,21 +709,21 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Monthly Trend Comparison */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#0d1216] rounded-2xl p-6 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
+        <div className="lg:col-span-2 bg-gradient-to-r from-teal-50/40 via-emerald-50/30 to-white dark:from-[#0d1216] dark:to-[#081b22] rounded-2xl p-6 border border-teal-200 dark:border-emerald-900/60 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 Tren Pendapatan vs Pengeluaran BLUD 2026
               </h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
                 Perbandingan arus kas masuk (Realisasi Pendapatan) dan realisasi belanja bulanan (dalam Miliar Rupiah).
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => onNavigateTab('pendapatan_blud')}
-                className="text-xs font-semibold text-teal-700 dark:text-emerald-300 bg-teal-50 dark:bg-emerald-950/80 hover:bg-teal-100 dark:hover:bg-emerald-900/80 px-3 py-1.5 rounded-lg transition border border-teal-200/60 dark:border-emerald-800/50 cursor-pointer"
+                className="text-xs font-semibold text-teal-700 dark:text-emerald-300 bg-teal-100/80 dark:bg-emerald-950/80 hover:bg-teal-200 dark:hover:bg-emerald-900/80 px-3 py-1.5 rounded-lg transition border border-teal-200 dark:border-emerald-800/50 cursor-pointer"
               >
                 Detail Pendapatan
               </button>
@@ -739,12 +739,12 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyComparisonData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#33415522" vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(val) => `Rp ${val}M`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#0d948822" vertical={false} />
+                <XAxis dataKey="name" stroke="#0d9488" fontSize={11} tick={{ fill: '#334155' }} />
+                <YAxis stroke="#0d9488" fontSize={11} tickFormatter={(val) => `Rp ${val}M`} tick={{ fill: '#334155' }} />
                 <Tooltip 
                   formatter={(value: any) => [`Rp ${value} Miliar`, '']}
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#ccfbf1', borderRadius: '12px', color: '#0f172a', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                 <Bar dataKey="Pendapatan" fill="#0d9488" radius={[4, 4, 0, 0]} name="Pendapatan BLUD" />
@@ -848,7 +848,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-emerald-950/80">
             <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase">Hutang Pengadaan 2026 (Berjalan)</span>
-            <div className="text-lg font-bold text-indigo-950 dark:text-indigo-300 mt-1">
+            <div className="text-lg font-bold text-indigo-950 dark:text-indigo-300 mt-1 font-mono tracking-tight">
               {formatRupiah(sisaHutang2026)}
             </div>
             <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">Rekanan Berjalan Aktif</span>
@@ -856,7 +856,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
 
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-emerald-950/80">
             <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase">Hutang Pengadaan 2025 (Carry-over)</span>
-            <div className="text-lg font-bold text-slate-800 dark:text-zinc-200 mt-1">
+            <div className="text-lg font-bold text-slate-800 dark:text-zinc-200 mt-1 font-mono tracking-tight">
               {formatRupiah(sisaHutang2025)}
             </div>
             <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">Sarpras, Obat & BMHP 2025</span>
@@ -864,7 +864,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
 
           <div className="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60">
             <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 uppercase">Total Akumulasi Hutang Belum Lunas</span>
-            <div className="text-lg font-black text-indigo-700 dark:text-indigo-400 mt-1">
+            <div className="text-lg font-black text-indigo-700 dark:text-indigo-400 mt-1 font-mono tracking-tight">
               {formatRupiah(totalHutangKeseluruhan)}
             </div>
             <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium mt-1 block">Dalam batas rasio likuiditas aman</span>

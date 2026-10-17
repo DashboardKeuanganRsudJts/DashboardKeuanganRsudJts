@@ -26,55 +26,55 @@ export const KPICards: React.FC<KPICardsProps> = ({ stats, onFilterStatus }) => 
   return (
     <div className="space-y-4">
       {/* SECTION 1: TOTAL DATA CORETAX (Master PPN Truth) */}
-      <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white shadow-xl border border-slate-700/80">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-gradient-to-br from-rose-500/20 via-amber-500/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-gradient-to-tl from-cyan-500/20 via-purple-500/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white shadow-md border border-teal-200 dark:border-teal-900/60">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-gradient-to-br from-teal-500/10 via-emerald-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-gradient-to-tl from-cyan-500/10 via-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Top Rainbow Spectrum Bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 via-amber-400 via-emerald-400 via-cyan-400 via-blue-500 to-purple-500"></div>
+        <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-emerald-400 via-cyan-400 via-blue-500 to-emerald-500"></div>
 
         <div className="p-5 sm:p-6 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-700/60 pb-4 mb-5">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-teal-200/80 dark:border-slate-700/60 pb-4 mb-5">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-emerald-400 to-cyan-400 p-0.5 shadow-md shadow-emerald-500/20">
-                <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-emerald-300">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 p-0.5 shadow-md shadow-emerald-500/20">
+                <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-teal-700 dark:text-emerald-300">
                   <Receipt className="w-6 h-6" />
                 </div>
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base sm:text-lg font-black text-white tracking-wide">
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-wide">
                     TOTAL DATA CORETAX 2026
                   </h2>
-                  <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/30 to-teal-500/30 text-emerald-300 font-bold border border-emerald-400/40 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-emerald-500/30 text-teal-800 dark:text-emerald-300 font-bold border border-teal-300 dark:border-emerald-400/40 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-teal-600 dark:text-amber-300" />
                     Master Data PPN
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
                   Sumber kebenaran resmi nilai DPP dan PPN Faktur Pajak dari DJP Coretax 2026
                 </p>
               </div>
             </div>
 
-            {/* Realisasi Pelunasan Rainbow Gauge */}
-            <div className="flex items-center gap-3 text-xs bg-slate-800/90 px-4 py-2 rounded-xl border border-slate-700 shadow-inner">
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            {/* Realisasi Pelunasan Gauge */}
+            <div className="flex items-center gap-3 text-xs bg-white/90 dark:bg-slate-800/90 px-4 py-2 rounded-xl border border-teal-200 dark:border-slate-700 shadow-2xs">
+              <TrendingUp className="w-5 h-5 text-teal-600 dark:text-emerald-400" />
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-300 font-medium">Realisasi Pelunasan:</span>
-                  <span className="font-extrabold text-emerald-300 text-sm">
+                  <span className="text-slate-600 dark:text-slate-300 font-medium">Realisasi Pelunasan:</span>
+                  <span className="font-extrabold text-teal-800 dark:text-emerald-300 text-sm">
                     {percentPaid}%
                   </span>
                 </div>
-                <div className="w-48 h-2 bg-slate-700 rounded-full mt-1.5 overflow-hidden">
+                <div className="w-48 h-2 bg-slate-200 dark:bg-slate-700 rounded-full mt-1.5 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-rose-500 via-amber-400 via-emerald-400 to-cyan-400 rounded-full transition-all duration-700"
+                    className="h-full bg-gradient-to-r from-teal-500 via-emerald-400 to-cyan-400 rounded-full transition-all duration-700"
                     style={{ width: `${Math.min(100, Math.max(0, percentPaid))}%` }}
                   ></div>
                 </div>
               </div>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 ({stats.sudahDibayarCount}/{stats.totalFaktur} Faktur)
               </span>
             </div>
@@ -82,52 +82,52 @@ export const KPICards: React.FC<KPICardsProps> = ({ stats, onFilterStatus }) => 
 
           {/* 3 Main Metrics for Coretax */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-slate-800/80 rounded-xl p-4 border border-cyan-500/30 hover:border-cyan-400/60 transition-all shadow-xs group">
-              <div className="flex items-center justify-between text-xs font-semibold text-cyan-300">
+            <div className="bg-white/90 dark:bg-slate-800/80 rounded-xl p-4 border border-teal-200 dark:border-cyan-500/30 hover:border-teal-400 dark:hover:border-cyan-400/60 transition-all shadow-xs group">
+              <div className="flex items-center justify-between text-xs font-bold text-teal-800 dark:text-cyan-300">
                 <span>Jumlah Faktur Pajak Coretax</span>
-                <span className="w-2 h-2 rounded-full bg-cyan-400 group-hover:animate-ping"></span>
+                <span className="w-2 h-2 rounded-full bg-teal-500 dark:bg-cyan-400 group-hover:animate-ping"></span>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                   {formatNumber(stats.totalFaktur)}
                 </span>
-                <span className="text-xs text-slate-400 font-medium">dokumen</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">dokumen</span>
               </div>
-              <div className="mt-2 pt-2 border-t border-slate-700/60 text-[11px] text-slate-400 flex items-center justify-between">
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
                 <span>Periode Tahun:</span>
-                <span className="font-bold text-cyan-200">Jan – Des 2026</span>
+                <span className="font-bold font-mono text-teal-800 dark:text-cyan-200">Jan – Des 2026</span>
               </div>
             </div>
 
-            <div className="bg-slate-800/80 rounded-xl p-4 border border-amber-500/30 hover:border-amber-400/60 transition-all shadow-xs group">
-              <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
+            <div className="bg-white/90 dark:bg-slate-800/80 rounded-xl p-4 border border-amber-200 dark:border-amber-500/30 hover:border-amber-400 dark:hover:border-amber-400/60 transition-all shadow-xs group">
+              <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-300">
                 <span>Total DPP (Dasar Pengenaan Pajak)</span>
-                <span className="w-2 h-2 rounded-full bg-amber-400 group-hover:animate-ping"></span>
+                <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 group-hover:animate-ping"></span>
               </div>
               <div className="mt-2">
-                <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                   {formatRupiah(stats.totalDPP)}
                 </span>
               </div>
-              <div className="mt-2 pt-2 border-t border-slate-700/60 text-[11px] text-slate-400 flex items-center justify-between">
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
                 <span>Dasar Nilai Transaksi:</span>
-                <span className="font-bold text-amber-200">DPP Coretax</span>
+                <span className="font-bold text-amber-800 dark:text-amber-200">DPP Coretax</span>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-emerald-950/60 via-slate-800 to-teal-950/60 rounded-xl p-4 border border-emerald-500/40 hover:border-emerald-400/80 transition-all shadow-md shadow-emerald-950/30 group">
-              <div className="flex items-center justify-between text-xs font-bold text-emerald-300">
+            <div className="bg-emerald-50/80 dark:bg-gradient-to-br dark:from-emerald-950/60 dark:via-slate-800 dark:to-teal-950/60 rounded-xl p-4 border border-emerald-300 dark:border-emerald-500/40 hover:border-emerald-400 dark:hover:border-emerald-400/80 transition-all shadow-xs group">
+              <div className="flex items-center justify-between text-xs font-bold text-emerald-900 dark:text-emerald-300">
                 <span>Total PPN Tertera (Coretax)</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 group-hover:animate-ping"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 group-hover:animate-ping"></span>
               </div>
               <div className="mt-2">
-                <span className="text-xl sm:text-2xl font-black text-emerald-300 tracking-tight">
+                <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-emerald-700 dark:text-emerald-300">
                   {formatRupiah(stats.totalPPN)}
                 </span>
               </div>
-              <div className="mt-2 pt-2 border-t border-emerald-800/40 text-[11px] text-emerald-400/90 flex items-center justify-between">
+              <div className="mt-2 pt-2 border-t border-emerald-200/80 dark:border-emerald-800/40 text-[11px] text-emerald-800 dark:text-emerald-400/90 flex items-center justify-between">
                 <span>Kebenaran PPN:</span>
-                <span className="font-bold text-emerald-200">100% Coretax DJP</span>
+                <span className="font-bold text-emerald-900 dark:text-emerald-200">100% Coretax DJP</span>
               </div>
             </div>
           </div>
@@ -167,11 +167,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ stats, onFilterStatus }) => 
             </div>
 
             <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <div className="text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                 {stats.sudahDibayarCount}{' '}
-                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">Faktur Pajak</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 font-sans">Faktur Pajak</span>
               </div>
-              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-300 mt-1 bg-emerald-100/70 dark:bg-emerald-900/40 px-2 py-1 rounded-lg inline-block">
+              <div className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-300 mt-1 bg-emerald-100/70 dark:bg-emerald-900/40 px-2 py-1 rounded-lg inline-block">
                 PPN: {formatRupiah(stats.sudahDibayarPPN)}
               </div>
             </div>
@@ -200,11 +200,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ stats, onFilterStatus }) => 
             </div>
 
             <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <div className="text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                 {stats.belumDibayarCount}{' '}
-                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">Faktur Pajak</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 font-sans">Faktur Pajak</span>
               </div>
-              <div className="text-xs font-bold text-amber-800 dark:text-amber-300 mt-1 bg-amber-100/70 dark:bg-amber-900/40 px-2 py-1 rounded-lg inline-block">
+              <div className="text-xs font-bold font-mono text-amber-800 dark:text-amber-300 mt-1 bg-amber-100/70 dark:bg-amber-900/40 px-2 py-1 rounded-lg inline-block">
                 PPN: {formatRupiah(stats.belumDibayarPPN)}
               </div>
             </div>
@@ -233,11 +233,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ stats, onFilterStatus }) => 
             </div>
 
             <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <div className="text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                 {stats.tidakDitemukanCount}{' '}
-                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">Faktur Pajak</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 font-sans">Faktur Pajak</span>
               </div>
-              <div className="text-xs font-bold text-rose-700 dark:text-rose-300 mt-1 bg-rose-100/70 dark:bg-rose-900/40 px-2 py-1 rounded-lg inline-block">
+              <div className="text-xs font-bold font-mono text-rose-700 dark:text-rose-300 mt-1 bg-rose-100/70 dark:bg-rose-900/40 px-2 py-1 rounded-lg inline-block">
                 PPN: {formatRupiah(stats.tidakDitemukanPPN)}
               </div>
             </div>
@@ -266,11 +266,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ stats, onFilterStatus }) => 
             </div>
 
             <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <div className="text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                 {stats.hutangTanpaFakturCount}{' '}
-                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">Invoice</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 font-sans">Invoice</span>
               </div>
-              <div className="text-xs font-bold text-purple-700 dark:text-purple-300 mt-1 bg-purple-100/70 dark:bg-purple-900/40 px-2 py-1 rounded-lg inline-block">
+              <div className="text-xs font-bold font-mono text-purple-700 dark:text-purple-300 mt-1 bg-purple-100/70 dark:bg-purple-900/40 px-2 py-1 rounded-lg inline-block">
                 Di Data Hutang 2026
               </div>
             </div>

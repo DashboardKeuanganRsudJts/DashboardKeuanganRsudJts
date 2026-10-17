@@ -327,8 +327,8 @@ export const MonitoringTable: React.FC<MonitoringTableProps> = ({
       {/* Main Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-emerald-100/90 dark:bg-zinc-800 text-emerald-950 dark:text-zinc-300 font-bold border-b-2 border-emerald-300 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
               <th className="py-3.5 px-3.5 text-center">Bulan</th>
               
               <th

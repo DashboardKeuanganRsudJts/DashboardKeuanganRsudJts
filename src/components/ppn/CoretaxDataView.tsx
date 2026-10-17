@@ -112,8 +112,8 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 shadow-lg border border-slate-800">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-yellow-400 via-emerald-400 via-cyan-400 via-blue-500 to-purple-500"></div>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white p-5 shadow-md border border-teal-200 dark:border-teal-900/60">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 via-emerald-400 via-cyan-400 to-teal-600"></div>
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -122,15 +122,15 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-extrabold text-white tracking-tight">
-                  DATA PPN DARI CORETax
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  DATA PPN DARI CORETAX
                 </h2>
-                <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-xs">
-                  <Sparkles className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-emerald-500/30 text-teal-800 dark:text-emerald-300 font-bold border border-teal-300 dark:border-emerald-400/40 shadow-2xs">
+                  <Sparkles className="w-3 h-3 text-teal-600 dark:text-amber-300" />
                   13 Kolom Standar Coretax DJP
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                 Data master faktur pajak dari Coretax DJP 2026. Nilai PPN menjadi sumber acuan utama kebenaran pajak.
               </p>
             </div>
@@ -139,9 +139,9 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={downloadCoretaxTemplate}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-teal-200 dark:border-slate-700 shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Download className="w-3.5 h-3.5 text-cyan-400" />
+              <Download className="w-3.5 h-3.5 text-teal-600 dark:text-cyan-400" />
               <span>Format 13 Kolom Excel</span>
             </button>
 
@@ -268,9 +268,9 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
         {/* 13 Kolom Table Display */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[1300px]">
-            <thead>
-              <tr className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white font-bold text-[11px] uppercase tracking-wider select-none">
-                <th className="py-3.5 px-3 text-center w-12 text-slate-300">No</th>
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold text-[11px] uppercase tracking-wider select-none border-b-2 border-emerald-300 dark:border-emerald-900/60">
+                <th className="py-3.5 px-3 text-center w-12 text-slate-600 dark:text-slate-300">No</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">1. NPWP Penjual</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">2. Nama Penjual</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">3. Nomor Faktur</th>
@@ -280,12 +280,12 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
                 <th className="py-3.5 px-3 text-center whitespace-nowrap">7. Status Faktur</th>
                 <th className="py-3.5 px-3 text-right whitespace-nowrap">8. Harga Jual/Penggantian</th>
                 <th className="py-3.5 px-3 text-right whitespace-nowrap">9. DPP Nilai Lain/DPP</th>
-                <th className="py-3.5 px-3 text-right whitespace-nowrap bg-emerald-700/80 text-white font-extrabold shadow-inner">
+                <th className="py-3.5 px-3 text-right whitespace-nowrap bg-emerald-200/90 dark:bg-emerald-800/80 text-emerald-950 dark:text-white font-extrabold shadow-inner">
                   10. PPN (Master)
                 </th>
                 <th className="py-3.5 px-3 text-right whitespace-nowrap">11. Nilai Invoice</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">12. Perekam</th>
-                <th className="py-3.5 px-3.5 whitespace-nowrap bg-indigo-700/80 text-white font-extrabold shadow-inner">
+                <th className="py-3.5 px-3.5 whitespace-nowrap bg-teal-200/90 dark:bg-indigo-800/80 text-teal-950 dark:text-white font-extrabold shadow-inner">
                   13. Nomor invoice
                 </th>
                 {canEdit && (

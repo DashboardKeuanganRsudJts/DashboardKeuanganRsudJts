@@ -257,17 +257,17 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header & Group Selector Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs border border-emerald-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md border border-teal-200 dark:border-teal-900/60">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-xs font-semibold mb-2">
               <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Sheet: Semua_Rekapan</span>
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Semua Rekapan Piutang Pelayanan RSUD 2026
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+            <p className="text-xs text-slate-600 dark:text-teal-200/80 mt-1">
               Rekapitulasi 10 kelompok penjamin: BPJS, Kemenkes, Karawang Sehat, Global Fund, Skrining TB/TCM, Perusahaan & Asuransi, Sewa Lahan, dan Utilitas Listrik.
             </p>
           </div>
@@ -295,11 +295,11 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
       </div>
 
       {/* 2. Group Total KPI Banner - Exact matching Screenshot 4 */}
-      <div className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-950 dark:text-white rounded-xl p-4 shadow-xs border border-emerald-200 dark:border-emerald-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-4 sm:p-5 shadow-xs border border-teal-200 dark:border-teal-900/60">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           
           <div className="flex items-center gap-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-xs">
+            <span className="text-xs font-extrabold uppercase tracking-wider bg-teal-800 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-lg shadow-xs">
               GRUP BULAN: {selectedBulanGroup} 2026
             </span>
             {isAdmin && (
@@ -411,8 +411,8 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
       <div className="bg-white dark:bg-[#0d1216] rounded-2xl border border-slate-200 dark:border-emerald-950/80 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-teal-900 text-white font-semibold border-b border-teal-800">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
                 <th className="py-2.5 px-3">Bulan</th>
                 <th className="py-2.5 px-2 text-center">No</th>
                 <th className="py-2.5 px-3">Nama Penjamin</th>
@@ -571,7 +571,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
                 })
               )}
             </tbody>
-            <tfoot className="bg-slate-100 dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-slate-300 dark:border-zinc-800">
+            <tfoot className="bg-emerald-50/70 dark:bg-[#12181f] font-bold text-slate-900 dark:text-emerald-100 border-t-2 border-emerald-200 dark:border-zinc-800">
               <tr>
                 <td colSpan={3} className="py-3 px-3 text-right uppercase text-slate-700 dark:text-zinc-300">
                   Total Grup {selectedBulanGroup}:

@@ -67,35 +67,35 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
       {/* Header Audit Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white p-5 shadow-lg border border-slate-800">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-amber-400 to-purple-500"></div>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white p-5 shadow-md border border-teal-200 dark:border-teal-900/60">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 via-emerald-400 to-cyan-400"></div>
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 text-white flex items-center justify-center shadow-md shadow-rose-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-teal-500/20">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-extrabold text-white tracking-tight">
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
                   AUDIT & ANALISIS SELISIH REKONSILIASI
                 </h2>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-rose-500/30 text-rose-300 font-bold border border-rose-500/40 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-amber-300" />
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-rose-500/30 text-teal-800 dark:text-rose-300 font-bold border border-teal-300 dark:border-rose-500/40 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-teal-600 dark:text-amber-300" />
                   Deteksi Anomali
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                 Pemeriksaan perbedaan nominal, faktur pajak tanpa data hutang, dan invoice hutang yang belum diterbitkan faktur pajaknya.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="bg-slate-800/90 px-3.5 py-2 rounded-xl border border-slate-700 text-xs flex items-center gap-3">
+            <div className="bg-white/90 dark:bg-slate-800/90 px-3.5 py-2 rounded-xl border border-teal-200 dark:border-slate-700 text-xs flex items-center gap-3 shadow-2xs">
               <div>
-                <div className="text-[10px] text-slate-400">Total Selisih Nominal</div>
-                <div className="text-sm font-extrabold text-amber-300 font-mono">
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">Total Selisih Nominal</div>
+                <div className="text-sm font-extrabold text-amber-700 dark:text-amber-300 font-mono">
                   {formatRupiah(
                     discrepancies.reduce((a, b) => {
                       const coretaxVal = (b.dpp || 0) + (b.ppn || 0);
@@ -105,10 +105,10 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
                   )}
                 </div>
               </div>
-              <div className="h-6 w-px bg-slate-700"></div>
+              <div className="h-6 w-px bg-teal-200 dark:bg-slate-700"></div>
               <div>
-                <div className="text-[10px] text-slate-400">Total Anomali</div>
-                <div className="text-sm font-extrabold text-rose-400">
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">Total Anomali</div>
+                <div className="text-sm font-extrabold text-rose-700 dark:text-rose-400">
                   {discrepancies.length + unlinkedCoretax.length + unlinkedHutang.length} Kasus
                 </div>
               </div>
@@ -174,8 +174,8 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
         {activeTab === 'discrepancies' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-emerald-100/90 dark:bg-zinc-800 text-emerald-950 dark:text-zinc-300 font-bold border-b-2 border-emerald-300 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
                   <th className="py-3 px-3.5">No Invoice</th>
                   <th className="py-3 px-3">No Faktur (Coretax)</th>
                   <th className="py-3 px-3">Vendor / Rekanan</th>
@@ -246,8 +246,8 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
         {activeTab === 'unlinked_coretax' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-emerald-100/90 dark:bg-zinc-800 text-emerald-950 dark:text-zinc-300 font-bold border-b-2 border-emerald-300 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
                   <th className="py-3 px-3.5">Masa</th>
                   <th className="py-3 px-3">Nomor Faktur (Coretax)</th>
                   <th className="py-3 px-3">Tanggal Faktur</th>
@@ -320,8 +320,8 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
         {activeTab === 'unlinked_hutang' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-emerald-100/90 dark:bg-zinc-800 text-emerald-950 dark:text-zinc-300 font-bold border-b-2 border-emerald-300 dark:border-zinc-700 text-[11px] uppercase tracking-wider">
                   <th className="py-3 px-3.5">Nomor Invoice</th>
                   <th className="py-3 px-3">Vendor / Rekanan</th>
                   <th className="py-3 px-3 text-right">Nilai Tagihan Hutang</th>

@@ -341,13 +341,13 @@ export const PendapatanBludView: React.FC<PendapatanBludViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Target Penerimaan</div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{formatRupiah(totalTarget)}</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white mt-2">{formatRupiah(totalTarget)}</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400 mt-2 font-medium">Pagu Anggaran 2026</div>
         </div>
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Realisasi Penerimaan</div>
-          <div className="text-2xl font-black text-teal-700 dark:text-emerald-400 mt-2">{formatRupiah(totalRealisasi)}</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-teal-700 dark:text-emerald-400 mt-2">{formatRupiah(totalRealisasi)}</div>
           <div className="text-xs text-teal-600 dark:text-emerald-400 mt-2 font-semibold flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" /> Masuk Kas BLUD RSUD
           </div>
@@ -355,7 +355,7 @@ export const PendapatanBludView: React.FC<PendapatanBludViewProps> = ({
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Rasio Pencapaian</div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{persentasePencapaian.toFixed(1)}%</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white mt-2">{persentasePencapaian.toFixed(1)}%</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400 mt-2">Kinerja Keuangan Optimal</div>
         </div>
       </div>

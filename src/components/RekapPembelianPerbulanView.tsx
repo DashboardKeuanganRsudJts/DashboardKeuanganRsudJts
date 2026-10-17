@@ -175,16 +175,16 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white dark:bg-[#0f172a] p-5 rounded-xl shadow-xs border border-emerald-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 p-6 rounded-2xl shadow-md border border-teal-200 dark:border-teal-900/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1 font-mono">
-            <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-teal-300 dark:border-teal-500/30 font-mono">
+            <Building2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
             <span className="uppercase tracking-wider">RSUD JATISARI · AUDIT PEMBUKUAN BLUD</span>
           </div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight uppercase">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white uppercase">
             REKAP {type.toUpperCase()} INVOICE PERBULAN
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 dark:text-teal-200/80 mt-1">
             Agregasi transaksi bulanan terverifikasi dari sumber pembukuan Invoice Hutang RSUD Jatisari TA 2026.
           </p>
         </div>
@@ -226,11 +226,11 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
               {filteredData.map((row, idx) => {
-                let rowBgClass = "hover:bg-blue-50/20 dark:hover:bg-slate-800/40 transition group";
+                let rowBgClass = "hover:bg-emerald-50/50 dark:hover:bg-slate-800/40 transition group bg-white dark:bg-[#0f172a]";
                 if (row.uraian.includes('USG')) {
                   rowBgClass = "bg-amber-50/60 hover:bg-amber-100/60 text-amber-950 dark:bg-amber-950/20 dark:text-amber-200";
                 } else if (row.uraian.includes('Alat Tulis Kantor')) {
-                  rowBgClass = "bg-sky-50/60 hover:bg-sky-100/60 text-sky-950 dark:bg-sky-950/20 dark:text-sky-200";
+                  rowBgClass = "bg-emerald-50/40 hover:bg-emerald-100/50 text-emerald-950 dark:bg-teal-950/20 dark:text-teal-200";
                 }
 
                 return (
@@ -252,7 +252,7 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
                       </td>
                     );
                   })}
-                  <td className="px-4 py-2.5 text-right font-mono font-bold border-l-2 border-blue-500/30 text-blue-800 dark:text-blue-300 bg-blue-50/20 dark:bg-blue-950/20">
+                  <td className="px-4 py-2.5 text-right font-mono font-bold border-l-2 border-emerald-500/30 text-emerald-900 dark:text-emerald-300 bg-emerald-50/30 dark:bg-emerald-950/20">
                     {formatRupiah(row.totalTahunIni)}
                   </td>
                 </tr>
@@ -266,21 +266,21 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
                 </tr>
               )}
             </tbody>
-            <tfoot className="bg-slate-900 font-bold text-white border-t-2 border-slate-700">
+            <tfoot className="bg-slate-700 font-bold text-white border-t-2 border-slate-600">
               <tr>
-                <td colSpan={3} className="px-4 py-3 text-right text-slate-300">TOTAL KESELURUHAN:</td>
-                <td className="px-4 py-3 text-right font-mono bg-slate-950">
+                <td colSpan={3} className="px-4 py-3 text-right text-slate-100">TOTAL KESELURUHAN:</td>
+                <td className="px-4 py-3 text-right font-mono bg-slate-800">
                   <div className="flex justify-between items-center w-full">
                     <span className="text-[10px] text-slate-400">Rp</span>
                     <span>{grandTotals.total2025 > 0 ? formatRupiah(grandTotals.total2025) : '-'}</span>
                   </div>
                 </td>
                 {MONTHS.map(m => (
-                  <td key={m} className="px-4 py-3 text-right font-mono border-l border-slate-700">
+                  <td key={m} className="px-4 py-3 text-right font-mono border-l border-slate-600">
                     {grandTotals[m] > 0 ? formatRupiah(grandTotals[m]) : '0'}
                   </td>
                 ))}
-                <td className="px-4 py-3 text-right font-mono text-base font-extrabold text-blue-300 bg-blue-950 border-l border-slate-700">
+                <td className="px-4 py-3 text-right font-mono text-base font-extrabold text-blue-200 bg-blue-900 border-l border-slate-600">
                   {formatRupiah(grandTotals.totalTahunIni)}
                 </td>
               </tr>

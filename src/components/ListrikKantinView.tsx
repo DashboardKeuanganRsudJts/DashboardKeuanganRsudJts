@@ -564,22 +564,19 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs border border-emerald-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md border border-teal-200 dark:border-teal-900/60">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold">
-                <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-500/30 text-xs font-semibold">
+                <Zap className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                 <span>Sheet: Listrik_Kantin ({stands.length} Stand Terdaftar)</span>
               </div>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 font-medium">
-                Aktif Sinkron 2026
-              </span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Monitoring & Pengelolaan Piutang Listrik Kantin RSUD
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-2xl">
+            <p className="text-xs text-slate-600 dark:text-teal-200/80 mt-1 max-w-2xl leading-relaxed">
               Pencatatan pemakaian listrik bulanan seluruh penyewa stand kantin food court RSUD: Ayam Geprek, Bu Aas, Bu Nenden, Teh Dewi, Pak Suan, Bu Rini, Pak Riska.
             </p>
           </div>
@@ -630,8 +627,8 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
       {/* 2. Stand Summary Cards Grid (All 7 Stands) */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-slate-800 dark:text-amber-50 flex items-center gap-2">
-            <Store className="w-4 h-4 text-amber-700" />
+          <h2 className="text-sm font-bold text-slate-800 dark:text-emerald-100 flex items-center gap-2">
+            <Store className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             <span>Ringkasan 7 Stand Kantin RSUD ({stands.length} Stand Terdata)</span>
           </h2>
           <span className="text-xs text-slate-500 dark:text-slate-400">Klik stand untuk memfilter tabel di bawah</span>
@@ -654,20 +651,20 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               <div
                 key={`stand-card-${stand.namaStand}-${sIdx}`}
                 onClick={() => setSelectedStandName(isSelected ? 'semua' : stand.namaStand)}
-                className={`bg-white dark:bg-[#140b07] rounded-xl p-4 border transition cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                className={`bg-white dark:bg-[#071311] rounded-xl p-4 border transition cursor-pointer relative overflow-hidden flex flex-col justify-between ${
                   isSelected 
-                    ? 'border-amber-500 ring-2 ring-amber-400/30 shadow-md bg-amber-50/20 dark:bg-amber-950/20' 
-                    : 'border-slate-200 dark:border-amber-900/40 hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-2xs'
+                    ? 'border-emerald-500 ring-2 ring-emerald-400/30 shadow-md bg-emerald-50/40 dark:bg-emerald-950/20' 
+                    : 'border-slate-200 dark:border-emerald-900/40 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-2xs'
                 }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[9px] font-extrabold uppercase border border-amber-200 dark:border-amber-800 mb-1">
-                        <Store className="w-2.5 h-2.5 text-amber-700" />
+                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 text-[9px] font-extrabold uppercase border border-emerald-200 dark:border-emerald-800 mb-1">
+                        <Store className="w-2.5 h-2.5 text-emerald-700 dark:text-emerald-400" />
                         <span>Food Court RSUD</span>
                       </div>
-                      <h3 className="text-sm font-black text-slate-900 dark:text-amber-50 leading-snug">{stand.namaStand}</h3>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-emerald-50 leading-snug">{stand.namaStand}</h3>
                     </div>
 
                     <div className="text-right">
@@ -682,18 +679,18 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-slate-100 grid grid-cols-3 gap-1 text-center text-xs">
+                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-emerald-950 grid grid-cols-3 gap-1 text-center text-xs">
                   <div>
                     <div className="text-[9px] text-slate-400 font-semibold uppercase">Tagihan</div>
                     <div className="font-bold text-slate-800 dark:text-white font-mono text-[11px] mt-0.5 truncate">{formatRupiah(cardTagihan)}</div>
                   </div>
                   <div>
                     <div className="text-[9px] text-slate-400 font-semibold uppercase">Setoran</div>
-                    <div className="font-bold text-emerald-700 font-mono text-[11px] mt-0.5 truncate">{formatRupiah(cardBayar)}</div>
+                    <div className="font-bold text-emerald-700 dark:text-emerald-400 font-mono text-[11px] mt-0.5 truncate">{formatRupiah(cardBayar)}</div>
                   </div>
                   <div>
                     <div className="text-[9px] text-slate-400 font-semibold uppercase">Sisa</div>
-                    <div className="font-bold text-rose-700 font-mono text-[11px] mt-0.5 truncate">{formatRupiah(cardSisa)}</div>
+                    <div className="font-bold text-rose-700 dark:text-rose-400 font-mono text-[11px] mt-0.5 truncate">{formatRupiah(cardSisa)}</div>
                   </div>
                 </div>
               </div>
@@ -703,17 +700,17 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
       </div>
 
       {/* 3. Filter Bar with Dedicated MONTH SELECTOR */}
-      <div className="bg-white dark:bg-[#140b07] rounded-xl border border-slate-200 dark:border-amber-900/40 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white dark:bg-[#071311] rounded-xl border border-slate-200 dark:border-emerald-900/40 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           
           {/* OPSI PILIH BULAN */}
-          <div className="flex items-center gap-1.5 bg-amber-50/80 dark:bg-amber-950/30 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-900/50">
-            <Calendar className="w-3.5 h-3.5 text-amber-800 dark:text-amber-500" />
-            <span className="text-xs text-amber-950 dark:text-amber-200 font-bold">Pilih Bulan:</span>
+          <div className="flex items-center gap-1.5 bg-emerald-50/80 dark:bg-emerald-950/30 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-900/50">
+            <Calendar className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+            <span className="text-xs text-emerald-950 dark:text-emerald-200 font-bold">Pilih Bulan:</span>
             <select
               value={selectedBulan}
               onChange={(e) => setSelectedBulan(e.target.value)}
-              className="bg-white dark:bg-[#2b170e] rounded-md border border-amber-300 dark:border-amber-800 px-2.5 py-1 text-xs text-amber-900 dark:text-amber-100 font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none cursor-pointer"
+              className="bg-white dark:bg-[#0c1f1c] rounded-md border border-emerald-300 dark:border-emerald-800 px-2.5 py-1 text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
             >
               {BULAN_OPTIONS.map((b, bIdx) => (
                 <option key={`listrik-bulan-filter-${b}-${bIdx}`} value={b}>{b}</option>
@@ -727,7 +724,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
             <select
               value={selectedStandName}
               onChange={(e) => setSelectedStandName(e.target.value)}
-              className="rounded-lg border border-slate-200 dark:border-amber-900/50 dark:bg-[#2b170e] px-2.5 py-1.5 text-xs text-slate-700 dark:text-amber-100 font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              className="rounded-lg border border-slate-200 dark:border-emerald-900/50 dark:bg-[#0c1f1c] px-2.5 py-1.5 text-xs text-slate-700 dark:text-emerald-100 font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             >
               <option value="semua">Semua Stand Kantin ({stands.length} Stand)</option>
               {stands.map((st, stIdx) => (
@@ -742,7 +739,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="rounded-lg border border-slate-200 dark:border-amber-900/50 dark:bg-[#2b170e] px-2.5 py-1.5 text-xs text-slate-700 dark:text-amber-100 font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              className="rounded-lg border border-slate-200 dark:border-emerald-900/50 dark:bg-[#0c1f1c] px-2.5 py-1.5 text-xs text-slate-700 dark:text-emerald-100 font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             >
               <option value="Semua">Semua Status</option>
               <option value="Lunas">Lunas</option>
@@ -753,13 +750,13 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="text-xs font-mono font-bold text-slate-700 dark:text-amber-100">
+          <div className="text-xs font-mono font-bold text-slate-700 dark:text-emerald-100">
             Akumulasi Sisa ({selectedBulan}): <span className="text-rose-700 dark:text-rose-500 text-sm font-extrabold">{formatRupiah(grandTotal.totalSisa)}</span>
           </div>
           {isAdmin && (
             <button
               onClick={handleOpenNewTagihan}
-              className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs"
+              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>+ Update Tagihan</span>
@@ -786,51 +783,51 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
             const subtotalSisa = displayedMonths.reduce((s, r) => s + r.sisaPiutang, 0);
 
             return (
-              <div key={`stand-section-${stand.namaStand}-${sIdx}`} className="bg-white dark:bg-[#140b07] rounded-2xl border border-slate-200 dark:border-amber-900/40 shadow-2xs overflow-hidden">
+              <div key={`stand-section-${stand.namaStand}-${sIdx}`} className="bg-white dark:bg-[#071311] rounded-2xl border border-emerald-200 dark:border-emerald-900/40 shadow-xs overflow-hidden">
                 
-                {/* Stand Header */}
-                <div className="bg-amber-950 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-amber-800/80 flex items-center justify-center text-amber-200">
-                      <Zap className="w-4 h-4" />
+                {/* Stand Header Banner */}
+                <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-200 dark:border-emerald-900/60">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-200 dark:border-teal-800 shadow-2xs">
+                      <Zap className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-black text-white tracking-wide uppercase">
+                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-wide uppercase">
                           Stand: {stand.namaStand}
                         </h3>
-                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded">
+                        <span className="px-2 py-0.5 bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-[10px] font-bold rounded border border-teal-300 dark:border-teal-500/30">
                           12 Bulan Rekap
                         </span>
                       </div>
-                      <p className="text-[11px] text-amber-200/80 mt-0.5">
+                      <p className="text-[11px] text-slate-600 dark:text-teal-200/80 mt-0.5">
                         Food Court RSUD Jatisari • Tagihan Listrik Berjalan ({selectedBulan})
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 sm:gap-4 text-right text-xs">
-                    <div>
-                      <span className="text-amber-300/80 text-[10px] block">Total Tagihan</span>
-                      <strong className="font-mono">{formatRupiah(subtotalTagihan)}</strong>
+                    <div className="bg-white/80 dark:bg-black/30 px-3 py-1.5 rounded-lg border border-teal-100 dark:border-teal-900/40">
+                      <span className="text-slate-500 dark:text-slate-400 text-[10px] block font-semibold">Total Tagihan</span>
+                      <strong className="font-mono text-slate-900 dark:text-white font-bold">{formatRupiah(subtotalTagihan)}</strong>
                     </div>
-                    <div>
-                      <span className="text-emerald-300 text-[10px] block">Terbayar</span>
-                      <strong className="font-mono text-emerald-300">{formatRupiah(subtotalBayar)}</strong>
+                    <div className="bg-white/80 dark:bg-black/30 px-3 py-1.5 rounded-lg border border-teal-100 dark:border-teal-900/40">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-[10px] block font-semibold">Terbayar</span>
+                      <strong className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{formatRupiah(subtotalBayar)}</strong>
                     </div>
-                    <div>
-                      <span className="text-rose-300 text-[10px] block">Sisa Piutang</span>
-                      <strong className="font-mono text-rose-300">{formatRupiah(subtotalSisa)}</strong>
+                    <div className="bg-white/80 dark:bg-black/30 px-3 py-1.5 rounded-lg border border-teal-100 dark:border-teal-900/40">
+                      <span className="text-rose-700 dark:text-rose-400 text-[10px] block font-semibold">Sisa Piutang</span>
+                      <strong className="font-mono text-rose-700 dark:text-rose-400 font-bold">{formatRupiah(subtotalSisa)}</strong>
                     </div>
 
                     {/* Delete Stand Button */}
                     {isSuperAdmin && (
                       <button
                         onClick={() => handleDeleteStand(stand.namaStand)}
-                        className="ml-1 p-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/60 transition flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95"
+                        className="ml-1 p-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/80 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 hover:text-rose-800 border border-rose-200 dark:border-rose-800/60 transition flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95 cursor-pointer"
                         title={`Hapus stand ${stand.namaStand} dari sistem`}
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                         <span className="hidden sm:inline">Hapus Stand</span>
                       </button>
                     )}
@@ -840,8 +837,8 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                 {/* Monthly Breakdown Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 dark:bg-amber-950/40 text-slate-700 dark:text-amber-100 font-semibold border-b border-slate-200 dark:border-amber-900/40">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
                         <th className="py-2.5 px-3">Bulan</th>
                         <th className="py-2.5 px-2 text-center">No</th>
                         <th className="py-2.5 px-3">Tanggal / Bulan</th>
@@ -930,7 +927,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                                   {canModifyRecord(m) && (
                                     <button
                                       onClick={() => handleOpenPay(stand.namaStand, m)}
-                                      className="p-1 rounded-md hover:bg-amber-50 text-amber-800 border border-amber-200 transition"
+                                      className="p-1 rounded-md hover:bg-emerald-50 text-emerald-800 border border-emerald-200 transition"
                                       title="Catat Pembayaran Cepat"
                                     >
                                       <CreditCard className="w-3.5 h-3.5" />
@@ -953,12 +950,12 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                       )}
                     </tbody>
                     {displayedMonths.length > 0 && (
-                      <tfoot className="bg-slate-50 dark:bg-amber-950/40 font-bold text-slate-900 dark:text-amber-100 border-t border-slate-200 dark:border-amber-900/40">
+                      <tfoot className="bg-emerald-50/60 dark:bg-emerald-950/40 font-bold text-slate-900 dark:text-emerald-100 border-t border-emerald-200 dark:border-emerald-900/40">
                         <tr>
                           <td colSpan={3} className="py-2.5 px-3 text-right uppercase text-[11px]">
                             Subtotal {stand.namaStand} ({selectedBulan}):
                           </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-slate-900 dark:text-amber-100">
+                          <td className="py-2.5 px-3 text-right font-mono text-slate-900 dark:text-emerald-100">
                             {formatRupiah(subtotalTagihan)}
                           </td>
                           <td></td>
@@ -985,17 +982,17 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
       {/* 5. Comprehensive UPDATE / INPUT TAGIHAN MODAL (Matching Perusahaan & Asuransi module) */}
       {isUpdateTagihanOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white dark:bg-[#1a0f0a] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-amber-900/40 space-y-4 my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="bg-white dark:bg-[#071311] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-emerald-900/40 space-y-4 my-8">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-emerald-950">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <Zap className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-teal-700" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
                     Form Update / Input Tagihan Listrik Kantin
                   </h3>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     Perbarui tagihan bulanan stand kantin atau daftarkan stand baru
                   </p>
                 </div>

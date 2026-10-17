@@ -279,15 +279,15 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-teal-200 dark:border-teal-900/60">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-emerald-800">
-            <TrendingDown className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Sub Bagian Keuangan • Pengeluaran Belanja BLUD
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-teal-300 dark:border-teal-500/30">
+            <TrendingDown className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Sub Bagian Keuangan • Pengeluaran Belanja BLUD
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Laporan Pengeluaran BLUD RSUD Jatisari
           </h2>
-          <p className="text-slate-600 dark:text-slate-300 text-xs mt-1 max-w-2xl leading-relaxed">
+          <p className="text-slate-600 dark:text-teal-200/80 text-xs mt-1 max-w-2xl leading-relaxed">
             Realisasi pengeluaran kas belanja pegawai, obat-obatan/BMHP, utilitas operasional, dan belanja modal alkes.
           </p>
         </div>
@@ -295,7 +295,7 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
         {isPicPengeluaranOrAdmin && (
           <button
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-teal-500/40"
           >
             <Plus className="w-4 h-4" /> Entri Pengeluaran Baru
           </button>
@@ -323,13 +323,13 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Realisasi Belanja</div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{formatRupiah(totalPengeluaran)}</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white mt-2">{formatRupiah(totalPengeluaran)}</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400 mt-2 font-medium">Beban Kas BLUD 2026</div>
         </div>
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Belanja Terbayar (SPJ Lunas)</div>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">{formatRupiah(totalLunas)}</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-rose-600 dark:text-rose-400 mt-2">{formatRupiah(totalLunas)}</div>
           <div className="text-xs text-rose-600 dark:text-rose-400 mt-2 font-semibold flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" /> SP2D Kasda / BKU Selesai
           </div>
@@ -337,7 +337,7 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Pos Transaksi</div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{filteredItems.length} Transaksi</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white mt-2">{filteredItems.length} Transaksi</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400 mt-2">Tertib Administrasi SPJ</div>
         </div>
       </div>

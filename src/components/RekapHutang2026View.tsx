@@ -407,16 +407,16 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-teal-200 dark:border-teal-900/60">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-emerald-800">
-            <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Sub Bagian Keuangan & Pengadaan
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-teal-300 dark:border-teal-500/30">
+            <Building2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Sub Bagian Keuangan & Pengadaan
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             REKAP PENGADAAN HUTANG 2026
           </h2>
-          <p className="text-slate-600 dark:text-slate-300 text-xs mt-1 max-w-2xl leading-relaxed">
-            Data tersinkronisasi langsung dari sub menu <strong className="font-semibold text-emerald-700 dark:text-emerald-400">INVOICE HUTANG 2026</strong> berdasarkan Jenis Pengadaan & Pos Belanja RSUD Jatisari TA 2026.
+          <p className="text-slate-600 dark:text-teal-200/80 text-xs mt-1 max-w-2xl leading-relaxed">
+            Data tersinkronisasi langsung dari sub menu <strong className="font-semibold text-teal-700 dark:text-teal-400">INVOICE HUTANG 2026</strong> berdasarkan Jenis Pengadaan & Pos Belanja RSUD Jatisari TA 2026.
           </p>
         </div>
 
@@ -424,13 +424,13 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
           <div className="flex gap-2">
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-500/40"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-700 hover:bg-teal-600 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-teal-600/40"
             >
               <FileSpreadsheet className="w-4 h-4" /> Import Excel
             </button>
             <button
               onClick={handleOpenAdd}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-600/40"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-xl text-xs shadow-md transition transform active:scale-95 border border-teal-500/40"
             >
               <Plus className="w-4 h-4" /> ENTRI PENGADAAN
             </button>
@@ -461,33 +461,33 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Saldo Awal (2026)</div>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-2">{formatRupiah(totalSaldoAwal)}</div>
-          <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-2 font-medium">
-            Total Fix (+Koreksi): <span className="font-semibold text-emerald-700 dark:text-emerald-400">{formatRupiah(totalFix)}</span>
+          <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-slate-900 dark:text-white mt-2 whitespace-nowrap">{formatRupiah(totalSaldoAwal)}</div>
+          <div className="text-[10px] sm:text-[10.5px] text-slate-500 dark:text-zinc-400 mt-2 font-medium whitespace-nowrap">
+            Total Fix (+Koreksi): <span className="font-semibold font-mono text-emerald-700 dark:text-emerald-400">{formatRupiah(totalFix)}</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Realisasi Pembayaran</div>
-          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{formatRupiah(totalSudahDibayar)}</div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-2 font-semibold flex items-center gap-1">
+          <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-emerald-600 dark:text-emerald-400 mt-2 whitespace-nowrap">{formatRupiah(totalSudahDibayar)}</div>
+          <div className="text-[10px] sm:text-[10.5px] text-emerald-600 dark:text-emerald-400 mt-2 font-semibold flex items-center gap-1 whitespace-nowrap">
             <CheckCircle2 className="w-3.5 h-3.5" /> {lunasCount} Pos Belanja Lunas
           </div>
         </div>
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Saldo Akhir (Sisa Hutang)</div>
-          <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-2">{formatRupiah(totalHutangAktif)}</div>
-          <div className="text-[11px] text-rose-600 dark:text-rose-400 mt-2 font-medium flex items-center gap-1">
+          <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-rose-600 dark:text-rose-400 mt-2 whitespace-nowrap">{formatRupiah(totalHutangAktif)}</div>
+          <div className="text-[10px] sm:text-[10.5px] text-rose-600 dark:text-rose-400 mt-2 font-medium flex items-center gap-1 whitespace-nowrap">
             <Clock className="w-3.5 h-3.5" /> {belumLunasCount} Pos Belum Lunas
           </div>
         </div>
 
         <div className="bg-white dark:bg-[#0d1216] rounded-2xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Pos Belanja 2026</div>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-2">{displayedItems.length} Pos Belanja</div>
-          <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-2 font-medium">
-            Total Koreksi: <span className="font-semibold text-amber-600 dark:text-amber-400">{formatRupiah(totalKoreksi)}</span>
+          <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-slate-900 dark:text-white mt-2 whitespace-nowrap">{displayedItems.length} Pos Belanja</div>
+          <div className="text-[10px] sm:text-[10.5px] text-slate-500 dark:text-zinc-400 mt-2 font-medium whitespace-nowrap">
+            Total Koreksi: <span className="font-semibold font-mono text-amber-600 dark:text-amber-400">{formatRupiah(totalKoreksi)}</span>
           </div>
         </div>
       </div>
@@ -632,16 +632,16 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
                       {formatRupiah(saldoAwal)}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
                       {koreksi > 0 ? formatRupiah(koreksi) : '-'}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
                       {pembayaran > 0 ? formatRupiah(pembayaran) : '-'}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-bold border-r border-slate-200 dark:border-zinc-800">
+                    <td className="px-4 py-2.5 text-right font-mono font-bold border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
                       {saldoAkhir > 0 ? (
                         <span className="inline-block px-2 py-0.5 rounded bg-[#d7a9be] dark:bg-[#722c4d] text-slate-900 dark:text-pink-100 font-bold">
                           {formatRupiah(saldoAkhir)}
@@ -689,16 +689,16 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
                 <td colSpan={2} className="px-4 py-3 text-right uppercase tracking-wider text-xs border-r border-[#b8dbc6] dark:border-[#2b5a45]">
                   TOTAL KESELURUHAN:
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs border-r border-[#b8dbc6] dark:border-[#2b5a45]">
+                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalSaldoAwal)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs border-r border-[#b8dbc6] dark:border-[#2b5a45]">
+                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalKoreksi)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs border-r border-[#b8dbc6] dark:border-[#2b5a45]">
+                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalSudahDibayar)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-rose-900 dark:text-pink-300 border-r border-[#b8dbc6] dark:border-[#2b5a45]">
+                <td className="px-4 py-3 text-right font-mono text-[11px] text-rose-900 dark:text-pink-300 border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalHutangAktif)}
                 </td>
                 <td className="px-3 py-3 text-center font-mono text-[11px] text-emerald-800 dark:text-emerald-300">

@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --color-rsud-green: #0284c7;
   --color-rsud-blue: #1e40af;
@@ -12,12 +12,28 @@
 /* Base styles */
 html {
   transition: background-color 0.15s ease, color 0.15s ease;
+  font-family: var(--font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
 }
 
-/* Tabular numbers for financial data accuracy */
-.tabular-nums, table, td, th {
+body, button, input, select, textarea {
+  font-family: var(--font-sans);
+}
+
+/* Tabular numbers and JetBrains Mono for all financial numbers and nominal Rupiah */
+.tabular-nums,
+.font-mono,
+[class*="font-mono"],
+td.text-right,
+th.text-right,
+table td.text-right,
+table th.text-right,
+tfoot td,
+input.font-mono,
+input[type="number"] {
+  font-family: var(--font-mono) !important;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
 }
 
 html.dark {

@@ -1093,15 +1093,15 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     <div className="space-y-6">
       
       {/* 1. Header Banner */}
-      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-emerald-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/70 to-cyan-50 dark:from-teal-950 dark:via-[#061914] dark:to-emerald-950 text-slate-900 dark:text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-teal-200 dark:border-teal-900/60">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-teal-500/20 text-emerald-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-emerald-200 dark:border-teal-400/30">
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 dark:text-teal-300" /> DATA MASTER INVOICE 2026
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-2 border border-teal-300 dark:border-teal-500/30">
+            <FileSpreadsheet className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> DATA MASTER INVOICE 2026
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             INVOICE HUTANG TAHUN 2026
           </h2>
-          <p className="text-slate-600 dark:text-teal-100/80 text-xs mt-1 max-w-2xl leading-relaxed">
+          <p className="text-slate-600 dark:text-teal-200/80 text-xs mt-1 max-w-2xl leading-relaxed">
             Data detail buku register faktur/invoice pengadaan barang, obat-obatan, BMHP, dan jasa Rumah Sakit Umum Daerah Jatisari TA 2026. Total tercatat {data.length} transaksi invoice.
           </p>
         </div>
