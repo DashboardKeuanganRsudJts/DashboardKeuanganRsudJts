@@ -11,7 +11,11 @@ const APP_DATA_DOCS = [
   { docId: 'listrik_kantin_2026', storageKey: 'rsud_listrik_kantin_2026', eventName: 'rsud_listrik_data_updated' },
   { docId: 'pendapatan_blud_data', storageKey: 'rsud_pendapatan_blud_data', eventName: 'rsud_pendapatan_data_updated' },
   { docId: 'pengeluaran_blud_data', storageKey: 'rsud_pengeluaran_blud_data', eventName: 'rsud_pengeluaran_data_updated' },
-  { docId: 'semua_rekapan_2026', storageKey: 'rsud_semua_rekapan_2026', eventName: 'rsud_semua_rekapan_updated' }
+  { docId: 'semua_rekapan_2026', storageKey: 'rsud_semua_rekapan_2026', eventName: 'rsud_semua_rekapan_updated' },
+  { docId: 'piutang_data_cache', storageKey: 'rsud_piutang_data_cache', eventName: 'rsud_piutang_data_updated' },
+  { docId: 'ppn_coretax_data_2026', storageKey: 'rsud_ppn_coretax_data_2026', eventName: 'rsud_ppn_coretax_updated' },
+  { docId: 'ppn_hutang_data_2026', storageKey: 'rsud_ppn_hutang_data_2026', eventName: 'rsud_ppn_hutang_updated' },
+  { docId: 'sheets_sync_config', storageKey: 'rsud_sheets_config', eventName: 'rsud_sheets_config_updated' }
 ];
 
 export function initFirestoreSync() {

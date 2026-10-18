@@ -517,6 +517,34 @@ export const MonitoringTable: React.FC<MonitoringTableProps> = ({
               </tr>
             )}
           </tbody>
+          <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+            <tr>
+              <td colSpan={3} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                TOTAL ({sortedItems.length} FAKTUR TERFILTER)
+              </td>
+              <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                {formatRupiah(sortedItems.reduce((acc, it) => acc + (it.dpp || 0), 0))}
+              </td>
+              <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-950 dark:text-indigo-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                {formatRupiah(sortedItems.reduce((acc, it) => acc + (it.ppn || 0), 0))}
+              </td>
+              <td className="py-3.5 px-3 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-400 text-[11px] font-mono">
+                -
+              </td>
+              <td className="py-3.5 px-3 text-center text-slate-700 dark:text-zinc-300 text-[11px] border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                {sortedItems.filter(it => it.status !== 'TIDAK_DITEMUKAN_DI_HUTANG' && it.status !== 'INVOICE_KOSONG').length} Terhubung
+              </td>
+              <td className="py-3.5 px-3 text-center text-emerald-700 dark:text-emerald-400 text-[11px] border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                {sortedItems.filter(it => it.status === 'SUDAH_DIBAYAR' || !!it.nomorSP2D).length} Terbayar
+              </td>
+              <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                {formatRupiah(sortedItems.reduce((acc, it) => acc + (it.nilaiInvoice || 0), 0))}
+              </td>
+              <td className="py-3.5 px-3 text-center text-slate-500 dark:text-zinc-400 text-[11px]">
+                -
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 

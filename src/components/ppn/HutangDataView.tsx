@@ -279,7 +279,7 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[1000px]">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold text-[11px] uppercase tracking-wider select-none border-b-2 border-emerald-300 dark:border-emerald-900/60">
+              <tr className="bg-emerald-100/90 dark:bg-[#12181f] text-emerald-950 dark:text-emerald-100 font-bold text-[11px] uppercase tracking-wider select-none border-b-2 border-emerald-300 dark:border-emerald-900/60">
                 <th className="py-3.5 px-3 text-center w-12 text-slate-600 dark:text-slate-300">No</th>
                 <th className="py-3.5 px-3.5 bg-teal-200/90 dark:bg-indigo-800/80 text-teal-950 dark:text-white font-extrabold shadow-inner whitespace-nowrap">
                   Nomor Invoice (Kunci Rekonsiliasi)
@@ -399,6 +399,22 @@ export const HutangDataView: React.FC<HutangDataViewProps> = ({
                 </tr>
               )}
             </tbody>
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={4} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredData.length} INVOICE HUTANG TERFILTER)
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(filteredData.reduce((acc, it) => acc + (it.nilaiInvoice || 0), 0))}
+                </td>
+                <td className="py-3.5 px-3 text-center text-emerald-700 dark:text-emerald-400 text-[11px] border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {filteredData.filter((it) => it.statusPembayaran === 'SUDAH DIBAYAR').length} Terbayar • {filteredData.filter((it) => it.statusPembayaran !== 'SUDAH DIBAYAR').length} Belum
+                </td>
+                <td colSpan={canEdit ? 4 : 3} className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {filteredData.filter((it) => it.nomorSP2D).length} Ber-SP2D • Realisasi: <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{formatRupiah(filteredData.filter((it) => it.statusPembayaran === 'SUDAH DIBAYAR').reduce((acc, it) => acc + (it.nilaiInvoice || 0), 0))}</span>
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 

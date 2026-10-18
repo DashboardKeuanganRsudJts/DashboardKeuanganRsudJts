@@ -567,7 +567,7 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
 
         <div className="overflow-x-auto rounded-xl border border-[#a8dbc0] dark:border-[#2b5a45]">
           <table className="w-full text-xs text-left border-collapse">
-            <thead className="bg-[#e6f4ea] dark:bg-[#1a382b] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45] uppercase text-[10.5px] tracking-wide">
+            <thead className="bg-[#e6f4ea] dark:bg-[#12181f] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45] uppercase text-[10.5px] tracking-wide">
               <tr>
                 <th className="px-3 py-3 text-center w-12 border-r border-[#c2e5d2] dark:border-[#2b5a45]">NO</th>
                 <th className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45]">URAIAN / JENIS PENGADAAN</th>
@@ -684,25 +684,25 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
               })}
             </tbody>
             {/* TOTAL FOOTER */}
-            <tfoot className="bg-[#dbe7e1] dark:bg-[#1a2e24] font-bold border-t-2 border-[#8dbba5] dark:border-[#2b5a45] text-[#123827] dark:text-white">
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
               <tr>
-                <td colSpan={2} className="px-4 py-3 text-right uppercase tracking-wider text-xs border-r border-[#b8dbc6] dark:border-[#2b5a45]">
-                  TOTAL KESELURUHAN:
+                <td colSpan={2} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({displayedItems.length} POS BELANJA TERFILTER)
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalSaldoAwal)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalKoreksi)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalSudahDibayar)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] text-rose-900 dark:text-pink-300 border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(totalHutangAktif)}
                 </td>
-                <td className="px-3 py-3 text-center font-mono text-[11px] text-emerald-800 dark:text-emerald-300">
-                  {totalInvoicesCount} Inv
+                <td className="px-3 py-3.5 text-center font-mono text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {totalInvoicesCount} berkas
                 </td>
               </tr>
             </tfoot>
@@ -1195,6 +1195,39 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
                           );
                         })}
                       </tbody>
+                      <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+                        <tr>
+                          <td colSpan={4} className="px-3 py-3 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                            TOTAL ({filteredInvoices.length} INVOICE)
+                          </td>
+                          <td className="px-3 py-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                            {formatRupiah(filteredInvoices.reduce((a, b) => a + (b.jumlahInvoice || 0), 0))}
+                          </td>
+                          <td className="px-3 py-3 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                            {formatRupiah(filteredInvoices.reduce((a, b) => a + (b.koreksi || 0), 0))}
+                          </td>
+                          <td className="px-3 py-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                            {formatRupiah(filteredInvoices.reduce((a, b) => a + (b.pembayaran || 0), 0))}
+                          </td>
+                          <td className="px-3 py-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                            {formatRupiah(filteredInvoices.reduce((a, b) => {
+                              const fix = b.totalInvoiceFix || ((b.jumlahInvoice || 0) + (b.koreksi || 0));
+                              return a + (b.sisaHutang !== undefined ? b.sisaHutang : Math.max(0, fix - (b.pembayaran || 0)));
+                            }, 0))}
+                          </td>
+                          <td className="px-3 py-3 text-center text-slate-600 dark:text-zinc-400 text-[10px] font-medium whitespace-nowrap">
+                            {filteredInvoices.filter(i => {
+                              const fix = i.totalInvoiceFix || ((i.jumlahInvoice || 0) + (i.koreksi || 0));
+                              const s = i.sisaHutang !== undefined ? i.sisaHutang : Math.max(0, fix - (i.pembayaran || 0));
+                              return s <= 0;
+                            }).length} Lunas • {filteredInvoices.filter(i => {
+                              const fix = i.totalInvoiceFix || ((i.jumlahInvoice || 0) + (i.koreksi || 0));
+                              const s = i.sisaHutang !== undefined ? i.sisaHutang : Math.max(0, fix - (i.pembayaran || 0));
+                              return s > 0;
+                            }).length} Belum
+                          </td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                 );

@@ -576,18 +576,18 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 1: PENDAPATAN BLUD */}
         <div 
           onClick={() => onNavigateTab('pendapatan_blud')}
-          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-teal-500/80 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-black rounded-2xl p-5 border border-slate-200/90 dark:border-zinc-800 shadow-sm hover:border-teal-400 transition cursor-pointer group relative overflow-hidden"
         >
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">1. Pendapatan BLUD (2026)</span>
-            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-teal-800/40">
+            <span className="font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-[11px]">1. Pendapatan BLUD (2026)</span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-zinc-900 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-zinc-800">
               <TrendingUp className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="text-lg sm:text-xl font-bold font-mono text-teal-700 dark:text-teal-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalPendapatanRealisasiBulanIni)}
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800">
             <span className="text-teal-700 dark:text-teal-400 font-semibold flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Realisasi Ags: {persenPendapatanRealisasi}%
             </span>
@@ -600,18 +600,18 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 2: PENGELUARAN BLUD */}
         <div 
           onClick={() => onNavigateTab('pengeluaran_blud')}
-          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-rose-400 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-black rounded-2xl p-5 border border-slate-200/90 dark:border-zinc-800 shadow-sm hover:border-rose-400 transition cursor-pointer group relative overflow-hidden"
         >
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">2. Pengeluaran BLUD (2026)</span>
-            <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-rose-800/40">
+            <span className="font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-[11px]">2. Pengeluaran BLUD (2026)</span>
+            <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-zinc-900 text-rose-700 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-zinc-800">
               <TrendingDown className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="text-lg sm:text-xl font-bold font-mono text-rose-700 dark:text-rose-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalPengeluaranBulanIni)}
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800">
             <span className="text-rose-700 dark:text-rose-400 font-semibold flex items-center gap-1">
               <Activity className="w-3.5 h-3.5" /> {countPosPengeluaran} Pos Realisasi
             </span>
@@ -624,27 +624,27 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 3: KESELURUHAN SALDO AKHIR HUTANG (2025 + 2026) */}
         <div 
           onClick={() => onNavigateTab('hutang')}
-          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-slate-400 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-black rounded-2xl p-5 border border-slate-200/90 dark:border-zinc-800 shadow-sm hover:border-teal-400 transition cursor-pointer group relative overflow-hidden"
         >
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">3. Saldo Akhir Hutang (2025+2026)</span>
-            <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+            <span className="font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-[11px]">3. Saldo Akhir Hutang (2025+2026)</span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-zinc-900 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-zinc-800">
               <CreditCard className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-bold font-mono text-slate-800 dark:text-slate-200 mt-2 tracking-tight whitespace-nowrap">
+          <div className="text-lg sm:text-xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalHutangKeseluruhan)}
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-[9px] font-mono text-slate-500 dark:text-slate-400">
-            <span>'25: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{formatRupiah(sisaHutang2025)}</strong></span>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-[9px] font-mono text-slate-500 dark:text-zinc-400">
+            <span>'25: <strong className="text-slate-700 dark:text-zinc-200 font-semibold">{formatRupiah(sisaHutang2025)}</strong></span>
             <span className="opacity-50">•</span>
-            <span>'26: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{formatRupiah(sisaHutang2026)}</strong></span>
+            <span>'26: <strong className="text-slate-700 dark:text-zinc-200 font-semibold">{formatRupiah(sisaHutang2026)}</strong></span>
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
-            <span className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800">
+            <span className="text-slate-700 dark:text-zinc-300 font-semibold flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> {jumlahRekananHutang} Rekanan
             </span>
-            <span className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 flex items-center font-medium">
+            <span className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-teal-300 flex items-center font-medium">
               Rincian <ChevronRight className="w-3 h-3 ml-0.5" />
             </span>
           </div>
@@ -653,18 +653,18 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         {/* CARD 4: SISA PIUTANG DARI SEMUA TAGIHAN TERBARU */}
         <div 
           onClick={() => onNavigateTab('perusahaan_asuransi')}
-          className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-teal-500/80 transition cursor-pointer group relative overflow-hidden"
+          className="bg-white dark:bg-black rounded-2xl p-5 border border-slate-200/90 dark:border-zinc-800 shadow-sm hover:border-teal-400 transition cursor-pointer group relative overflow-hidden"
         >
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">4. Sisa Piutang Semua Tagihan</span>
-            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-teal-800/40">
+            <span className="font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider text-[11px]">4. Sisa Piutang Semua Tagihan</span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-zinc-900 text-teal-700 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-zinc-800">
               <FileSpreadsheet className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="text-lg sm:text-xl font-bold font-mono text-teal-700 dark:text-teal-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalSisaPiutangTerbaruSemuaTagihan)}
           </div>
-          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center justify-between text-xs mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800">
             <span className="text-teal-700 dark:text-teal-400 font-semibold flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" /> Outstanding Terkini
             </span>
@@ -679,7 +679,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       {/* QUICK ACCESS: MODUL MONITORING PPN 2026 */}
       <div 
         onClick={() => onNavigateTab('monitoring_ppn')}
-        className="bg-white dark:bg-[#0f172a] p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 cursor-pointer hover:border-teal-500/80 transition shadow-xs group flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        className="bg-white dark:bg-[#07221d] p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-teal-900/60 cursor-pointer hover:border-teal-400 transition shadow-xs group flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/40">
@@ -692,7 +692,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
             <h4 className="text-base font-bold text-slate-900 dark:text-white">
               Sistem Monitoring PPN 2026 (Faktur Pajak vs Invoice Hutang)
             </h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-teal-200/70 mt-0.5">
               Pencocokan Faktur Pajak Coretax vs Invoice Hutang, deteksi selisih tarif PPN 11%, dan verifikasi SP2D.
             </p>
           </div>
@@ -709,7 +709,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Monthly Trend Comparison */}
-        <div className="lg:col-span-2 bg-gradient-to-r from-teal-50/40 via-emerald-50/30 to-white dark:from-[#0d1216] dark:to-[#081b22] rounded-2xl p-6 border border-teal-200 dark:border-emerald-900/60 shadow-sm">
+        <div className="lg:col-span-2 bg-gradient-to-r from-teal-50/40 via-emerald-50/30 to-white dark:from-[#0d1216] dark:via-[#0d1216] dark:to-[#0d1216] dark:bg-[#0d1216] rounded-2xl p-6 border border-teal-200 dark:border-emerald-950/80 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -740,13 +740,13 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyComparisonData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#0d948822" vertical={false} />
-                <XAxis dataKey="name" stroke="#0d9488" fontSize={11} tick={{ fill: '#334155' }} />
-                <YAxis stroke="#0d9488" fontSize={11} tickFormatter={(val) => `Rp ${val}M`} tick={{ fill: '#334155' }} />
+                <XAxis dataKey="name" stroke="#0d9488" fontSize={11} tick={{ fill: '#94a3b8' }} />
+                <YAxis stroke="#0d9488" fontSize={11} tickFormatter={(val) => `Rp ${val}M`} tick={{ fill: '#94a3b8' }} />
                 <Tooltip 
                   formatter={(value: any) => [`Rp ${value} Miliar`, '']}
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#ccfbf1', borderRadius: '12px', color: '#0f172a', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: '#12181f', borderColor: '#064e3b', borderRadius: '12px', color: '#ffffff', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)' }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} formatter={(val) => <span className="text-slate-700 dark:text-zinc-200 font-medium">{val}</span>} />
                 <Bar dataKey="Pendapatan" fill="#0d9488" radius={[4, 4, 0, 0]} name="Pendapatan BLUD" />
                 <Bar dataKey="Pengeluaran" fill="#e11d48" radius={[4, 4, 0, 0]} name="Pengeluaran BLUD" />
               </BarChart>
@@ -823,7 +823,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] uppercase border border-indigo-200 dark:border-indigo-800/60">
+              <span className="px-2.5 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 font-bold text-[10px] uppercase border border-teal-200 dark:border-teal-800/60">
                 Pilar 3: Hutang Pengadaan
               </span>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -837,7 +837,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
 
           <button
             onClick={() => onNavigateTab('hutang')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-xs transition shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-xl text-xs transition shadow-sm cursor-pointer"
           >
             <span>Buka Semua Menu Rekap Hutang</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -848,7 +848,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-emerald-950/80">
             <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase">Hutang Pengadaan 2026 (Berjalan)</span>
-            <div className="text-lg font-bold text-indigo-950 dark:text-indigo-300 mt-1 font-mono tracking-tight">
+            <div className="text-lg font-bold text-slate-800 dark:text-zinc-200 mt-1 font-mono tracking-tight">
               {formatRupiah(sisaHutang2026)}
             </div>
             <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">Rekanan Berjalan Aktif</span>
@@ -862,12 +862,12 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
             <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">Sarpras, Obat & BMHP 2025</span>
           </div>
 
-          <div className="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60">
-            <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 uppercase">Total Akumulasi Hutang Belum Lunas</span>
-            <div className="text-lg font-black text-indigo-700 dark:text-indigo-400 mt-1 font-mono tracking-tight">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-emerald-950/80">
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase">Total Akumulasi Hutang Belum Lunas</span>
+            <div className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1 font-mono tracking-tight">
               {formatRupiah(totalHutangKeseluruhan)}
             </div>
-            <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium mt-1 block">Dalam batas rasio likuiditas aman</span>
+            <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">Dalam batas rasio likuiditas aman</span>
           </div>
         </div>
 
@@ -890,7 +890,7 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
                   <td className="px-4 py-3 font-bold text-slate-800 dark:text-zinc-200">{item.namaPerusahaan}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-zinc-400">{item.tanggalInvoice}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-zinc-400">{item.kegiatan}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-indigo-900 dark:text-indigo-300">{formatRupiah(item.totalTagihan)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-slate-900 dark:text-zinc-100 font-mono">{formatRupiah(item.totalTagihan)}</td>
                   <td className="px-4 py-3 text-center text-slate-600 dark:text-zinc-400 font-mono">{item.umurHutangHari} hari</td>
                   <td className="px-4 py-3 text-center">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60">
@@ -900,6 +900,20 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
                 </tr>
               ))}
             </tbody>
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={3} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({topHutangInvoices.length} INVOICE TERBESAR)
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(topHutangInvoices.reduce((a, b) => a + (b.totalTagihan || 0), 0))}
+                </td>
+                <td className="px-4 py-3.5 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-400">-</td>
+                <td className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {topHutangInvoices.filter(i => i.status === 'Lunas').length} Lunas • {topHutangInvoices.filter(i => i.status !== 'Lunas').length} Belum Lunas
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -974,6 +988,25 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
                 </tr>
               ))}
             </tbody>
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={3} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({latestOutstandingInvoices.length} KLAIM OUTSTANDING)
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-medium text-slate-700 dark:text-zinc-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(latestOutstandingInvoices.reduce((a, b) => a + (b.totalTagihan || 0), 0))}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(latestOutstandingInvoices.reduce((a, b) => a + (b.pembayaran || 0), 0))}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(latestOutstandingInvoices.reduce((a, b) => a + (b.sisaPiutang || 0), 0))}
+                </td>
+                <td className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {latestOutstandingInvoices.filter(i => i.status === 'Lunas').length} Lunas • {latestOutstandingInvoices.filter(i => i.status !== 'Lunas').length} Belum Lunas
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

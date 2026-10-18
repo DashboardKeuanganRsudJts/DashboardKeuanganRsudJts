@@ -269,7 +269,7 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[1300px]">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold text-[11px] uppercase tracking-wider select-none border-b-2 border-emerald-300 dark:border-emerald-900/60">
+              <tr className="bg-emerald-100/90 dark:bg-[#12181f] text-emerald-950 dark:text-emerald-100 font-bold text-[11px] uppercase tracking-wider select-none border-b-2 border-emerald-300 dark:border-emerald-900/60">
                 <th className="py-3.5 px-3 text-center w-12 text-slate-600 dark:text-slate-300">No</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">1. NPWP Penjual</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">2. Nama Penjual</th>
@@ -434,6 +434,28 @@ export const CoretaxDataView: React.FC<CoretaxDataViewProps> = ({
                 </tr>
               )}
             </tbody>
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={8} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredData.length} FAKTUR CORETAX TERFILTER)
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(filteredData.reduce((acc, it) => acc + (it.hargaJual || it.dpp || 0), 0))}
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(filteredData.reduce((acc, it) => acc + (it.dpp || 0), 0))}
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-950 dark:text-indigo-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(filteredData.reduce((acc, it) => acc + (it.ppn || 0), 0))}
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(filteredData.reduce((acc, it) => acc + (it.nilaiInvoiceCoretax || ((it.dpp || 0) + (it.ppn || 0))), 0))}
+                </td>
+                <td colSpan={canEdit ? 3 : 2} className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {filteredData.filter(it => it.nomorInvoice).length} Terhubung Invoice • {filteredData.filter(it => !it.nomorInvoice).length} Belum Terhubung
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 

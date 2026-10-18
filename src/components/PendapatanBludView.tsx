@@ -445,6 +445,26 @@ export const PendapatanBludView: React.FC<PendapatanBludViewProps> = ({
                 );
               })}
             </tbody>
+            {/* TOTAL FOOTER ROW */}
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={2} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredItems.length} SUMBER PENDAPATAN)
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-medium text-slate-700 dark:text-zinc-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(totalTarget)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(totalRealisasi)}
+                </td>
+                <td className="px-4 py-3.5 text-center font-mono font-bold text-slate-800 dark:text-zinc-200 border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  {persentasePencapaian.toFixed(1)}%
+                </td>
+                <td colSpan={isPicPendapatanOrAdmin ? 2 : 1} className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {filteredItems.length} Pos Aktif ({selectedBulan})
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

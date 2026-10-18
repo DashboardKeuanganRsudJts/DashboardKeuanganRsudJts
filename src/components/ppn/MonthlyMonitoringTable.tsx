@@ -255,52 +255,52 @@ export const MonthlyMonitoringTable: React.FC<MonthlyMonitoringTableProps> = ({
             </tbody>
 
             {/* Total Footer Row */}
-            <tfoot>
-              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-white font-bold text-xs border-t-2 border-emerald-300 dark:border-emerald-900/60 shadow-xs">
-                <td className="py-4 px-4 uppercase tracking-wider font-black text-emerald-950 dark:text-amber-300">
-                  🌟 TOTAL REKAPITULASI 2026
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td className="py-3.5 px-4 uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL REKAPITULASI 2026
                 </td>
-                <td className="py-4 px-3 text-center text-slate-900 dark:text-white font-black">
-                  {formatNumber(grandTotal.jumlahFaktur)}
+                <td className="py-3.5 px-3 text-center font-mono border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  {formatNumber(grandTotal.jumlahFaktur)} faktur
                 </td>
-                <td className="py-4 px-3 text-right font-mono text-slate-800 dark:text-zinc-300 font-bold">
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(grandTotal.totalDPP)}
                 </td>
-                <td className="py-4 px-3 text-right font-mono text-emerald-800 dark:text-emerald-300 font-black text-sm">
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-950 dark:text-indigo-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(grandTotal.totalPPN)}
                 </td>
-                <td className="py-4 px-3 text-right font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50/70 dark:bg-zinc-900 font-bold border-x border-emerald-200/60 dark:border-zinc-800">
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   <div>{formatRupiah(grandTotal.sudahDibayarPPN)}</div>
-                  <div className="text-[10px] text-emerald-700 dark:text-emerald-300 font-semibold">
+                  <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold font-sans">
                     {grandTotal.sudahDibayarCount} Faktur
                   </div>
                 </td>
-                <td className="py-4 px-3 text-right font-mono text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-zinc-900 font-bold border-r border-amber-200/60 dark:border-zinc-800">
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-amber-700 dark:text-amber-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   <div>{formatRupiah(grandTotal.belumDibayarPPN)}</div>
-                  <div className="text-[10px] text-amber-700 dark:text-amber-200 font-semibold">
+                  <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold font-sans">
                     {grandTotal.belumDibayarCount} Faktur
                   </div>
                 </td>
-                <td className="py-4 px-3 text-right font-mono text-rose-800 dark:text-rose-300 bg-rose-50/70 dark:bg-zinc-900 font-bold border-r border-rose-200/60 dark:border-zinc-800">
+                <td className="py-3.5 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   <div>{formatRupiah(grandTotal.tidakDitemukanPPN)}</div>
-                  <div className="text-[10px] text-rose-700 dark:text-rose-200 font-semibold">
+                  <div className="text-[10px] text-rose-700 dark:text-rose-400 font-semibold font-sans">
                     {grandTotal.tidakDitemukanCount} Faktur
                   </div>
                 </td>
-                <td className="py-4 px-4 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/50 font-black text-xs shadow-2xs">
-                    {grandPersentase}% Pelunasan
+                <td className="py-3.5 px-4 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
+                    {grandPersentase}% Realisasi
                   </span>
                 </td>
-                <td className="py-4 px-3 text-center">
-                  {selectedMonth !== null && (
+                <td className="py-3.5 px-3 text-center text-slate-500 dark:text-zinc-400 text-[11px]">
+                  {selectedMonth !== null ? (
                     <button
                       onClick={() => onSelectMonth(null)}
-                      className="text-xs text-emerald-700 dark:text-amber-300 underline hover:text-emerald-900 dark:hover:text-white font-bold cursor-pointer"
+                      className="text-xs text-emerald-700 dark:text-emerald-400 underline font-bold cursor-pointer"
                     >
                       Reset
                     </button>
-                  )}
+                  ) : '-'}
                 </td>
               </tr>
             </tfoot>

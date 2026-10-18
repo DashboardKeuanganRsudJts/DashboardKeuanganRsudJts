@@ -575,7 +575,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* CARD 1: SALDO AWAL HUTANG 2025 */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden transition">
+        <div className="bg-white dark:bg-[#0d1216] rounded-xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-xs relative overflow-hidden transition">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Saldo Awal Hutang 2025
@@ -587,12 +587,12 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           <div className="text-lg sm:text-xl font-bold font-mono text-slate-900 dark:text-white mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(saldoAwal2025)}
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-2 gap-2 font-mono">
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800 text-[10px]">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 grid grid-cols-2 gap-2 font-mono">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800 text-[10px]">
               <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Koreksi:</span>
               <strong className="text-amber-700 dark:text-amber-400 font-semibold block whitespace-nowrap">{formatRupiah(koreksi2025)}</strong>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800 text-[10px]">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800 text-[10px]">
               <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Fix:</span>
               <strong className="text-slate-900 dark:text-slate-200 font-semibold block whitespace-nowrap">{formatRupiah(saldoAwal2025 + koreksi2025)}</strong>
             </div>
@@ -600,7 +600,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         </div>
 
         {/* CARD 2: SALDO AWAL HUTANG 2026 / PENAMBAHAN BARJAS 2026 */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden transition">
+        <div className="bg-white dark:bg-[#0d1216] rounded-xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-xs relative overflow-hidden transition">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Penambahan Barjas 2026
@@ -612,12 +612,12 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           <div className="text-lg sm:text-xl font-bold font-mono text-blue-700 dark:text-blue-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(saldoAwal2026)}
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-2 gap-2 font-mono">
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800 text-[10px]">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 grid grid-cols-2 gap-2 font-mono">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800 text-[10px]">
               <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Koreksi:</span>
               <strong className="text-amber-700 dark:text-amber-400 font-semibold block whitespace-nowrap">{formatRupiah(koreksi2026)}</strong>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800 text-[10px]">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800 text-[10px]">
               <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Fix:</span>
               <strong className="text-blue-700 dark:text-blue-300 font-semibold block whitespace-nowrap">{formatRupiah(saldoAwal2026 + koreksi2026)}</strong>
             </div>
@@ -625,7 +625,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         </div>
 
         {/* CARD 3: PEMBAYARAN HUTANG 2026 */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden transition">
+        <div className="bg-white dark:bg-[#0d1216] rounded-xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-xs relative overflow-hidden transition">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Pembayaran Hutang 2026
@@ -637,12 +637,12 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           <div className="text-lg sm:text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalPembayaranTahun2026)}
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-2 gap-2 font-mono">
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800 text-[10px]">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 grid grid-cols-2 gap-2 font-mono">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800 text-[10px]">
               <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Bayar '25:</span>
               <strong className="text-slate-800 dark:text-slate-200 font-semibold block whitespace-nowrap">{formatRupiah(pembayaran2025)}</strong>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800 text-[10px]">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800 text-[10px]">
               <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Bayar '26:</span>
               <strong className="text-slate-800 dark:text-slate-200 font-semibold block whitespace-nowrap">{formatRupiah(pembayaran2026)}</strong>
             </div>
@@ -650,7 +650,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         </div>
 
         {/* CARD 4: SALDO AKHIR HUTANG PER TAHUN (2025 & 2026) */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden">
+        <div className="bg-white dark:bg-[#0d1216] rounded-xl p-5 border border-slate-200 dark:border-emerald-950/80 shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
               Saldo Akhir Hutang (Total)
@@ -662,12 +662,12 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           <div className="text-lg sm:text-xl font-bold font-mono text-rose-700 dark:text-rose-400 mt-2 tracking-tight whitespace-nowrap">
             {formatRupiah(totalSaldoAkhirSemuaTahun)}
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-2 gap-2 font-mono">
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 grid grid-cols-2 gap-2 font-mono">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800">
               <span className="text-slate-500 dark:text-slate-400 block text-[9px]">Sisa TA 2025:</span>
               <span className="font-bold text-rose-700 dark:text-rose-400 text-[9px] block whitespace-nowrap">{formatRupiah(saldoAkhir2025)}</span>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-900/80 px-2 py-1.5 rounded border border-slate-200 dark:border-slate-800">
+            <div className="bg-slate-50 dark:bg-[#12181f] px-2 py-1.5 rounded border border-slate-200 dark:border-zinc-800">
               <span className="text-slate-500 dark:text-slate-400 block text-[9px]">Sisa TA 2026:</span>
               <span className="font-bold text-rose-700 dark:text-rose-400 text-[9px] block whitespace-nowrap">{formatRupiah(saldoAkhir2026)}</span>
             </div>
@@ -992,6 +992,25 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
                 );
               })}
             </tbody>
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={5} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({top10AgingList.length} INVOICE TERPILIH)
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(top10AgingList.reduce((a, b) => a + (b.jumlahInvoice || 0), 0))}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(top10AgingList.reduce((a, b) => a + (b.pembayaran || 0), 0))}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(top10AgingList.reduce((a, b) => a + (b.sisaHutang || 0), 0))}
+                </td>
+                <td colSpan={2} className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {top10AgingList.filter(i => i.status === 'Lunas').length} Lunas • {top10AgingList.filter(i => i.status !== 'Lunas').length} Belum Lunas
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -1081,21 +1100,21 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-emerald-200 dark:border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-950/80">
           <table className="w-full text-xs text-left border-collapse">
-            <thead className="bg-[#e6f4ea] dark:bg-slate-800/90 text-[#13422d] dark:text-slate-200 font-bold border-b border-emerald-200 dark:border-slate-700 uppercase text-[10.5px] tracking-wide">
+            <thead className="bg-[#e6f4ea] dark:bg-[#12181f] text-[#13422d] dark:text-zinc-200 font-bold border-b border-emerald-200 dark:border-zinc-800 uppercase text-[10.5px] tracking-wide">
               <tr>
-                <th className="px-3 py-3.5 text-center w-12 border-r border-emerald-200 dark:border-slate-700 text-[#13422d]/70 dark:text-slate-400">NO</th>
-                <th className="px-3 py-3.5 text-center w-20 border-r border-emerald-200 dark:border-slate-700">TAHUN</th>
-                <th className="px-4 py-3.5 border-r border-emerald-200 dark:border-slate-700">URAIAN / POS BELANJA</th>
-                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700">SALDO AWAL (TAGIHAN)</th>
-                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700">KOREKSI</th>
-                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700">PEMBAYARAN</th>
-                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-slate-700 bg-emerald-50/50 dark:bg-slate-900/50">SALDO AKHIR</th>
+                <th className="px-3 py-3.5 text-center w-12 border-r border-emerald-200 dark:border-zinc-800 text-[#13422d]/70 dark:text-zinc-400">NO</th>
+                <th className="px-3 py-3.5 text-center w-20 border-r border-emerald-200 dark:border-zinc-800">TAHUN</th>
+                <th className="px-4 py-3.5 border-r border-emerald-200 dark:border-zinc-800">URAIAN / POS BELANJA</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-zinc-800">SALDO AWAL (TAGIHAN)</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-zinc-800">KOREKSI</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-zinc-800">PEMBAYARAN</th>
+                <th className="px-4 py-3.5 text-right border-r border-emerald-200 dark:border-zinc-800 bg-emerald-50/50 dark:bg-[#12181f]">SALDO AKHIR</th>
                 <th className="px-3 py-3.5 text-center w-24">STATUS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 font-sans">
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 font-sans">
               {combinedTableRows.map((item, idx) => {
                 const isHigh = item.isHighlighted;
                 return (
@@ -1157,25 +1176,25 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
               })}
             </tbody>
             {/* TOTAL FOOTER */}
-            <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold border-t-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
               <tr>
-                <td colSpan={3} className="px-4 py-3 text-right uppercase tracking-wider text-xs border-r border-slate-200 dark:border-slate-700">
-                  TOTAL KESELURUHAN:
+                <td colSpan={3} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({combinedTableRows.length} POS BELANJA TERFILTER)
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(combinedTableRows.reduce((a, b) => a + b.totalTagihan, 0))}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(combinedTableRows.reduce((a, b) => a + b.koreksi, 0))}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(combinedTableRows.reduce((a, b) => a + b.jumlahBayar, 0))}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[11px] text-rose-900 dark:text-pink-300 border-r border-[#b8dbc6] dark:border-[#2b5a45] whitespace-nowrap">
+                <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(combinedTableRows.reduce((a, b) => a + b.sisaHutang, 0))}
                 </td>
-                <td className="px-3 py-3 text-center font-mono text-[10.5px]">
-                  {combinedTableRows.reduce((a, b) => a + b.invoiceCount, 0)} Inv
+                <td className="px-3 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {combinedTableRows.filter(r => r.status === 'Lunas').length} Lunas • {combinedTableRows.filter(r => r.status !== 'Lunas').length} Belum Lunas
                 </td>
               </tr>
             </tfoot>

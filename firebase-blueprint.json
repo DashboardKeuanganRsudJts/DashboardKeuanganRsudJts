@@ -48,6 +48,17 @@
         "createdBy": { "type": "string" }
       },
       "required": ["noBukti", "nominalTagihan", "createdBy"]
+    },
+    "AppData": {
+      "title": "AppData",
+      "description": "Module storage state for financial records synchronization",
+      "type": "object",
+      "properties": {
+        "payload": { "type": "object" },
+        "updatedAt": { "type": "string" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["payload"]
     }
   },
   "firestore": {
@@ -58,6 +69,10 @@
     "invoices/{invoiceId}": {
       "schema": { "$ref": "#/entities/Invoice" },
       "description": "Collection of invoices"
+    },
+    "appData/{docId}": {
+      "schema": { "$ref": "#/entities/AppData" },
+      "description": "Application synchronization state documents"
     }
   }
 }

@@ -428,6 +428,20 @@ export const PengeluaranBludView: React.FC<PengeluaranBludViewProps> = ({
                 );
               })}
             </tbody>
+            {/* TOTAL FOOTER ROW */}
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={3} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredItems.length} POS PENGELUARAN TERFILTER)
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(totalPengeluaran)}
+                </td>
+                <td colSpan={isPicPengeluaranOrAdmin ? 2 : 1} className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {filteredItems.filter(i => i.status === 'Lunas').length} Lunas • {filteredItems.filter(i => i.status !== 'Lunas').length} Proses
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

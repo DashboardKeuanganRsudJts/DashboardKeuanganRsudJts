@@ -711,6 +711,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
   // Aggregate Metrics for currently filtered data
   const metrics = useMemo(() => {
+    const totalPiutangLalu = filteredData.reduce((s, r) => s + (r.piutangLalu || 0), 0);
+    const totalPiutangBulanIni = filteredData.reduce((s, r) => s + (r.piutangBulanIni || 0), 0);
     const totalPiutangSdBulanIni = filteredData.reduce((s, r) => s + r.piutangSdBulanIni, 0);
     const totalPembayaran = filteredData.reduce((s, r) => s + r.pembayaran, 0);
     const totalSisa = filteredData.reduce((s, r) => s + r.sisaPiutang, 0);
@@ -718,6 +720,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
     const lunasCount = filteredData.filter(r => r.status === 'Lunas').length;
 
     return {
+      totalPiutangLalu,
+      totalPiutangBulanIni,
       totalPiutangSdBulanIni,
       totalPembayaran,
       totalSisa,
@@ -1546,7 +1550,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
         <div className="overflow-x-auto min-h-[480px] max-h-[640px]">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="sticky top-0 z-20">
-              <tr className="bg-emerald-100 dark:bg-[#081b22] text-emerald-950 dark:text-white font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
+              <tr className="bg-emerald-100 dark:bg-[#12181f] text-emerald-950 dark:text-white font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
                 <th className="py-3 px-2 text-center w-12 border-r border-emerald-200 dark:border-emerald-900/60">No</th>
                 <th className="py-3 px-3.5 min-w-[290px] max-w-[350px] border-r border-emerald-200 dark:border-emerald-900/60">Nama Perusahaan / Asuransi & No. Invoice</th>
                 <th className="py-3 px-3 border-r border-emerald-200 dark:border-emerald-900/60">Jenis Layanan</th>
@@ -1557,7 +1561,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 <th className="py-3 px-3 text-right border-r border-emerald-200 dark:border-emerald-900/60">Pembayaran</th>
                 <th className="py-3 px-3 text-right font-bold border-r border-rose-200 bg-rose-50 dark:bg-rose-950 text-rose-900 dark:text-rose-100">Sisa Piutang</th>
                 {isOnlyAdminPiutang && (
-                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-100 dark:bg-[#081b22] z-10">Aksi</th>
+                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-100 dark:bg-[#12181f] z-10">Aksi</th>
                 )}
               </tr>
             </thead>
@@ -2006,6 +2010,35 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 })
               )}
             </tbody>
+            {/* TOTAL FOOTER ROW */}
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={3} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredData.length} REKANAN TERFILTER - {selectedBulan})
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-medium text-slate-700 dark:text-zinc-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(metrics.totalPiutangLalu)}
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-medium text-blue-900 dark:text-blue-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(metrics.totalPiutangBulanIni)}
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(metrics.totalPiutangSdBulanIni)}
+                </td>
+                <td className="py-3.5 px-3 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-400">-</td>
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(metrics.totalPembayaran)}
+                </td>
+                <td className="py-3.5 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  {formatRupiah(metrics.totalSisa)}
+                </td>
+                {isOnlyAdminPiutang && (
+                  <td className="py-3.5 px-2 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium whitespace-nowrap">
+                    {metrics.lunasCount} Lunas • {metrics.belumLunasCount} Belum Lunas
+                  </td>
+                )}
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

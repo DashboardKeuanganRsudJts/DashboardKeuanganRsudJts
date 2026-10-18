@@ -196,7 +196,7 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
               placeholder="Cari rekening / uraian..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-emerald-50/40 dark:bg-slate-900 border border-emerald-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full pl-9 pr-4 py-2 bg-emerald-50/40 dark:bg-[#12181f] border border-emerald-200 dark:border-zinc-800 rounded-lg text-sm text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <button 
@@ -209,10 +209,10 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-xs border border-emerald-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-[#0d1216] rounded-xl shadow-xs border border-slate-200 dark:border-emerald-950/80 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-[#e6f4ea] dark:bg-[#1a382b] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45]">
+            <thead className="bg-[#e6f4ea] dark:bg-[#12181f] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45]">
               <tr>
                 <th className="px-3 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45] text-center w-12 text-[#13422d]/70 dark:text-[#a6ecc8]/70 font-mono">NO</th>
                 <th className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45]">KODE REKENING</th>
@@ -224,9 +224,12 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
                 <th className="px-4 py-3 text-right bg-emerald-800 text-white font-extrabold">TOTAL</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
               {filteredData.map((row, idx) => {
-                let rowBgClass = "hover:bg-emerald-50/50 dark:hover:bg-slate-800/40 transition group bg-white dark:bg-[#0f172a]";
+                const isEven = idx % 2 === 0;
+                let rowBgClass = isEven
+                  ? "bg-white dark:bg-[#0d1216] hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition group"
+                  : "bg-slate-50/70 dark:bg-[#12181f]/80 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition group";
                 if (row.uraian.includes('USG')) {
                   rowBgClass = "bg-amber-50/60 hover:bg-amber-100/60 text-amber-950 dark:bg-amber-950/20 dark:text-amber-200";
                 } else if (row.uraian.includes('Alat Tulis Kantor')) {
@@ -235,10 +238,10 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
 
                 return (
                 <tr key={idx} className={rowBgClass}>
-                  <td className="px-3 py-2.5 text-center border-r border-slate-200/60 dark:border-zinc-800/50 text-slate-400 font-mono text-[11px]">{row.no}</td>
-                  <td className="px-4 py-2.5 font-mono text-xs font-semibold border-r border-slate-200/60 dark:border-zinc-800/50 text-slate-700 dark:text-slate-300">{row.kodeRekening}</td>
-                  <td className="px-4 py-2.5 font-medium border-r border-slate-200/60 dark:border-zinc-800/50 text-slate-900 dark:text-slate-100">{row.uraian}</td>
-                  <td className="px-4 py-2.5 text-right font-mono border-r border-slate-200/60 dark:border-zinc-800/50 text-slate-600 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-900/30">
+                  <td className="px-3 py-2.5 text-center border-r border-slate-200/60 dark:border-zinc-800/60 text-slate-400 font-mono text-[11px]">{row.no}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs font-semibold border-r border-slate-200/60 dark:border-zinc-800/60 text-slate-700 dark:text-zinc-300">{row.kodeRekening}</td>
+                  <td className="px-4 py-2.5 font-medium border-r border-slate-200/60 dark:border-zinc-800/60 text-slate-900 dark:text-zinc-100">{row.uraian}</td>
+                  <td className="px-4 py-2.5 text-right font-mono border-r border-slate-200/60 dark:border-zinc-800/60 text-slate-600 dark:text-zinc-400 bg-slate-50/40 dark:bg-transparent">
                     <div className="flex justify-between items-center w-full">
                       <span className="text-[10px] text-slate-400">Rp</span>
                       <span>{row.total2025 > 0 ? formatRupiah(row.total2025) : '-'}</span>
@@ -247,7 +250,7 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
                   {MONTHS.map(m => {
                     const val = row[m as keyof typeof row] as number;
                     return (
-                      <td key={m} className={`px-4 py-2.5 text-right font-mono border-r border-slate-200/60 dark:border-zinc-800/50 ${val > 0 ? 'text-slate-900 dark:text-slate-100 font-medium' : 'text-slate-400 dark:text-slate-600'}`}>
+                      <td key={m} className={`px-4 py-2.5 text-right font-mono border-r border-slate-200/60 dark:border-zinc-800/60 ${val > 0 ? 'text-slate-900 dark:text-zinc-100 font-medium' : 'text-slate-400 dark:text-zinc-500'}`}>
                         {val > 0 ? formatRupiah(val) : '0'}
                       </td>
                     );
@@ -266,21 +269,23 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
                 </tr>
               )}
             </tbody>
-            <tfoot className="bg-slate-700 font-bold text-white border-t-2 border-slate-600">
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
               <tr>
-                <td colSpan={3} className="px-4 py-3 text-right text-slate-100">TOTAL KESELURUHAN:</td>
-                <td className="px-4 py-3 text-right font-mono bg-slate-800">
+                <td colSpan={3} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredData.length} POS REKENING TERFILTER)
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-700 dark:text-zinc-300">
                   <div className="flex justify-between items-center w-full">
                     <span className="text-[10px] text-slate-400">Rp</span>
                     <span>{grandTotals.total2025 > 0 ? formatRupiah(grandTotals.total2025) : '-'}</span>
                   </div>
                 </td>
                 {MONTHS.map(m => (
-                  <td key={m} className="px-4 py-3 text-right font-mono border-l border-slate-600">
+                  <td key={m} className="px-4 py-3.5 text-right font-mono border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-800 dark:text-zinc-200">
                     {grandTotals[m] > 0 ? formatRupiah(grandTotals[m]) : '0'}
                   </td>
                 ))}
-                <td className="px-4 py-3 text-right font-mono text-base font-extrabold text-blue-200 bg-blue-900 border-l border-slate-600">
+                <td className="px-4 py-3.5 text-right font-mono text-sm font-black text-emerald-800 dark:text-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/40">
                   {formatRupiah(grandTotals.totalTahunIni)}
                 </td>
               </tr>

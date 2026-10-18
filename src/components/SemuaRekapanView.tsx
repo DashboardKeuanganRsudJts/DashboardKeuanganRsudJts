@@ -412,7 +412,7 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
+              <tr className="bg-emerald-100/90 dark:bg-[#12181f] text-emerald-950 dark:text-emerald-100 font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
                 <th className="py-2.5 px-3">Bulan</th>
                 <th className="py-2.5 px-2 text-center">No</th>
                 <th className="py-2.5 px-3">Nama Penjamin</th>
@@ -571,28 +571,28 @@ export const SemuaRekapanView: React.FC<SemuaRekapanViewProps> = ({
                 })
               )}
             </tbody>
-            <tfoot className="bg-emerald-50/70 dark:bg-[#12181f] font-bold text-slate-900 dark:text-emerald-100 border-t-2 border-emerald-200 dark:border-zinc-800">
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
               <tr>
-                <td colSpan={3} className="py-3 px-3 text-right uppercase text-slate-700 dark:text-zinc-300">
-                  Total Grup {selectedBulanGroup}:
+                <td colSpan={3} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredRows.length} PENJAMIN - {selectedBulanGroup})
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-slate-800 dark:text-zinc-200">
+                <td className="py-3.5 px-3 text-right font-mono font-medium text-slate-700 dark:text-zinc-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(filteredRows.reduce((s, r) => s + r.piutangBulanLalu, 0))}
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-blue-900 dark:text-blue-300">
+                <td className="py-3.5 px-3 text-right font-mono font-medium text-blue-900 dark:text-blue-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(filteredRows.reduce((s, r) => s + r.piutangBulanIni, 0))}
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-slate-900 dark:text-white">
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(filteredRows.reduce((s, r) => s + r.piutangSdBulanIni, 0))}
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-emerald-800 dark:text-emerald-400">
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(filteredRows.reduce((s, r) => s + r.pembayaran, 0))}
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-rose-800 dark:text-rose-400">
+                <td className="py-3.5 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(filteredRows.reduce((s, r) => s + r.sisaPiutang, 0))}
                 </td>
-                <td colSpan={isPicPiutangOrAdmin ? 3 : 2} className="py-3 px-3 text-center text-xs text-slate-500 dark:text-zinc-400">
-                  {filteredRows.filter(r => r.status === 'Belum Lunas').length} Belum Lunas
+                <td colSpan={isPicPiutangOrAdmin ? 3 : 2} className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {filteredRows.filter(r => r.status === 'Lunas').length} Lunas • {filteredRows.filter(r => r.status !== 'Lunas').length} Belum Lunas
                 </td>
               </tr>
             </tfoot>

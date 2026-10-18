@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = initializeFirestore(app, { experimentalForceLongPolling: true }, firebaseConfigData.firestoreDatabaseId);
+export const db = initializeFirestore(app, { experimentalForceLongPolling: true }, (firebaseConfigData as any).firestoreDatabaseId);
 export const auth = getAuth(app);
 
 // Sesi login hanya berlaku selama tab/browser aktif.
@@ -25,4 +25,13 @@ setPersistence(auth, browserSessionPersistence).catch((err) => {
 
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// Validate connection to Firestore on initial boot
+import('firebase/firestore').then(({ doc, getDocFromServer }) => {
+  getDocFromServer(doc(db, 'test', 'connection')).catch((error) => {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn("Please check your Firebase configuration or network status.");
+    }
+  });
+});
 

@@ -42,6 +42,71 @@ html.dark {
   color: #f8fafc;
 }
 
+/* Table Header & Footer dark mode background matching screenshot */
+html.dark thead,
+.dark thead,
+html.dark thead tr,
+.dark thead tr,
+html.dark thead th,
+.dark thead th,
+html.dark thead td,
+.dark thead td {
+  background-color: #12181f !important;
+  background-image: none !important;
+  color: #d4d4d8 !important;
+}
+
+html.dark tfoot,
+.dark tfoot,
+html.dark tfoot tr,
+.dark tfoot tr,
+html.dark tfoot td,
+.dark tfoot td,
+html.dark tfoot th,
+.dark tfoot th {
+  background-color: #12181f !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+/* Select & Option Dropdown popup styling in dark mode */
+html.dark select,
+.dark select,
+select:where(.dark, .dark *) {
+  color-scheme: dark !important;
+  background-color: #12181f;
+  color: #f4f4f5;
+}
+
+html.dark option,
+.dark option,
+html.dark select option,
+.dark select option,
+option:where(.dark, .dark *) {
+  color-scheme: dark !important;
+  background-color: #12181f !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark option:checked,
+.dark option:checked,
+html.dark select option:checked,
+.dark select option:checked {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+html.light select,
+.light select {
+  color-scheme: light;
+}
+
+html.light option,
+.light option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
 html.light {
   color-scheme: light;
   background-color: #f1f5f9;

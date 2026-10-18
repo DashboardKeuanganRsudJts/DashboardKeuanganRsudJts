@@ -13,12 +13,20 @@ import {
   Database,
   HelpCircle,
   Check,
-  Plus
+  Plus,
+  Cloud,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+  Copy
 } from 'lucide-react';
 import { SyncStatusInfo, PiutangRecord } from '../types/piutang';
 import { GoogleSheetsService } from '../services/googleSheetsService';
 import { SpreadsheetImportService } from '../services/spreadsheetImportService';
 import { formatDateTimeIndo } from '../utils/formatters';
+import { auth, googleProvider } from '../lib/firebase';
+import { signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
+import { syncDocumentToFirestore } from '../services/firestoreSync';
 
 interface GoogleSheetsModalProps {
   isOpen: boolean;
@@ -56,8 +64,18 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
+  const [isSyncingFirestore, setIsSyncingFirestore] = useState(false);
+  const [showAppsScriptGuide, setShowAppsScriptGuide] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setCurrentUser(u));
+    return () => unsub();
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
+      setCurrentUser(auth.currentUser);
       const storedToken = GoogleSheetsService.getStoredToken();
       setToken(storedToken);
       setSpreadsheetInput(syncConfig.spreadsheetId || '');
@@ -71,18 +89,89 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
     }
   }, [isOpen, syncConfig]);
 
+  const handleLoginFirebaseWithGoogle = async () => {
+    setErrorMessage(null);
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      setCurrentUser(res.user);
+      setSuccessMessage(`Berhasil login ke Firebase sebagai: ${res.user.email}`);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Gagal login ke akun Firebase.');
+    }
+  };
+
   const handleConnectGoogle = async () => {
     setIsAuthenticating(true);
     setErrorMessage(null);
     try {
+      if (!auth.currentUser) {
+        try {
+          const res = await signInWithPopup(auth, googleProvider);
+          setCurrentUser(res.user);
+        } catch (authErr: any) {
+          console.info('Firebase auth prompt skipped/closed:', authErr);
+        }
+      }
       const accessToken = await GoogleSheetsService.requestGoogleAuth();
       setToken(accessToken);
-      setSuccessMessage('Berhasil terhubung dengan Google Account!');
+      setSuccessMessage('Berhasil terhubung dengan Google Account & Firebase!');
       await fetchDriveFiles(accessToken);
     } catch (err: any) {
       setErrorMessage(err.message || 'Gagal menghubungkan akun Google.');
     } finally {
       setIsAuthenticating(false);
+    }
+  };
+
+  const handleSyncDirectlyToFirestore = async () => {
+    const cleanId = GoogleSheetsService.extractSpreadsheetId(spreadsheetInput);
+    if (!cleanId) {
+      setErrorMessage('Harap pilih atau masukkan Link Google Spreadsheet terlebih dahulu.');
+      return;
+    }
+
+    if (!auth.currentUser) {
+      setErrorMessage('Harap klik "Masuk dengan Google" pada status Firebase di atas agar memiliki izin menulis ke database Cloud Firestore.');
+      return;
+    }
+
+    const activeToken = token || GoogleSheetsService.getStoredToken();
+    if (!activeToken) {
+      setErrorMessage('Akses Google Sheets belum terhubung. Silakan klik "Hubungkan Akun Google" terlebih dahulu.');
+      return;
+    }
+
+    setIsSyncingFirestore(true);
+    setErrorMessage(null);
+    try {
+      const rows = await GoogleSheetsService.fetchSheetRows(activeToken, cleanId, sheetName);
+      const parsed = GoogleSheetsService.parseSheetRowsToPiutang(rows);
+      if (parsed.length === 0) {
+        throw new Error(`Tidak ditemukan baris data yang valid pada lembar kerja "${sheetName}".`);
+      }
+
+      GoogleSheetsService.saveCachedData(parsed);
+      await syncDocumentToFirestore('piutang_data_cache', parsed);
+
+      const updatedConfig: Partial<SyncStatusInfo> = {
+        isConfigured: true,
+        isConnected: true,
+        spreadsheetId: cleanId,
+        sheetName: sheetName || 'Data Piutang',
+        lastSyncedAt: new Date().toISOString(),
+        totalRowsSynced: parsed.length,
+        error: null
+      };
+
+      GoogleSheetsService.saveConfig(updatedConfig);
+      await syncDocumentToFirestore('sheets_sync_config', updatedConfig);
+      onSaveConfig(updatedConfig, parsed);
+
+      setSuccessMessage(`Sukses! ${parsed.length} baris data piutang dari Google Sheets berhasil disinkronkan langsung ke Cloud Firestore.`);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Gagal sinkronisasi data ke Cloud Firestore.');
+    } finally {
+      setIsSyncingFirestore(false);
     }
   };
 
@@ -282,29 +371,75 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
             </div>
           )}
 
-          {/* Step 1: Google Account Authentication */}
-          <div className="bg-slate-50/70 dark:bg-[#12181f] p-4 rounded-xl border border-slate-200 dark:border-zinc-800">
-            <div className="flex items-center justify-between">
+          {/* Step 1: Google Account & Firebase Cloud Authentication */}
+          <div className="bg-slate-50/70 dark:bg-[#12181f] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-zinc-800">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Langkah 1</span>
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Status Autentikasi Akun Google</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Status Koneksi Akun Google & Database Cloud Firebase</span>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Google Drive / Sheets API Token */}
+              <div className="p-3 rounded-lg bg-white dark:bg-[#161f28] border border-slate-200 dark:border-zinc-700/80 flex flex-col justify-between">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="font-semibold text-slate-800 dark:text-zinc-200 text-xs">Akses Google Drive & Sheets</span>
+                </div>
+                <div className="flex items-center justify-between mt-auto">
+                  {token ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/60">
+                      <Check className="w-3 h-3" />
+                      <span>Drive Terhubung</span>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={handleConnectGoogle}
+                      disabled={isAuthenticating}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-[11px] transition shadow-2xs"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>{isAuthenticating ? 'Menghubungkan...' : 'Hubungkan Drive'}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Firebase Cloud Firestore Authentication */}
+              <div className="p-3 rounded-lg bg-white dark:bg-[#161f28] border border-slate-200 dark:border-zinc-700/80 flex flex-col justify-between">
+                <div className="flex items-center gap-2 mb-2">
+                  <Cloud className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="font-semibold text-slate-800 dark:text-zinc-200 text-xs">Database Cloud Firebase</span>
+                </div>
+                <div className="flex items-center justify-between mt-auto">
+                  {currentUser ? (
+                    <div className="flex flex-col">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800/60">
+                        <ShieldCheck className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                        <span>Izin Tulis Aktif</span>
+                      </span>
+                      <span className="text-[10px] text-slate-500 dark:text-zinc-400 truncate max-w-[150px] mt-0.5 font-mono">
+                        {currentUser.email}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleLoginFirebaseWithGoogle}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[11px] transition shadow-2xs"
+                    >
+                      <Cloud className="w-3 h-3" />
+                      <span>Login ke Firebase</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 text-[11px] text-blue-900 dark:text-blue-300 leading-relaxed flex items-start gap-2">
+              <Database className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
               <div>
-                {token ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/60">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Akun Terhubung</span>
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleConnectGoogle}
-                    disabled={isAuthenticating}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 dark:bg-emerald-600 text-white font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-500 transition shadow-2xs"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{isAuthenticating ? 'Menghubungkan...' : 'Hubungkan Akun Google'}</span>
-                  </button>
-                )}
+                <strong>Penting:</strong> Supaya data dari Google Sheets tersimpan permanen ke Cloud Firebase, pastikan akun pemilik sudah login ke Firebase di atas. Data akan otomatis disinkronkan ke server Firebase.
               </div>
             </div>
           </div>
@@ -582,25 +717,77 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
             </div>
           )}
 
+          {/* Expandable Guide for Google Sheets to Firebase Direct Automation */}
+          <div className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-[#12181f]/40">
+            <button
+              type="button"
+              onClick={() => setShowAppsScriptGuide(!showAppsScriptGuide)}
+              className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-100/60 dark:hover:bg-zinc-800/40 transition"
+            >
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="font-semibold text-slate-800 dark:text-zinc-200 text-xs">
+                  Bagaimana cara agar perubahan di Google Spreadsheet otomatis mengupdate Firebase?
+                </span>
+              </div>
+              {showAppsScriptGuide ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            </button>
+
+            {showAppsScriptGuide && (
+              <div className="p-4 pt-1 border-t border-slate-200 dark:border-zinc-800 space-y-3 text-xs leading-relaxed text-slate-600 dark:text-zinc-300">
+                <div className="space-y-1.5">
+                  <p className="font-semibold text-slate-800 dark:text-white">1. Melalui Web Aplikasi (Paling Mudah):</p>
+                  <p>
+                    Setiap kali Anda membuka aplikasi RSUD Jatisari dengan akun Google pemilik terhubung, aplikasi akan secara berkala (atau saat Anda klik <strong>"Tarik & Simpan ke Firebase Sekarang"</strong>) membaca data terbaru dari Google Sheets Anda dan langsung menyimpannya ke database Cloud Firebase.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <p className="font-semibold text-slate-800 dark:text-white">2. Mengapa sebelumnya database Firebase tidak terupdate?</p>
+                  <ul className="list-disc pl-5 space-y-1 text-[11px]">
+                    <li>Akun pemilik belum login ke Firebase (aturan keamanan Cloud Firestore mewajibkan login akun pemilik agar memiliki izin menulis).</li>
+                    <li>Sebelumnya sinkronisasi Google Sheets hanya tersimpan di cache browser lokal dan belum di-push otomatis ke server Firebase Firestore. (Kini sudah diperbaiki & otomatis disimpan ke Firestore).</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#12181f]/60 flex items-center justify-between">
+        <div className="p-4 border-t border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#12181f]/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
+            className="px-4 py-2 rounded-lg border border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition order-2 sm:order-1"
           >
             Tutup
           </button>
           
-          <button
-            onClick={handleSaveAndSync}
-            disabled={!spreadsheetInput}
-            className="px-5 py-2 rounded-lg bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-800 dark:hover:bg-emerald-500 transition shadow-2xs disabled:opacity-50 flex items-center gap-1.5"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Simpan & Sinkronkan</span>
-          </button>
+          <div className="flex items-center gap-2 order-1 sm:order-2">
+            <button
+              onClick={handleSyncDirectlyToFirestore}
+              disabled={!spreadsheetInput || isSyncingFirestore}
+              className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs transition shadow-2xs flex items-center justify-center gap-1.5"
+              title="Tarik data terbaru dari Google Sheets dan langsung upload ke Cloud Firebase"
+            >
+              {isSyncingFirestore ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Cloud className="w-3.5 h-3.5" />
+              )}
+              <span>{isSyncingFirestore ? 'Menyinkronkan...' : 'Tarik & Simpan ke Firebase Sekarang'}</span>
+            </button>
+
+            <button
+              onClick={handleSaveAndSync}
+              disabled={!spreadsheetInput}
+              className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-800 dark:hover:bg-emerald-500 transition shadow-2xs disabled:opacity-50 flex items-center justify-center gap-1.5"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Simpan Pengaturan</span>
+            </button>
+          </div>
         </div>
 
       </div>

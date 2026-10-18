@@ -45,7 +45,7 @@ import { User } from 'firebase/auth';
 import { initFaviconSync, updateAppFavicon } from './utils/faviconHelper';
 import { useUserProfile } from './utils/userProfile';
 import { useTheme } from './context/ThemeContext';
-import { initFirestoreSync } from './services/firestoreSync';
+import { initFirestoreSync, syncDocumentToFirestore } from './services/firestoreSync';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
 
 interface AppProps {
@@ -128,6 +128,17 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
       navigate('/home');
     }
   }, [user, location.pathname, navigate]);
+
+  // Real-time synchronization for Piutang data from Cloud Firestore
+  useEffect(() => {
+    const handlePiutangUpdate = (e: any) => {
+      if (e.detail && Array.isArray(e.detail) && e.detail.length > 0) {
+        setRecords(e.detail);
+      }
+    };
+    window.addEventListener('rsud_piutang_data_updated', handlePiutangUpdate);
+    return () => window.removeEventListener('rsud_piutang_data_updated', handlePiutangUpdate);
+  }, []);
 
   // Synchronize Browser Favicon in real-time (default or custom uploaded logo)
   useEffect(() => {
@@ -220,6 +231,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
       if (parsed.length > 0) {
         setRecords(parsed);
         GoogleSheetsService.saveCachedData(parsed);
+        await syncDocumentToFirestore('piutang_data_cache', parsed);
       }
 
       const nowStr = new Date().toISOString();
@@ -234,9 +246,10 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
       setSyncConfig(prev => ({ ...prev, ...updatedConfig }));
       GoogleSheetsService.saveConfig(updatedConfig);
       GoogleSheetsService.markDailySyncCompleted();
+      await syncDocumentToFirestore('sheets_sync_config', updatedConfig);
 
       showToast(
-        `Berhasil menyinkronkan ${parsed.length} data piutang dari Google Sheets!`,
+        `Berhasil menyinkronkan ${parsed.length} data piutang dari Google Sheets ke Cloud Firestore!`,
         'success'
       );
     } catch (err: any) {
@@ -503,7 +516,7 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
         </header>
 
         {/* Dynamic Main Body Scroll Area */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-24 md:pb-8 custom-scrollbar bg-emerald-50/15 dark:bg-transparent">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-24 md:pb-8 custom-scrollbar bg-emerald-50/15 dark:bg-[#12181f]">
           
           {/* 1. DASHBOARD UTAMA */}
           {activeMenu === 'dashboard_2026' && (
@@ -733,10 +746,16 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
         isOpen={isGoogleModalOpen}
         onClose={() => setIsGoogleModalOpen(false)}
         syncConfig={syncConfig}
-        onSaveConfig={(cfg) => {
+        onSaveConfig={(cfg, freshData) => {
           setSyncConfig(prev => ({ ...prev, ...cfg }));
           GoogleSheetsService.saveConfig(cfg);
-          showToast('Pengaturan Google Sheets berhasil disimpan!', 'success');
+          if (freshData && freshData.length > 0) {
+            setRecords(freshData);
+            GoogleSheetsService.saveCachedData(freshData);
+            syncDocumentToFirestore('piutang_data_cache', freshData).catch(e => console.warn('Sync firestore:', e));
+          }
+          syncDocumentToFirestore('sheets_sync_config', cfg).catch(e => console.warn('Sync firestore config:', e));
+          showToast('Pengaturan Google Sheets & Cloud Firestore berhasil diperbarui!', 'success');
         }}
       />
 
@@ -744,7 +763,9 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onSuccessImport={(summary) => {
-          setRecords(GoogleSheetsService.loadCachedData());
+          const fresh = GoogleSheetsService.loadCachedData();
+          setRecords(fresh);
+          syncDocumentToFirestore('piutang_data_cache', fresh).catch(e => console.warn('Sync firestore:', e));
           showToast(summary, 'success');
         }}
       />
@@ -756,7 +777,8 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
           const updated = [newRecord, ...records];
           setRecords(updated);
           GoogleSheetsService.saveCachedData(updated);
-          showToast('Data piutang baru berhasil dicatat!', 'success');
+          syncDocumentToFirestore('piutang_data_cache', updated).catch(e => console.warn('Sync firestore:', e));
+          showToast('Data piutang baru berhasil dicatat & disinkronkan ke Cloud!', 'success');
         }}
       />
 

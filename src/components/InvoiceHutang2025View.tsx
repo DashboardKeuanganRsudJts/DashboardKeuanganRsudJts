@@ -1246,11 +1246,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               setFilterRekanan(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300 max-w-[180px] truncate"
+            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-200 max-w-[180px] truncate dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-[#12181f] dark:[&>option]:text-zinc-100"
           >
-            <option value="ALL">Semua Rekanan ({uniqueRekanan.length})</option>
+            <option value="ALL" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Semua Rekanan ({uniqueRekanan.length})</option>
             {uniqueRekanan.map((r, i) => (
-              <option key={i} value={r}>{r}</option>
+              <option key={i} value={r} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">{r}</option>
             ))}
           </select>
 
@@ -1261,11 +1261,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               setFilterBulan(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300"
+            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-200 dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-[#12181f] dark:[&>option]:text-zinc-100"
           >
-            <option value="ALL">Semua Bulan</option>
+            <option value="ALL" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Semua Bulan</option>
             {uniqueBulan.map((b, i) => (
-              <option key={i} value={b}>{b}</option>
+              <option key={i} value={b} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">{b}</option>
             ))}
           </select>
 
@@ -1276,11 +1276,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               setFilterSumber(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300"
+            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-200 dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-[#12181f] dark:[&>option]:text-zinc-100"
           >
-            <option value="ALL">Semua Sumber</option>
-            <option value="BLUD">BLUD</option>
-            <option value="APBD">APBD</option>
+            <option value="ALL" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Semua Sumber</option>
+            <option value="BLUD" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">BLUD</option>
+            <option value="APBD" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">APBD</option>
           </select>
 
           {/* Filter Status */}
@@ -1290,15 +1290,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               setFilterStatus(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300"
+            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-200 dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-[#12181f] dark:[&>option]:text-zinc-100"
           >
-            <option value="ALL">Semua Status</option>
-            <option value="LUNAS">Lunas (Sisa Rp 0)</option>
-            <option value="BELUM_LUNAS">Belum Lunas</option>
+            <option value="ALL" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Semua Status</option>
+            <option value="LUNAS" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Lunas (Sisa Rp 0)</option>
+            <option value="BELUM_LUNAS" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Belum Lunas</option>
           </select>
 
           {/* Sortir Dropdown */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-200">
             <ArrowUpDown className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
             <select
               value={`${String(sortField)}_${sortAsc ? 'asc' : 'desc'}`}
@@ -1308,23 +1308,23 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 setSortAsc(dir === 'asc');
                 setCurrentPage(1);
               }}
-              className="bg-transparent text-xs font-medium text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-medium text-slate-700 dark:text-zinc-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] dark:bg-[#12181f] [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-[#12181f] dark:[&>option]:text-zinc-100"
               title="Pilih Pengurutan Data"
             >
-              <option value="no_asc">Urutkan: No (1 - 999)</option>
-              <option value="no_desc">Urutkan: No (999 - 1)</option>
-              <option value="bulanInvoice_asc">Urutkan: Bulan (Januari - Desember)</option>
-              <option value="bulanInvoice_desc">Urutkan: Bulan (Desember - Januari)</option>
-              <option value="tglInvoice_asc">Urutkan: Tgl Invoice (Terlama - Terbaru)</option>
-              <option value="tglInvoice_desc">Urutkan: Tgl Invoice (Terbaru - Terlama)</option>
-              <option value="jatuhTempo_asc">Urutkan: Tgl Jatuh Tempo (Terdekat)</option>
-              <option value="rekanan_asc">Urutkan: Vendor (A - Z)</option>
-              <option value="rekanan_desc">Urutkan: Vendor (Z - A)</option>
-              <option value="jumlahInvoice_desc">Urutkan: Nilai Invoice (Terbesar)</option>
-              <option value="jumlahInvoice_asc">Urutkan: Nilai Invoice (Terkecil)</option>
-              <option value="sisaHutang_desc">Urutkan: Sisa Hutang (Terbesar)</option>
-              <option value="sisaHutang_asc">Urutkan: Sisa Hutang (Terkecil)</option>
-              <option value="lamaHariHutang_desc">Urutkan: Umur Hutang (Tertinggi)</option>
+              <option value="no_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: No (1 - 999)</option>
+              <option value="no_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: No (999 - 1)</option>
+              <option value="bulanInvoice_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Bulan (Januari - Desember)</option>
+              <option value="bulanInvoice_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Bulan (Desember - Januari)</option>
+              <option value="tglInvoice_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Tgl Invoice (Terlama - Terbaru)</option>
+              <option value="tglInvoice_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Tgl Invoice (Terbaru - Terlama)</option>
+              <option value="jatuhTempo_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Tgl Jatuh Tempo (Terdekat)</option>
+              <option value="rekanan_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Vendor (A - Z)</option>
+              <option value="rekanan_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Vendor (Z - A)</option>
+              <option value="jumlahInvoice_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Nilai Invoice (Terbesar)</option>
+              <option value="jumlahInvoice_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Nilai Invoice (Terkecil)</option>
+              <option value="sisaHutang_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Sisa Hutang (Terbesar)</option>
+              <option value="sisaHutang_asc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Sisa Hutang (Terkecil)</option>
+              <option value="lamaHariHutang_desc" className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Urutkan: Umur Hutang (Tertinggi)</option>
             </select>
           </div>
 
@@ -1336,14 +1336,14 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               setPageSize(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300"
+            className="px-3 py-2 bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-200 dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-800 dark:[&>option]:bg-[#12181f] dark:[&>option]:text-zinc-100"
           >
-            <option value={10}>10 baris/hal</option>
-            <option value={25}>25 baris/hal</option>
-            <option value={50}>50 baris/hal</option>
-            <option value={100}>100 baris/hal</option>
-            <option value={200}>200 baris/hal</option>
-            <option value={-1}>Tampilkan Semua</option>
+            <option value={10} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">10 baris/hal</option>
+            <option value={25} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">25 baris/hal</option>
+            <option value={50} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">50 baris/hal</option>
+            <option value={100} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">100 baris/hal</option>
+            <option value={200} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">200 baris/hal</option>
+            <option value={-1} className="bg-white dark:bg-[#12181f] text-slate-800 dark:text-zinc-100">Tampilkan Semua</option>
           </select>
         </div>
       </div>
@@ -1361,7 +1361,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
         <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-zinc-800">
           <table className="w-full text-xs text-left border-collapse whitespace-nowrap">
-            <thead className="bg-[#f0f9f6] dark:bg-[#132720] text-[#0d4a36] dark:text-[#a2f0d4] font-bold border-b border-teal-200 dark:border-emerald-900 uppercase text-[10px] tracking-wider select-none">
+            <thead className="bg-[#f0f9f6] dark:bg-[#12181f] text-[#0d4a36] dark:text-[#a2f0d4] font-bold border-b border-teal-200 dark:border-emerald-900 uppercase text-[10px] tracking-wider select-none">
               <tr>
                 <th onClick={() => handleSort('no')} className="px-3 py-3 text-center w-12 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">NO <ArrowUpDown className="w-2.5 h-2.5" /></div>
@@ -1592,29 +1592,30 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
               )}
             </tbody>
             {/* TOTALS FOOTER */}
-            <tfoot className="bg-[#e4f4ed] dark:bg-[#10231c] font-bold text-slate-900 dark:text-white border-t-2 border-teal-400 dark:border-teal-800">
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
               <tr>
-                <td colSpan={10} className="px-4 py-3 text-right uppercase tracking-wider text-xs">
-                  TOTAL TERFILTER ({filteredItems.length} BARIS):
+                <td colSpan={10} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredItems.length} INVOICE TERFILTER)
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-slate-900 dark:text-zinc-100">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(stats.totalInvoice)}
                 </td>
-                <td className="px-3 py-3 text-right font-mono text-xs text-slate-600 dark:text-zinc-400">
+                <td className="px-3 py-3.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {stats.totalKoreksi > 0 ? formatRupiah(stats.totalKoreksi) : '-'}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-teal-900 dark:text-teal-300">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-indigo-950 dark:text-indigo-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {formatRupiah(stats.totalInvoiceFix)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-emerald-700 dark:text-emerald-300">
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {stats.totalPembayaran > 0 ? formatRupiah(stats.totalPembayaran) : '-'}
                 </td>
-                <td></td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-rose-700 dark:text-rose-300">
+                <td className="px-3 py-3.5 text-center text-slate-400 border-r border-[#c2e5d2] dark:border-[#2b5a45]">-</td>
+                <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {stats.totalSisaHutang > 0 ? formatRupiah(stats.totalSisaHutang) : '-'}
                 </td>
-                <td colSpan={5}></td>
-                <td></td>
+                <td colSpan={6} className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {stats.lunasCount} Lunas • {stats.belumLunasCount} Belum Lunas
+                </td>
               </tr>
             </tfoot>
           </table>

@@ -173,7 +173,8 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
       setError('Silakan masukkan email dan password.');
       return;
     }
@@ -181,11 +182,11 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       setError(null);
       setIsSubmitting(true);
       await setPersistence(auth, browserSessionPersistence);
-      const isEmailAdmin = (email === 'begegbayunugroho@gmail.com') || email.toLowerCase().includes('admin');
-      const isEmailPajak = email.toLowerCase().includes('pajak') || email.toLowerCase().includes('ppn');
+      const isEmailAdmin = (normalizedEmail === 'begegbayunugroho@gmail.com') || normalizedEmail.includes('admin');
+      const isEmailPajak = normalizedEmail.includes('pajak') || normalizedEmail.includes('ppn');
 
       if (isLoginMode) {
-        const res = await signInWithEmailAndPassword(auth, email, password);
+        const res = await signInWithEmailAndPassword(auth, normalizedEmail, password);
         const userDocRef = doc(db, 'users', res.user.uid);
         const snap = await getDoc(userDocRef);
         if (snap.exists()) {
@@ -211,10 +212,10 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
           }
         }
 
-        const res = await createUserWithEmailAndPassword(auth, email, password);
+        const res = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
         const assignedRole = isEmailAdmin ? 'admin' : (isEmailPajak && selectedRole === 'viewer') ? 'pic_pajak' : selectedRole;
         await setDoc(doc(db, 'users', res.user.uid), {
-          email,
+          email: normalizedEmail,
           role: assignedRole,
           isAdmin: assignedRole === 'admin',
           createdAt: new Date().toISOString()
@@ -228,23 +229,25 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       if (err.code === 'auth/invalid-credential' || (err.message && err.message.includes('auth/invalid-credential'))) {
         if (isLoginMode) {
           try {
-            const q = query(collection(db, 'users'), where('email', '==', email));
+            const q = query(collection(db, 'users'), where('email', '==', normalizedEmail));
             const snap = await getDocs(q);
             if (snap.empty) {
-              setError('Daftar Heula Sateh Mun Rek Asup');
+              setError('Email tidak ditemukan dalam sistem. Pastikan email terdaftar atau gunakan tombol "Masuk dengan Akun Google".');
             } else {
-              setError('Punten, Password na salah lur.');
+              setError('Password salah, atau akun Anda terdaftar lewat Google. Silakan klik tombol "Masuk dengan Akun Google" di bawah jika menggunakan Google.');
             }
           } catch (e) {
-            setError('Punten, Password na salah lur.');
+            setError('Kredensial login tidak valid. Jika sebelumnya masuk menggunakan Google, gunakan tombol "Masuk dengan Akun Google".');
           }
         } else {
           setError('Terjadi kesalahan saat pendaftaran.');
         }
       } else if (err.code === 'auth/wrong-password') {
-        setError('Punten, Password na salah lur.');
+        setError('Password yang Anda masukkan salah.');
       } else if (err.code === 'auth/user-not-found') {
-        setError('Daftar Heula Sateh Mun Rek Asup');
+        setError('Email belum terdaftar. Silakan pilih tab Daftar Akun Baru.');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError('Email ini sudah terdaftar. Silakan beralih ke mode Masuk (Login).');
       } else {
         setError(err.message || 'Terjadi kesalahan autentikasi.');
       }

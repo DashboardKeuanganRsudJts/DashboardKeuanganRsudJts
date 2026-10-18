@@ -838,7 +838,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="sticky top-0 z-10">
-                      <tr className="bg-emerald-100/90 dark:bg-[#081b22] text-emerald-950 dark:text-emerald-100 font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
+                      <tr className="bg-emerald-100/90 dark:bg-[#12181f] text-emerald-950 dark:text-emerald-100 font-bold border-b-2 border-emerald-300 dark:border-emerald-900/60 text-[11px]">
                         <th className="py-2.5 px-3">Bulan</th>
                         <th className="py-2.5 px-2 text-center">No</th>
                         <th className="py-2.5 px-3">Tanggal / Bulan</th>
@@ -950,22 +950,22 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                       )}
                     </tbody>
                     {displayedMonths.length > 0 && (
-                      <tfoot className="bg-emerald-50/60 dark:bg-emerald-950/40 font-bold text-slate-900 dark:text-emerald-100 border-t border-emerald-200 dark:border-emerald-900/40">
+                      <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
                         <tr>
-                          <td colSpan={3} className="py-2.5 px-3 text-right uppercase text-[11px]">
-                            Subtotal {stand.namaStand} ({selectedBulan}):
+                          <td colSpan={3} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                            TOTAL ({stand.namaStand} - {selectedBulan})
                           </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-slate-900 dark:text-emerald-100">
+                          <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                             {formatRupiah(subtotalTagihan)}
                           </td>
-                          <td></td>
-                          <td className="py-2.5 px-3 text-right font-mono text-emerald-800 dark:text-emerald-400">
+                          <td className="py-3.5 px-3 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-400">-</td>
+                          <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                             {formatRupiah(subtotalBayar)}
                           </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-rose-800 dark:text-rose-400">
+                          <td className="py-3.5 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                             {formatRupiah(subtotalSisa)}
                           </td>
-                          <td colSpan={4} className="py-2.5 px-3 text-center text-slate-500 dark:text-slate-400 text-xs">
+                          <td colSpan={4} className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
                             {displayedMonths.filter(r => r.sisaPiutang > 0 && r.piutang > 0).length} Bulan Belum Lunas
                           </td>
                         </tr>

@@ -769,7 +769,7 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
         {/* Table View */}
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left border-collapse">
-            <thead className="bg-[#e6f4ea] dark:bg-[#1a382b] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45] uppercase text-[10px] tracking-wide">
+            <thead className="bg-[#e6f4ea] dark:bg-[#12181f] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45] uppercase text-[10px] tracking-wide">
               <tr>
                 <th className="px-3 py-3 text-center w-12 border-r border-[#c2e5d2] dark:border-[#2b5a45]">NO</th>
                 <th className="px-4 py-3 border-r border-[#c2e5d2] dark:border-[#2b5a45]">NAMA SUPPLIER / VENDOR REKANAN</th>
@@ -889,7 +889,7 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
 
             {/* Total Footer Row */}
             {filteredSuppliers.length > 0 && (
-              <tfoot className="bg-[#f0f9f3] dark:bg-[#12281e] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
                 <tr>
                   <td colSpan={2} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
                     TOTAL ({filteredSuppliers.length} VENDOR TERFILTER)
@@ -1113,6 +1113,36 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
                     })
                   )}
                 </tbody>
+                <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+                  <tr>
+                    <td colSpan={6} className="px-3 py-3 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                      TOTAL ({filteredModalInvoices.length} INVOICE VENDOR)
+                    </td>
+                    <td className="px-3 py-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                      {formatRupiah(filteredModalInvoices.reduce((a, b) => a + (b.totalInvoiceFix || b.jumlahInvoice || 0), 0))}
+                    </td>
+                    <td className="px-3 py-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                      {formatRupiah(filteredModalInvoices.reduce((a, b) => a + (b.pembayaran || 0), 0))}
+                    </td>
+                    <td className="px-3 py-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                      {formatRupiah(filteredModalInvoices.reduce((a, b) => {
+                        const tagihan = b.totalInvoiceFix || b.jumlahInvoice || 0;
+                        return a + (b.sisaHutang !== undefined ? b.sisaHutang : Math.max(0, tagihan - (b.pembayaran || 0)));
+                      }, 0))}
+                    </td>
+                    <td colSpan={3} className="px-3 py-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                      {filteredModalInvoices.filter(i => {
+                        const tagihan = i.totalInvoiceFix || i.jumlahInvoice || 0;
+                        const s = i.sisaHutang !== undefined ? i.sisaHutang : Math.max(0, tagihan - (i.pembayaran || 0));
+                        return s <= 0;
+                      }).length} Lunas • {filteredModalInvoices.filter(i => {
+                        const tagihan = i.totalInvoiceFix || i.jumlahInvoice || 0;
+                        const s = i.sisaHutang !== undefined ? i.sisaHutang : Math.max(0, tagihan - (i.pembayaran || 0));
+                        return s > 0;
+                      }).length} Belum Lunas
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
 

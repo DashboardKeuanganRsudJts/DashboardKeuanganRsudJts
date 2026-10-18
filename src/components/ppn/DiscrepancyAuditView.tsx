@@ -238,6 +238,28 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
                   </tr>
                 )}
               </tbody>
+              <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+                <tr>
+                  <td colSpan={3} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                    TOTAL ({filteredDiscrepancies.length} SELISIH DOKUMEN)
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {formatRupiah(filteredDiscrepancies.reduce((acc, it) => acc + ((it.dpp || 0) + (it.ppn || 0)), 0))}
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {formatRupiah(filteredDiscrepancies.reduce((acc, it) => acc + (it.nilaiInvoice || 0), 0))}
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {(() => {
+                      const diffSum = filteredDiscrepancies.reduce((acc, it) => acc + (((it.dpp || 0) + (it.ppn || 0)) - (it.nilaiInvoice || 0)), 0);
+                      return diffSum > 0 ? `+${formatRupiah(diffSum)}` : formatRupiah(diffSum);
+                    })()}
+                  </td>
+                  <td className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                    {filteredDiscrepancies.length} Berkas Selisih
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
@@ -312,6 +334,22 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
                   </tr>
                 )}
               </tbody>
+              <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+                <tr>
+                  <td colSpan={4} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                    TOTAL ({filteredUnlinkedCoretax.length} FAKTUR BELUM DITAUTKAN)
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {formatRupiah(filteredUnlinkedCoretax.reduce((acc, it) => acc + (it.dpp || 0), 0))}
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-950 dark:text-indigo-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {formatRupiah(filteredUnlinkedCoretax.reduce((acc, it) => acc + (it.ppn || 0), 0))}
+                  </td>
+                  <td colSpan={3} className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                    {filteredUnlinkedCoretax.length} Faktur Coretax Menunggu Penautan No. Invoice
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
@@ -386,6 +424,22 @@ export const DiscrepancyAuditView: React.FC<DiscrepancyAuditViewProps> = ({
                   </tr>
                 )}
               </tbody>
+              <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+                <tr>
+                  <td colSpan={2} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                    TOTAL ({filteredUnlinkedHutang.length} TAGIHAN TANPA FAKTUR)
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {formatRupiah(filteredUnlinkedHutang.reduce((acc, it) => acc + (it.nilaiInvoice || 0), 0))}
+                  </td>
+                  <td className="py-3.5 px-3 text-center text-emerald-700 dark:text-emerald-400 text-[11px] border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                    {filteredUnlinkedHutang.filter(it => it.statusPembayaranHutang === 'SUDAH DIBAYAR').length} Terbayar • {filteredUnlinkedHutang.filter(it => it.statusPembayaranHutang !== 'SUDAH DIBAYAR').length} Belum
+                  </td>
+                  <td colSpan={4} className="py-3.5 px-3 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                    {filteredUnlinkedHutang.filter(it => it.nomorSP2D).length} Ber-SP2D • Menunggu Penerbitan Faktur Pajak
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

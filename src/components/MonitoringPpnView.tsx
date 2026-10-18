@@ -24,6 +24,7 @@ import {
 } from '../utils/reconciliation';
 import { syncHutangFromGoogleSheets, DEFAULT_GOOGLE_SHEETS_URL } from '../utils/googleSheetsSync';
 import { exportMonitoringToExcel } from '../utils/ppnExcelHelper';
+import { syncDocumentToFirestore } from '../services/firestoreSync';
 
 import { KPICards } from './ppn/KPICards';
 import { MonthlyMonitoringTable } from './ppn/MonthlyMonitoringTable';
@@ -100,18 +101,40 @@ export const MonitoringPpnView: React.FC<MonitoringPpnViewProps> = ({
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importModalType, setImportModalType] = useState<'coretax' | 'hutang'>('coretax');
 
-  // Sync to local storage
+  // Sync to local storage & Cloud Firestore
   useEffect(() => {
     localStorage.setItem('rsud_ppn_coretax_data_2026', JSON.stringify(coretaxData));
+    syncDocumentToFirestore('ppn_coretax_data_2026', coretaxData).catch(e => console.warn('Sync firestore:', e));
   }, [coretaxData]);
 
   useEffect(() => {
     localStorage.setItem('rsud_ppn_hutang_data_2026', JSON.stringify(hutangData));
+    syncDocumentToFirestore('ppn_hutang_data_2026', hutangData).catch(e => console.warn('Sync firestore:', e));
   }, [hutangData]);
 
   useEffect(() => {
     localStorage.setItem('rsud_ppn_sheet_url_2026', sheetUrl);
   }, [sheetUrl]);
+
+  // Listen for real-time Firestore updates
+  useEffect(() => {
+    const handleCoretaxUpdate = (e: any) => {
+      if (e.detail && Array.isArray(e.detail) && e.detail.length > 0) {
+        setCoretaxData(e.detail);
+      }
+    };
+    const handleHutangUpdate = (e: any) => {
+      if (e.detail && Array.isArray(e.detail) && e.detail.length > 0) {
+        setHutangData(e.detail);
+      }
+    };
+    window.addEventListener('rsud_ppn_coretax_updated', handleCoretaxUpdate);
+    window.addEventListener('rsud_ppn_hutang_updated', handleHutangUpdate);
+    return () => {
+      window.removeEventListener('rsud_ppn_coretax_updated', handleCoretaxUpdate);
+      window.removeEventListener('rsud_ppn_hutang_updated', handleHutangUpdate);
+    };
+  }, []);
 
   // Reconciled Data & Analytics
   const reconciliationResult = useMemo(() => {

@@ -115,6 +115,17 @@ export default function DatabaseKodeRekeningView({ onShowToast }: DatabaseKodeRe
                 </tr>
               )}
             </tbody>
+            {/* TOTAL FOOTER ROW */}
+            <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
+              <tr>
+                <td colSpan={2} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
+                  TOTAL ({filteredData.length} KODE REKENING TERFILTER)
+                </td>
+                <td className="px-4 py-3.5 text-left text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                  {filteredData.length} Pos Rekening Aktif RSUD Jatisari
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
