@@ -1492,18 +1492,18 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                             TRUE
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-emerald-950/80 text-amber-700 dark:text-emerald-300">
                             FALSE
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
+                      <td className="px-3 py-2.5 text-slate-600 dark:text-emerald-300/80 font-mono text-[11px]">
                         {formatDateDDMMYYYY(item.tglSpdBukuKas || item.tglBayar || '')}
                       </td>
-                      <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 text-[10px] font-semibold">
+                      <td className="px-3 py-2.5 text-slate-600 dark:text-emerald-300/80 text-[10px] font-semibold">
                         {getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd || '-'}
                       </td>
-                      <td className="px-4 py-2.5 font-mono text-[10.5px] text-slate-700 dark:text-zinc-300 max-w-[200px] truncate" title={item.noSpdBukuKas}>
+                      <td className="px-4 py-2.5 font-mono text-[10.5px] text-slate-700 dark:text-emerald-100 max-w-[200px] truncate" title={item.noSpdBukuKas}>
                         {item.noSpdBukuKas || '-'}
                       </td>
                       <td className="px-3 py-2.5 text-center font-mono font-medium">
@@ -1517,44 +1517,44 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                           }
                           if (umur <= 0) {
                             return (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700" title="Belum jatuh tempo">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-[#071311] text-slate-700 dark:text-emerald-300/80 border border-slate-200 dark:border-emerald-800/60" title="Belum jatuh tempo">
                                 {umur} hr
                               </span>
                             );
                           }
                           if (umur <= 30) {
                             return (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-emerald-950/60 text-amber-700 dark:text-emerald-300 border border-amber-200 dark:border-emerald-800">
                                 {umur} hr
                               </span>
                             );
                           }
                           if (umur <= 60) {
                             return (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 dark:bg-emerald-950/60 text-orange-700 dark:text-emerald-300 border border-orange-200 dark:border-emerald-800">
                                 {umur} hr
                               </span>
                             );
                           }
                           if (umur <= 90) {
                             return (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 dark:bg-emerald-950/60 text-rose-700 dark:text-emerald-300 border border-rose-200 dark:border-emerald-800">
                                 {umur} hr
                               </span>
                             );
                           }
                           return (
-                            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-800">
+                            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 dark:bg-emerald-950 text-rose-800 dark:text-emerald-200 border border-rose-300 dark:border-emerald-800">
                               {umur} hr
                             </span>
                           );
                         })()}
                       </td>
-                      <td className="px-3 py-2.5 text-center border-l border-slate-200 dark:border-zinc-800">
+                      <td className="px-3 py-2.5 text-center border-l border-slate-200 dark:border-emerald-900/40">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleOpenDetail(item)}
-                            className="p-1 rounded text-slate-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/50 transition cursor-pointer"
+                            className="p-1 rounded text-slate-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-emerald-950/50 transition cursor-pointer"
                             title="Lihat Detail Transaksi"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -1566,7 +1566,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                                 className={`p-1 rounded transition cursor-pointer ${
                                   item.sisaHutang <= 0
                                     ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
-                                    : 'text-amber-500 hover:text-emerald-600 hover:bg-amber-50 dark:hover:bg-amber-950/50'
+                                    : 'text-amber-500 hover:text-emerald-600 hover:bg-amber-50 dark:hover:bg-emerald-950/50 dark:text-emerald-400'
                                 }`}
                                 title={item.sisaHutang <= 0 ? 'Status Lunas (Klik untuk ubah jadi Belum Lunas)' : 'Klik untuk Set Lunas (Sisa Rp 0)'}
                               >

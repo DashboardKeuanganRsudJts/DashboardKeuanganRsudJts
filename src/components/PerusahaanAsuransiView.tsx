@@ -1382,7 +1382,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
             {isOnlyAdminPiutang && (
               <button
                 onClick={() => handleOpenPayment()}
-                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-amber-400/30"
+                className="px-3.5 py-2 bg-teal-700 hover:bg-teal-600 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-teal-400/30"
                 title="Input pembayaran pelunasan tagihan invoice"
               >
                 <CreditCard className="w-4 h-4" />
@@ -1949,11 +1949,11 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                           <button
                             type="button"
                             onClick={() => handleOpenPayment(row, undefined, 'manual')}
-                            className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-amber-50 dark:hover:bg-amber-950/60 text-emerald-700 dark:text-emerald-400 hover:text-amber-800 dark:hover:text-amber-300 transition border border-transparent hover:border-amber-300 dark:hover:border-amber-700/60 text-right w-full justify-end cursor-pointer"
+                            className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-teal-50 dark:hover:bg-teal-950/60 text-emerald-700 dark:text-emerald-400 hover:text-teal-800 dark:hover:text-teal-300 transition border border-transparent hover:border-teal-300 dark:hover:border-teal-700/60 text-right w-full justify-end cursor-pointer"
                             title="Klik untuk Input Pembayaran (Sesuai Invoice atau Manual Bebas)"
                           >
                             <span>{formatRupiah(row.pembayaran)}</span>
-                            <CreditCard className="w-3 h-3 opacity-30 group-hover:opacity-100 text-amber-600 dark:text-amber-400 transition shrink-0" />
+                            <CreditCard className="w-3 h-3 opacity-30 group-hover:opacity-100 text-teal-600 dark:text-teal-400 transition shrink-0" />
                           </button>
                         ) : (
                           formatRupiah(row.pembayaran)
@@ -1988,7 +1988,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             {/* TOMBOL BAYAR INVOICE / MANUAL */}
                             <button
                               onClick={() => handleOpenPayment(row)}
-                              className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 transition"
+                              className="p-1.5 rounded bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 transition"
                               title="Input Pembayaran (Invoice atau Manual Bebas)"
                             >
                               <CreditCard className="w-3.5 h-3.5" />
@@ -2446,11 +2446,11 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
       {/* ========================================================================= */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#0d1216] rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-amber-950/80 space-y-4 max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#0d1216] rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-teal-900/60 space-y-4 max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
               <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
+                <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300">
                   <CreditCard className="w-5 h-5" />
                 </div>
                 <div>
@@ -2482,11 +2482,11 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
                   payMode === 'invoice'
-                    ? 'bg-white dark:bg-[#12181f] text-amber-900 dark:text-amber-300 shadow-xs border border-slate-200 dark:border-zinc-700'
+                    ? 'bg-white dark:bg-[#12181f] text-teal-800 dark:text-teal-300 shadow-xs border border-slate-200 dark:border-zinc-700'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                 }`}
               >
-                <Receipt className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <Receipt className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <span>1. Sesuai Invoice</span>
               </button>
 
@@ -2500,7 +2500,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
                   payMode === 'manual'
-                    ? 'bg-amber-600 text-white shadow-xs'
+                    ? 'bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 text-white shadow-xs'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                 }`}
               >
@@ -2527,7 +2527,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                       setPayAmount(found.sisaPiutang > 0 ? found.sisaPiutang : found.piutangSdBulanIni);
                     }
                   }}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 font-semibold focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 >
                   {dataList.filter(r => selectedBulan === 'Semua Bulan' || r.bulan.toUpperCase() === selectedBulan.toUpperCase()).map(r => (
                     <option key={`${r.no}-${r.namaPerusahaan}-${r.bulan}`} value={`${r.no}-${r.namaPerusahaan}-${r.bulan}`}>
@@ -2539,46 +2539,46 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
               {/* MODE MANUAL BANNER & OPTIONS */}
               {payMode === 'manual' ? (
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 space-y-2.5">
-                  <div className="flex items-center gap-1.5 text-amber-950 dark:text-amber-200 font-bold">
-                    <Sliders className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900/60 space-y-2.5">
+                  <div className="flex items-center gap-1.5 text-teal-950 dark:text-teal-200 font-bold">
+                    <Sliders className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
                     <span>Mode Pembayaran Manual / Bebas Aktif</span>
                   </div>
-                  <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 leading-relaxed">
+                  <p className="text-[11px] text-teal-900/80 dark:text-teal-300/80 leading-relaxed">
                     Digunakan untuk mencatat penerimaan kas titipan, uang muka (DP), pembayaran gelondongan rekening, atau setoran kasir dengan nominal bebas yang <strong>tidak harus sama dengan invoice yang terdaftar</strong>.
                   </p>
 
-                  <div className="pt-2 border-t border-amber-200/80 dark:border-amber-900/60">
+                  <div className="pt-2 border-t border-teal-200/80 dark:border-teal-900/60">
                     <span className="block font-bold text-slate-700 dark:text-zinc-300 mb-1.5 text-[11px]">
                       Tipe Perlakuan Pembayaran Manual:
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition text-[11px] font-semibold ${
                         manualPayType === 'tambah'
-                          ? 'bg-white dark:bg-zinc-800 border-amber-500 text-amber-950 dark:text-amber-200 shadow-2xs'
-                          : 'border-amber-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                          ? 'bg-white dark:bg-zinc-800 border-teal-500 text-teal-950 dark:text-teal-200 shadow-2xs'
+                          : 'border-teal-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                       }`}>
                         <input
                           type="radio"
                           name="manualPayType"
                           checked={manualPayType === 'tambah'}
                           onChange={() => setManualPayType('tambah')}
-                          className="text-amber-600 focus:ring-amber-500"
+                          className="text-teal-600 focus:ring-teal-500"
                         />
                         <span>(+) Tambah ke Pembayaran Berjalan</span>
                       </label>
 
                       <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition text-[11px] font-semibold ${
                         manualPayType === 'set_total'
-                          ? 'bg-white dark:bg-zinc-800 border-amber-500 text-amber-950 dark:text-amber-200 shadow-2xs'
-                          : 'border-amber-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                          ? 'bg-white dark:bg-zinc-800 border-teal-500 text-teal-950 dark:text-teal-200 shadow-2xs'
+                          : 'border-teal-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                       }`}>
                         <input
                           type="radio"
                           name="manualPayType"
                           checked={manualPayType === 'set_total'}
                           onChange={() => setManualPayType('set_total')}
-                          className="text-amber-600 focus:ring-amber-500"
+                          className="text-teal-600 focus:ring-teal-500"
                         />
                         <span>(=) Tetapkan Total Pembayaran</span>
                       </label>
@@ -2594,7 +2594,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                     </label>
                     {getRowInvoices(selectedInvoiceForPay).length > 0 ? (
                       <select
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 font-semibold focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         value={selectedSpecificInvoice?.id || selectedSpecificInvoice?.noInvoice || ''}
                         onChange={(e) => {
                           const targetInv = getRowInvoices(selectedInvoiceForPay).find(
@@ -2644,7 +2644,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1 flex justify-between items-center">
                   <span>Nominal Pembayaran (Rp) <span className="text-rose-500">*</span></span>
                   {selectedInvoiceForPay && selectedInvoiceForPay.sisaPiutang > 0 && (
-                    <span className="text-[11px] text-amber-800 dark:text-amber-400 font-medium">
+                    <span className="text-[11px] text-teal-800 dark:text-teal-400 font-medium">
                       Sisa: {formatRupiah(selectedInvoiceForPay.sisaPiutang)}
                     </span>
                   )}
@@ -2658,7 +2658,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                     placeholder="Masukkan nominal pembayaran..."
                     value={payAmount}
                     onChange={(e) => setPayAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-amber-300 dark:border-amber-700 bg-white dark:bg-[#12181f] font-mono font-bold text-emerald-900 dark:text-emerald-300 focus:ring-2 focus:ring-amber-500 focus:outline-none text-base"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-teal-300 dark:border-teal-700 bg-white dark:bg-[#12181f] font-mono font-bold text-emerald-900 dark:text-emerald-300 focus:ring-2 focus:ring-teal-500 focus:outline-none text-base"
                     autoFocus
                   />
                 </div>
@@ -2715,7 +2715,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                     required
                     value={payDate}
                     onChange={(e) => setPayDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none font-medium"
                   />
                 </div>
 
@@ -2729,7 +2729,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                     placeholder="Contoh: TRF-BJB-89212 / Kasir RSUD"
                     value={payBukti}
                     onChange={(e) => setPayBukti(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -2744,19 +2744,19 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                   placeholder={payMode === 'manual' ? 'Contoh: Titipan pembayaran kasir non-invoice, uang muka MCU, pelunasan sebagian' : 'Contoh: Pelunasan klaim rawat inap'}
                   value={payKeterangan}
                   onChange={(e) => setPayKeterangan(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-[#12181f] text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
 
               {/* BANNER PERLINDUNGAN INVOICE PADA MODE MANUAL */}
               {payMode === 'manual' && selectedInvoiceForPay && (
-                <div className="p-3 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 flex items-start gap-2.5">
-                  <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                <div className="p-3 rounded-xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900/60 flex items-start gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400 mt-0.5 shrink-0" />
                   <div className="space-y-0.5 text-xs">
-                    <span className="font-bold text-blue-950 dark:text-blue-200 block">
+                    <span className="font-bold text-teal-950 dark:text-teal-200 block">
                       Rincian Tagihan Invoice Tetap Aman & Terjaga
                     </span>
-                    <p className="text-[11px] text-blue-900/80 dark:text-blue-300/80 leading-relaxed">
+                    <p className="text-[11px] text-teal-900/80 dark:text-teal-300/80 leading-relaxed">
                       Pembayaran manual ini dicatat pada saldo piutang perusahaan dan <strong>tidak akan mengganggu atau merubah</strong> tagihan invoice yang belum terbayar. Invoice yang telah dibuat hanya akan lunas jika dibayar sesuai nomor &amp; nominalnya melalui tab <strong>&quot;1. Sesuai Invoice&quot;</strong>.
                     </p>
                   </div>
@@ -2765,8 +2765,8 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
               {/* SIMULASI PERHITUNGAN LIVE AKHIR */}
               {selectedInvoiceForPay && (
-                <div className="p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 space-y-1.5 text-xs">
-                  <span className="font-bold text-amber-950 dark:text-amber-200 block text-[11px]">
+                <div className="p-3.5 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-900/40 space-y-1.5 text-xs">
+                  <span className="font-bold text-teal-950 dark:text-teal-200 block text-[11px]">
                     Simulasi Saldo Akhir Bulan {selectedInvoiceForPay.bulan}:
                   </span>
                   
@@ -2786,7 +2786,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             {formatRupiah(finalBayar)}
                           </span>
                         </div>
-                        <div className="flex justify-between border-t border-amber-200 dark:border-amber-900/60 pt-1.5 bg-white dark:bg-zinc-800/80 p-2 rounded-lg">
+                        <div className="flex justify-between border-t border-teal-200 dark:border-teal-900/60 pt-1.5 bg-white dark:bg-zinc-800/80 p-2 rounded-lg">
                           <span className="font-bold text-slate-800 dark:text-zinc-200">
                             Sisa Piutang Setelah Bayar:
                           </span>
@@ -2812,7 +2812,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 transition shadow-xs flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold transition shadow-xs flex items-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
                   <span>Simpan Pembayaran & Roll-Forward</span>

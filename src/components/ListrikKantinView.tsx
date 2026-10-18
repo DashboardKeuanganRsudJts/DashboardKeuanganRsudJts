@@ -852,7 +852,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                         <th className="py-2.5 px-3 text-center">Aksi / Update</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-amber-900/20">
+                    <tbody className="divide-y divide-slate-100 dark:divide-teal-900/20">
                       {displayedMonths.length === 0 ? (
                         <tr>
                           <td colSpan={11} className="py-8 text-center text-slate-400">
@@ -868,11 +868,11 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                           return (
                             <tr 
                               key={`stand-month-row-${stand.namaStand}-${m.bulan}-${m.no}-${mIdx}`}
-                              className={`hover:bg-slate-50/80 dark:hover:bg-[#1a0f0a] transition ${
+                              className={`hover:bg-slate-50/80 dark:hover:bg-[#0c1a17] transition ${
                                 hasSisa ? 'bg-rose-50/20 dark:bg-rose-950/20' : (isBelumAda ? 'opacity-70' : '')
                               }`}
                             >
-                              <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-amber-50 whitespace-nowrap">
+                              <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                                 {m.bulan}
                               </td>
                               <td className="py-2.5 px-2 text-center font-mono text-slate-500 dark:text-slate-400">
@@ -881,7 +881,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                               <td className="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-400">
                                 {m.tanggalBulan}
                               </td>
-                              <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-amber-100">
+                              <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                                 {formatRupiah(m.piutang)}
                               </td>
                               <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400 whitespace-nowrap font-mono text-[11px]">
@@ -999,7 +999,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               </div>
               <button
                 onClick={() => setIsUpdateTagihanOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-teal-950/50 text-slate-400 dark:text-zinc-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1009,7 +1009,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               
               {/* Stand Selection */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Stand Kantin</label>
+                <label className="block font-bold text-slate-700 dark:text-zinc-200 mb-1">Stand Kantin</label>
                 {!formIsCustomStand ? (
                   <div className="space-y-1.5">
                     <select
@@ -1022,7 +1022,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                           setFormStandNama(e.target.value);
                         }
                       }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-bold text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                     >
                       {stands.map((st, stIdx) => (
                         <option key={`modal-select-stand-${st.namaStand}-${stIdx}`} value={st.namaStand}>{st.namaStand}</option>
@@ -1038,13 +1038,13 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                         placeholder="Nama Stand Baru (Contoh: STAND KOPI KANTIN)"
                         value={formCustomStandNama}
                         onChange={(e) => setFormCustomStandNama(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-amber-300 font-bold uppercase text-amber-950 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-xl border border-teal-300 dark:border-teal-700/60 bg-white dark:bg-[#0c1a17] font-bold uppercase text-teal-950 dark:text-teal-200 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setFormIsCustomStand(false)}
-                        className="px-3 py-2 border rounded-xl hover:bg-slate-50 text-slate-600"
+                        className="px-3 py-2 border border-slate-200 dark:border-teal-900/50 rounded-xl hover:bg-slate-50 dark:hover:bg-teal-950/40 text-slate-600 dark:text-zinc-300"
                       >
                         Batal
                       </button>
@@ -1056,7 +1056,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               {/* Bulan & Tanggal Input */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Bulan Tagihan</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Bulan Tagihan</label>
                   <select
                     value={formBulan}
                     onChange={(e) => {
@@ -1071,7 +1071,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                         setFormTanggalJatuhTempo(`15/${nextMm}/${nextYr}`);
                       }
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-bold text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   >
                     {MONTH_NAMES_UPPER.map((m, mIdx) => (
                       <option key={`modal-select-month-${m}-${mIdx}`} value={m}>{m}</option>
@@ -1080,13 +1080,13 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tanggal / Bulan Tagihan</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Tanggal / Bulan Tagihan</label>
                   <input
                     type="text"
                     placeholder="01/01/2026"
                     value={formTanggalBulan}
                     onChange={(e) => setFormTanggalBulan(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-mono text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1094,7 +1094,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               {/* Piutang Tagihan & Pembayaran */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Piutang Tagihan Listrik (Rp)</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Piutang Tagihan Listrik (Rp)</label>
                   <input
                     type="number"
                     value={formPiutang}
@@ -1105,24 +1105,24 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                         setFormPembayaran(val);
                       }
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-mono font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Pembayaran / Setoran (Rp)</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Pembayaran / Setoran (Rp)</label>
                   <input
                     type="number"
                     value={formPembayaran}
                     onChange={(e) => setFormPembayaran(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold text-emerald-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-mono font-bold text-emerald-800 dark:text-emerald-400 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Quick helper for full payment */}
-              <div className="flex items-center justify-between text-[11px] px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="flex items-center justify-between text-[11px] px-3 py-1.5 bg-slate-50 dark:bg-teal-950/30 rounded-lg border border-slate-200 dark:border-teal-900/40">
                 <button
                   type="button"
                   onClick={() => {
@@ -1130,36 +1130,36 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                     setFormTanggalPembayaran(new Date().toLocaleDateString('en-GB'));
                     setFormStatus('Lunas');
                   }}
-                  className="text-amber-800 font-bold hover:underline"
+                  className="text-teal-700 dark:text-teal-400 font-bold hover:underline"
                 >
                   ⚡ Set Lunas Penuh ({formatRupiah(formPiutang)})
                 </button>
-                <span className="font-mono text-slate-600">
-                  Sisa: <strong className="text-rose-700">{formatRupiah(Math.max(0, formPiutang - formPembayaran))}</strong>
+                <span className="font-mono text-slate-600 dark:text-zinc-300">
+                  Sisa: <strong className="text-rose-600 dark:text-rose-400">{formatRupiah(Math.max(0, formPiutang - formPembayaran))}</strong>
                 </span>
               </div>
 
               {/* Tanggal Bayar & Jatuh Tempo */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tanggal Pembayaran</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Tanggal Pembayaran</label>
                   <input
                     type="text"
                     placeholder="Contoh: 20/04/2026 atau -"
                     value={formTanggalPembayaran}
                     onChange={(e) => setFormTanggalPembayaran(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-mono text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tanggal Jatuh Tempo</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Tanggal Jatuh Tempo</label>
                   <input
                     type="text"
                     placeholder="Contoh: 15/02/2026"
                     value={formTanggalJatuhTempo}
                     onChange={(e) => setFormTanggalJatuhTempo(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-mono text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1167,11 +1167,11 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
               {/* Status & Keterangan */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Status Tagihan</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Status Tagihan</label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-bold text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   >
                     <option value="Lunas">Lunas</option>
                     <option value="Lewat Tempo">Lewat Tempo / Belum Lunas</option>
@@ -1180,28 +1180,28 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Keterangan / Catatan Meter</label>
+                  <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Keterangan / Catatan Meter</label>
                   <input
                     type="text"
                     placeholder="Contoh: Menunggak / Selesai bayar"
                     value={formKeterangan}
                     onChange={(e) => setFormKeterangan(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-teal-950/60">
                 <button
                   type="button"
                   onClick={() => setIsUpdateTagihanOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-teal-950/40 dark:hover:text-white transition"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-800 text-white font-bold hover:bg-amber-900 transition shadow-2xs flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold transition shadow-md flex items-center gap-1.5"
                 >
                   <Save className="w-4 h-4" />
                   <span>Simpan Tagihan</span>
@@ -1214,81 +1214,81 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
 
       {/* 6. Payment Modal (Quick payment) */}
       {payingMonth && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#1a0f0a] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-amber-900/40 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-amber-700" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#071311] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-teal-900/50 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-teal-950/60">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-teal-100 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <span>Penerimaan Pembayaran Listrik Kantin</span>
               </h3>
               <button
                 onClick={() => setPayingMonth(null)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-teal-950/50 text-slate-400 dark:text-zinc-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-200 space-y-1 text-xs">
-              <div className="font-bold text-amber-950">{payingMonth.standNama}</div>
-              <div className="text-amber-800">Tagihan Periode: <span className="font-bold">{payingMonth.monthRow.bulan}</span></div>
-              <div className="text-slate-600">Total Kewajiban: <span className="font-mono font-bold text-slate-900">{formatRupiah(payingMonth.monthRow.piutang)}</span></div>
+            <div className="bg-teal-50/60 dark:bg-teal-950/30 p-3.5 rounded-xl border border-teal-200 dark:border-teal-900/50 space-y-1 text-xs">
+              <div className="font-bold text-teal-950 dark:text-teal-200 text-sm">{payingMonth.standNama}</div>
+              <div className="text-teal-800 dark:text-teal-300">Tagihan Periode: <span className="font-bold text-slate-900 dark:text-white">{payingMonth.monthRow.bulan} 2026</span></div>
+              <div className="text-slate-600 dark:text-zinc-300">Total Kewajiban: <span className="font-mono font-bold text-slate-900 dark:text-white">{formatRupiah(payingMonth.monthRow.piutang)}</span></div>
             </div>
 
             <form onSubmit={handleSavePayment} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Nominal Disetorkan (Rp)</label>
+                <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Nominal Disetorkan (Rp)</label>
                 <input
                   type="number"
                   value={payAmount}
                   onChange={(e) => setPayAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold text-emerald-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] font-mono font-bold text-emerald-800 dark:text-emerald-400 focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm"
                 />
-                <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
+                <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                   <button
                     type="button"
                     onClick={() => setPayAmount(payingMonth.monthRow.piutang)}
-                    className="text-amber-800 hover:underline font-semibold"
+                    className="text-teal-700 dark:text-teal-400 hover:underline font-semibold"
                   >
                     Bayar Lunas Penuh ({formatRupiah(payingMonth.monthRow.piutang)})
                   </button>
-                  <span>Sisa: {formatRupiah(Math.max(0, payingMonth.monthRow.piutang - payAmount))}</span>
+                  <span className="text-slate-600 dark:text-zinc-300">Sisa: <strong className="text-rose-600 dark:text-rose-400">{formatRupiah(Math.max(0, payingMonth.monthRow.piutang - payAmount))}</strong></span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Tanggal Pembayaran</label>
+                <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Tanggal Pembayaran</label>
                 <input
                   type="text"
                   placeholder="Contoh: 12/08/2026"
                   value={payDate}
                   onChange={(e) => setPayDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Keterangan / Catatan Kasir</label>
+                <label className="block font-semibold text-slate-700 dark:text-zinc-200 mb-1">Keterangan / Catatan Kasir</label>
                 <input
                   type="text"
                   placeholder="Contoh: Setor tunai ke Bagian Keuangan RSUD"
                   value={payNote}
                   onChange={(e) => setPayNote(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 bg-white dark:bg-[#0c1a17] text-slate-800 dark:text-zinc-100 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-teal-950/60">
                 <button
                   type="button"
                   onClick={() => setPayingMonth(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-teal-950/40 dark:hover:text-white transition"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-800 text-white font-bold hover:bg-amber-900 transition shadow-2xs"
+                  className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold transition shadow-md"
                 >
                   Simpan Setoran
                 </button>
@@ -1300,71 +1300,73 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
 
       {/* 7. Kwitansi Modal */}
       {kwitansiRow && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#1a0f0a] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-amber-900/40 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-700" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#071311] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-teal-900/50 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-teal-950/60">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-teal-100 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <span>Kwitansi Resmi Pemakaian Listrik Kantin</span>
               </h3>
               <button
                 onClick={() => setKwitansiRow(null)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-teal-950/50 text-slate-400 dark:text-zinc-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Printable Kwitansi */}
-            <div className="p-5 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 space-y-4 text-xs">
-              <div className="text-center border-b pb-2 border-slate-200">
-                <div className="font-bold text-xs uppercase text-slate-500">BLUD RSUD JATISARI KARAWANG</div>
-                <div className="text-base font-black text-slate-900">BUKTI PEMBAYARAN LISTRIK KANTIN</div>
-                <div className="text-[10px] text-slate-500">No: KW-LST-2026-{kwitansiRow.monthRow.bulan.slice(0,3).toUpperCase()}</div>
+            <div className="p-5 border-2 border-dashed border-slate-300 dark:border-teal-800/60 rounded-xl bg-slate-50 dark:bg-[#0c1a17] space-y-4 text-xs shadow-inner">
+              <div className="text-center border-b pb-2 border-slate-200 dark:border-teal-900/40">
+                <div className="font-bold text-xs uppercase text-slate-500 dark:text-teal-400 tracking-wider">BLUD RSUD JATISARI KARAWANG</div>
+                <div className="text-base font-black text-slate-900 dark:text-zinc-100 tracking-wide mt-0.5">BUKTI PEMBAYARAN LISTRIK KANTIN</div>
+                <div className="text-[10px] text-slate-500 dark:text-teal-200/70 font-mono mt-0.5">No: KW-LST-2026-{kwitansiRow.monthRow.bulan.slice(0,3).toUpperCase()}</div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-slate-500 block text-[10px]">Nama Penyewa/Stand:</span>
-                  <strong className="text-slate-900">{kwitansiRow.standNama}</strong>
+                  <span className="text-slate-500 dark:text-zinc-400 block text-[10px]">Nama Penyewa/Stand:</span>
+                  <strong className="text-slate-900 dark:text-zinc-100 text-xs">{kwitansiRow.standNama}</strong>
                 </div>
                 <div className="text-right">
-                  <span className="text-slate-500 block text-[10px]">Bulan Tagihan:</span>
-                  <strong className="text-slate-900">{kwitansiRow.monthRow.bulan} 2026</strong>
+                  <span className="text-slate-500 dark:text-zinc-400 block text-[10px]">Bulan Tagihan:</span>
+                  <strong className="text-slate-900 dark:text-zinc-100 text-xs">{kwitansiRow.monthRow.bulan} 2026</strong>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-[#2b170e] p-3 rounded-lg border border-slate-200 dark:border-amber-900/40 space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Total Tagihan:</span>
-                  <span className="font-mono font-bold">{formatRupiah(kwitansiRow.monthRow.piutang)}</span>
+              <div className="bg-white dark:bg-[#132824] p-3.5 rounded-lg border border-slate-200 dark:border-teal-800/50 space-y-2 shadow-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 dark:text-zinc-300 font-medium">Total Tagihan:</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-zinc-100">{formatRupiah(kwitansiRow.monthRow.piutang)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Pembayaran Diterima:</span>
-                  <span className="font-mono font-bold text-emerald-700">{formatRupiah(kwitansiRow.monthRow.pembayaran)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 dark:text-zinc-300 font-medium">Pembayaran Diterima:</span>
+                  <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{formatRupiah(kwitansiRow.monthRow.pembayaran)}</span>
                 </div>
-                <div className="flex justify-between border-t pt-1 font-bold text-slate-900">
-                  <span>Sisa Tagihan:</span>
-                  <span className="font-mono text-rose-700">{formatRupiah(kwitansiRow.monthRow.sisaPiutang)}</span>
+                <div className="flex justify-between items-center border-t border-slate-200 dark:border-teal-900/60 pt-2 font-bold text-slate-900 dark:text-zinc-100">
+                  <span className="dark:text-zinc-200">Sisa Tagihan:</span>
+                  <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">{formatRupiah(kwitansiRow.monthRow.sisaPiutang)}</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center text-xs">
                 <div>
-                  <span className="text-slate-500 text-[10px] block">Status:</span>
-                  <span className={`px-2 py-0.5 font-bold rounded text-[11px] ${
-                    kwitansiRow.monthRow.status === 'Lunas' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                  <span className="text-slate-500 dark:text-zinc-400 text-[10px] block mb-0.5">Status:</span>
+                  <span className={`px-2 py-0.5 font-bold rounded text-[11px] inline-block ${
+                    kwitansiRow.monthRow.status === 'Lunas' 
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border dark:border-emerald-700/50' 
+                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 dark:border dark:border-rose-700/50'
                   }`}>
                     {kwitansiRow.monthRow.status}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-slate-500 text-[10px] block">Tanggal Pembayaran:</span>
-                  <span className="font-mono font-bold text-slate-800">{kwitansiRow.monthRow.tanggalPembayaran}</span>
+                  <span className="text-slate-500 dark:text-zinc-400 text-[10px] block mb-0.5">Tanggal Pembayaran:</span>
+                  <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">{kwitansiRow.monthRow.tanggalPembayaran}</span>
                 </div>
               </div>
 
-              <div className="text-right pt-4 text-[10px] text-slate-500">
+              <div className="text-right pt-4 text-[10px] text-slate-500 dark:text-zinc-400 italic">
                 Pengelola Utilitas & Kasir Kantin RSUD Jatisari
               </div>
             </div>
@@ -1372,13 +1374,13 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setKwitansiRow(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition text-xs"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-teal-900/50 font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-teal-950/40 dark:hover:text-white transition text-xs"
               >
                 Tutup
               </button>
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-amber-800 text-white font-bold hover:bg-amber-900 transition text-xs flex items-center gap-1.5 shadow-2xs"
+                className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold transition text-xs flex items-center gap-1.5 shadow-md"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Cetak Kwitansi</span>

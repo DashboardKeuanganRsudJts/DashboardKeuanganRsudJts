@@ -1511,46 +1511,46 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                             TRUE
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-emerald-950/80 text-amber-700 dark:text-emerald-300">
                             FALSE
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
+                      <td className="px-3 py-2.5 text-slate-600 dark:text-emerald-300/80 font-mono text-[11px]">
                         {formatDateDDMMYYYY(item.tglSpdBukuKas || item.tglBayar || '')}
                       </td>
-                      <td className="px-3 py-2.5 text-slate-600 dark:text-zinc-400 text-[10px] font-semibold">
+                      <td className="px-3 py-2.5 text-slate-600 dark:text-emerald-300/80 text-[10px] font-semibold">
                         {getMonthNameIndo(item.tglSpdBukuKas || item.tglBayar || '') || item.bulanSpd || '-'}
                       </td>
-                      <td className="px-4 py-2.5 font-mono text-[10.5px] text-slate-700 dark:text-zinc-300 max-w-[200px] truncate" title={item.noSpdBukuKas}>
+                      <td className="px-4 py-2.5 font-mono text-[10.5px] text-slate-700 dark:text-emerald-100 max-w-[200px] truncate" title={item.noSpdBukuKas}>
                         {item.noSpdBukuKas || '-'}
                       </td>
                       <td className="px-3 py-2.5 text-center font-mono font-medium">
                         {(() => {
                           const u = calculateUmurHutang(item);
                           if (item.sisaHutang <= 0) {
-                            return <span className="text-slate-400 dark:text-zinc-500 font-sans text-[11px]">Lunas</span>;
+                            return <span className="text-slate-400 dark:text-emerald-400/60 font-sans text-[11px]">Lunas</span>;
                           }
                           if (u <= 0) {
                             return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Belum JT</span>;
                           }
                           if (u <= 30) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">{u} hr</span>;
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-50 text-blue-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-blue-200 dark:border-emerald-800">{u} hr</span>;
                           }
                           if (u <= 60) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">{u} hr</span>;
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-amber-200 dark:border-emerald-800">{u} hr</span>;
                           }
                           if (u <= 90) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800">{u} hr</span>;
+                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-orange-50 text-orange-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-orange-200 dark:border-emerald-800">{u} hr</span>;
                           }
-                          return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse">{u} hr</span>;
+                          return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-100 text-rose-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-rose-300 dark:border-emerald-800">{u} hr</span>;
                         })()}
                       </td>
-                      <td className="px-3 py-2.5 text-center border-l border-slate-200 dark:border-zinc-800">
+                      <td className="px-3 py-2.5 text-center border-l border-slate-200 dark:border-emerald-900/40">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleOpenDetail(item)}
-                            className="p-1 rounded text-slate-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/50 transition cursor-pointer"
+                            className="p-1 rounded text-slate-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-emerald-950/50 transition cursor-pointer"
                             title="Lihat Detail Transaksi"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -1562,7 +1562,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                                 className={`p-1 rounded transition cursor-pointer ${
                                   item.sisaHutang <= 0
                                     ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
-                                    : 'text-amber-500 hover:text-emerald-600 hover:bg-amber-50 dark:hover:bg-amber-950/50'
+                                    : 'text-amber-500 hover:text-emerald-600 hover:bg-amber-50 dark:hover:bg-emerald-950/50 dark:text-emerald-400'
                                 }`}
                                 title={item.sisaHutang <= 0 ? 'Status Lunas (Klik untuk ubah jadi Belum Lunas)' : 'Klik untuk Set Lunas (Sisa Rp 0)'}
                               >
