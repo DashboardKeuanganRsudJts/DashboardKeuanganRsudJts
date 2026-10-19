@@ -1342,18 +1342,6 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
 
           <div className="flex flex-wrap items-center gap-2">
             
-            {/* Upload Spreadsheet Quick Action (Hanya Admin Piutang) */}
-            {onOpenUploadModal && isOnlyAdminPiutang && (
-              <button
-                onClick={onOpenUploadModal}
-                className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-emerald-500/40"
-                title="Upload file spreadsheet untuk memperbarui data piutang perusahaan & asuransi"
-              >
-                <UploadCloud className="w-4 h-4 text-emerald-300" />
-                <span>Upload Spreadsheet</span>
-              </button>
-            )}
-
             {/* Primary Action 1: Tambah Rekanan Baru (Hanya Admin Piutang) */}
             {isOnlyAdminPiutang && (
               <button
@@ -1366,19 +1354,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               </button>
             )}
 
-            {/* Primary Action 2: Entri Tagihan Baru (Hanya Admin Piutang) */}
-            {isOnlyAdminPiutang && (
-              <button
-                onClick={() => handleOpenAddInvoice()}
-                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-emerald-400/30"
-                title="Entri tagihan invoice baru dengan memilih mitra dari daftar"
-              >
-                <Plus className="w-4 h-4" />
-                <span>📝 + Entri Tagihan</span>
-              </button>
-            )}
-
-            {/* Primary Action 3: Input Pembayaran Invoice (Hanya Admin Piutang) */}
+            {/* Primary Action 2: Input Pembayaran Invoice (Hanya Admin Piutang) */}
             {isOnlyAdminPiutang && (
               <button
                 onClick={() => handleOpenPayment()}
@@ -1387,17 +1363,6 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               >
                 <CreditCard className="w-4 h-4" />
                 <span>💸 Bayar Invoice</span>
-              </button>
-            )}
-
-            {isOnlyAdminPiutang && (
-              <button
-                onClick={handleResetToEmptyAllMonths}
-                className="px-3 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-rose-200 dark:border-rose-700/50"
-                title="Kosongkan seluruh data tagihan contoh di semua bulan (Jan - Des)"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Reset 1 Tahun</span>
               </button>
             )}
 
@@ -1561,7 +1526,9 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 <th className="py-3 px-3 text-right border-r border-emerald-200 dark:border-emerald-900/60">Pembayaran</th>
                 <th className="py-3 px-3 text-right font-bold border-r border-rose-200 bg-rose-50 dark:bg-rose-950 text-rose-900 dark:text-rose-100">Sisa Piutang</th>
                 {isOnlyAdminPiutang && (
-                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-100 dark:bg-[#12181f] z-10">Aksi</th>
+                  <th className="py-3 px-2 text-center sticky right-0 bg-emerald-100 dark:bg-[#12181f] z-10 w-[120px] min-w-[120px]">
+                    Aksi
+                  </th>
                 )}
               </tr>
             </thead>
@@ -1912,74 +1879,74 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                       </td>
 
                       {/* 5. PIUTANG LALU */}
-                      <td className="py-3 px-3 text-right font-mono text-slate-700 dark:text-zinc-300 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
+                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-200 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
                         {isOnlyAdminPiutang ? (
                           <button
                             type="button"
                             onClick={() => handleOpenEditPiutangLalu(row)}
-                            className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-teal-50 dark:hover:bg-teal-950/60 text-slate-700 dark:text-zinc-300 hover:text-teal-900 dark:hover:text-teal-200 transition border border-transparent hover:border-teal-300 dark:hover:border-teal-700/60 text-right w-full justify-end cursor-pointer"
+                            className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-teal-50 dark:hover:bg-teal-950/60 text-slate-900 dark:text-zinc-200 hover:text-teal-900 dark:hover:text-teal-200 transition border border-transparent hover:border-teal-300 dark:hover:border-teal-700/60 text-right w-full justify-end cursor-pointer font-mono font-bold"
                             title="Klik untuk Edit Saldo Piutang Lalu (Otomatis update berantai ke bulan berikutnya)"
                           >
-                            <span>{formatRupiah(row.piutangLalu)}</span>
+                            <span className="font-mono font-bold">{formatRupiah(row.piutangLalu)}</span>
                             <Edit className="w-3 h-3 opacity-30 group-hover:opacity-100 text-teal-600 dark:text-teal-400 transition shrink-0" />
                           </button>
                         ) : (
-                          formatRupiah(row.piutangLalu)
+                          <span className="font-mono font-bold">{formatRupiah(row.piutangLalu)}</span>
                         )}
                       </td>
 
                       {/* 8. PIUTANG BULAN INI */}
-                      <td className="py-3 px-3 text-right font-mono text-blue-900 dark:text-blue-300 font-medium align-top border-r border-slate-200/80 dark:border-zinc-800/80">
-                        {formatRupiah(row.piutangBulanIni)}
+                      <td className="py-3 px-3 text-right font-mono font-bold text-blue-950 dark:text-blue-300 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
+                        <span className="font-mono font-bold">{formatRupiah(row.piutangBulanIni)}</span>
                       </td>
 
                       {/* 9. PIUTANG S.D BULAN INI (KOLOM HIGHLIGHT KHUSUS) */}
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-teal-200 align-top bg-teal-50/40 dark:bg-teal-950/40 border-r border-slate-200 dark:border-zinc-800">
-                        {formatRupiah(row.piutangSdBulanIni)}
+                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-950 dark:text-teal-200 align-top bg-teal-50/50 dark:bg-teal-950/40 border-r border-slate-200 dark:border-zinc-800">
+                        <span className="font-mono font-bold">{formatRupiah(row.piutangSdBulanIni)}</span>
                       </td>
 
                       {/* 10. TGL BAYAR */}
-                      <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 whitespace-nowrap font-mono text-[11px] align-top border-r border-slate-200/80 dark:border-zinc-800/80">
-                        {row.tanggalPembayaran}
+                      <td className="py-3 px-3 text-slate-900 dark:text-zinc-100 whitespace-nowrap font-mono font-bold text-[11px] align-top border-r border-slate-200/80 dark:border-zinc-800/80">
+                        <span className="font-mono font-bold">{row.tanggalPembayaran}</span>
                       </td>
 
                       {/* 11. PEMBAYARAN */}
-                      <td className="py-3 px-3 text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
+                      <td className="py-3 px-3 text-right font-mono font-bold text-emerald-800 dark:text-emerald-400 align-top border-r border-slate-200/80 dark:border-zinc-800/80">
                         {isOnlyAdminPiutang ? (
                           <button
                             type="button"
                             onClick={() => handleOpenPayment(row, undefined, 'manual')}
-                            className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-teal-50 dark:hover:bg-teal-950/60 text-emerald-700 dark:text-emerald-400 hover:text-teal-800 dark:hover:text-teal-300 transition border border-transparent hover:border-teal-300 dark:hover:border-teal-700/60 text-right w-full justify-end cursor-pointer"
+                            className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-teal-50 dark:hover:bg-teal-950/60 text-emerald-800 dark:text-emerald-400 hover:text-teal-900 dark:hover:text-teal-300 transition border border-transparent hover:border-teal-300 dark:hover:border-teal-700/60 text-right w-full justify-end cursor-pointer font-mono font-bold"
                             title="Klik untuk Input Pembayaran (Sesuai Invoice atau Manual Bebas)"
                           >
-                            <span>{formatRupiah(row.pembayaran)}</span>
+                            <span className="font-mono font-bold">{formatRupiah(row.pembayaran)}</span>
                             <CreditCard className="w-3 h-3 opacity-30 group-hover:opacity-100 text-teal-600 dark:text-teal-400 transition shrink-0" />
                           </button>
                         ) : (
-                          formatRupiah(row.pembayaran)
+                          <span className="font-mono font-bold">{formatRupiah(row.pembayaran)}</span>
                         )}
                       </td>
 
                       {/* 12. SISA PIUTANG (KOLOM HIGHLIGHT KHUSUS) */}
                       <td className={`py-3 px-3 text-right font-mono font-bold align-top border-r border-slate-200 dark:border-zinc-800 ${
                         isNegative 
-                          ? 'bg-amber-50/60 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300' 
+                          ? 'bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-extrabold' 
                           : hasSisa 
-                          ? 'bg-rose-50/40 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400' 
-                          : 'bg-slate-50/40 dark:bg-zinc-900/40 text-slate-500 dark:text-zinc-500'
+                          ? 'bg-rose-50/70 dark:bg-rose-950/40 text-rose-800 dark:text-rose-400 font-extrabold' 
+                          : 'bg-slate-50/40 dark:bg-zinc-900/40 text-slate-600 dark:text-zinc-400 font-bold'
                       }`}>
-                        {formatRupiah(row.sisaPiutang)}
+                        <span className="font-mono font-bold">{formatRupiah(row.sisaPiutang)}</span>
                       </td>
 
                       {/* 14. AKSI (Hanya ditampilkan untuk ADMIN_PIUTANG) */}
                       {isOnlyAdminPiutang && (
-                        <td className="py-3 px-2 text-center whitespace-nowrap sticky right-0 bg-white/95 dark:bg-[#0d1216]/95 backdrop-blur-xs z-10 align-top shadow-xs">
-                          <div className="flex items-center justify-center gap-1">
+                        <td className="py-3 px-2 text-center whitespace-nowrap sticky right-0 bg-white/95 dark:bg-[#0d1216]/95 backdrop-blur-xs z-10 align-middle shadow-xs w-[120px] min-w-[120px]">
+                          <div className="flex items-center justify-center gap-1.5">
                             {/* TOMBOL EDIT PIUTANG LALU */}
                             <button
                               type="button"
                               onClick={() => handleOpenEditPiutangLalu(row)}
-                              className="p-1.5 rounded bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 transition"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 transition shadow-2xs hover:scale-105 active:scale-95"
                               title="Edit Saldo Piutang Lalu (Roll-Forward Berantai)"
                             >
                               <Edit className="w-3.5 h-3.5" />
@@ -1988,7 +1955,7 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             {/* TOMBOL BAYAR INVOICE / MANUAL */}
                             <button
                               onClick={() => handleOpenPayment(row)}
-                              className="p-1.5 rounded bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 transition"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 transition shadow-2xs hover:scale-105 active:scale-95"
                               title="Input Pembayaran (Invoice atau Manual Bebas)"
                             >
                               <CreditCard className="w-3.5 h-3.5" />
@@ -1997,10 +1964,10 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                             {/* CETAK SURAT TAGIHAN */}
                             <button
                               onClick={() => handleOpenSuratInvoice(row)}
-                              className="p-1.5 rounded bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60 transition shadow-2xs hover:scale-105 active:scale-95"
                               title="Cetak Surat Penagihan / Invoice Resmi"
                             >
-                              <FileText className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" />
+                              <FileText className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </td>
@@ -2016,25 +1983,29 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
                 <td colSpan={3} className="py-3.5 px-4 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
                   TOTAL ({filteredData.length} REKANAN TERFILTER - {selectedBulan})
                 </td>
-                <td className="py-3.5 px-3 text-right font-mono font-medium text-slate-700 dark:text-zinc-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(metrics.totalPiutangLalu)}
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-950 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  <span className="font-mono font-bold">{formatRupiah(metrics.totalPiutangLalu)}</span>
                 </td>
-                <td className="py-3.5 px-3 text-right font-mono font-medium text-blue-900 dark:text-blue-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(metrics.totalPiutangBulanIni)}
+                <td className="py-3.5 px-3 text-right font-mono font-bold text-blue-950 dark:text-blue-300 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  <span className="font-mono font-bold">{formatRupiah(metrics.totalPiutangBulanIni)}</span>
                 </td>
-                <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(metrics.totalPiutangSdBulanIni)}
+                <td className="py-3.5 px-3 text-right font-mono font-black text-slate-950 dark:text-teal-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  <span className="font-mono font-black">{formatRupiah(metrics.totalPiutangSdBulanIni)}</span>
                 </td>
-                <td className="py-3.5 px-3 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-400">-</td>
-                <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(metrics.totalPembayaran)}
+                <td className="py-3.5 px-3 text-center border-r border-[#c2e5d2] dark:border-[#2b5a45] text-slate-400 font-mono font-bold">-</td>
+                <td className="py-3.5 px-3 text-right font-mono font-black text-emerald-800 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  <span className="font-mono font-black">{formatRupiah(metrics.totalPembayaran)}</span>
                 </td>
-                <td className="py-3.5 px-3 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(metrics.totalSisa)}
+                <td className="py-3.5 px-3 text-right font-mono font-black text-rose-800 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  <span className="font-mono font-black">{formatRupiah(metrics.totalSisa)}</span>
                 </td>
                 {isOnlyAdminPiutang && (
-                  <td className="py-3.5 px-2 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium whitespace-nowrap">
-                    {metrics.lunasCount} Lunas • {metrics.belumLunasCount} Belum Lunas
+                  <td className="py-3 px-2 text-center text-slate-600 dark:text-zinc-400 text-xs font-medium sticky right-0 bg-[#f0f9f3] dark:bg-[#12181f] z-10 w-[120px] min-w-[120px]">
+                    <div className="flex items-center justify-center gap-1.5 whitespace-nowrap text-[11px]">
+                      <span className="text-emerald-700 dark:text-emerald-400 font-bold">{metrics.lunasCount} L</span>
+                      <span className="text-slate-400 dark:text-zinc-500">•</span>
+                      <span className="text-rose-600 dark:text-rose-400 font-bold">{metrics.belumLunasCount} Sisa</span>
+                    </div>
                   </td>
                 )}
               </tr>
@@ -2625,16 +2596,16 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
               {selectedInvoiceForPay && (
                 <div className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3 space-y-1.5">
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-zinc-400">Total Piutang s.d Bulan Ini:</span>
-                    <strong className="font-mono text-slate-900 dark:text-zinc-100">{formatRupiah(selectedInvoiceForPay.piutangSdBulanIni)}</strong>
+                    <span className="text-slate-600 dark:text-zinc-400 font-medium">Total Piutang s.d Bulan Ini:</span>
+                    <strong className="font-mono font-bold text-slate-950 dark:text-zinc-100">{formatRupiah(selectedInvoiceForPay.piutangSdBulanIni)}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-zinc-400">Sudah Pernah Dibayar Sebelumnya:</span>
-                    <strong className="font-mono text-emerald-700 dark:text-emerald-400">{formatRupiah(selectedInvoiceForPay.pembayaran)}</strong>
+                    <span className="text-slate-600 dark:text-zinc-400 font-medium">Sudah Pernah Dibayar Sebelumnya:</span>
+                    <strong className="font-mono font-bold text-emerald-800 dark:text-emerald-400">{formatRupiah(selectedInvoiceForPay.pembayaran)}</strong>
                   </div>
                   <div className="flex justify-between border-t border-slate-200 dark:border-zinc-800 pt-1">
-                    <span className="font-bold text-slate-800 dark:text-zinc-200">Sisa Piutang Berjalan:</span>
-                    <strong className="font-mono text-rose-700 dark:text-rose-400 font-bold">{formatRupiah(selectedInvoiceForPay.sisaPiutang)}</strong>
+                    <span className="font-bold text-slate-900 dark:text-zinc-200">Sisa Piutang Berjalan:</span>
+                    <strong className="font-mono text-rose-800 dark:text-rose-400 font-black">{formatRupiah(selectedInvoiceForPay.sisaPiutang)}</strong>
                   </div>
                 </div>
               )}

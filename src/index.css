@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -7,6 +9,10 @@
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --color-rsud-green: #0284c7;
   --color-rsud-blue: #1e40af;
+}
+
+:root {
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Base styles */
@@ -22,16 +28,30 @@ body, button, input, select, textarea {
 
 /* Tabular numbers and JetBrains Mono for all financial numbers and nominal Rupiah */
 .tabular-nums,
+.tabular-nums *,
 .font-mono,
+.font-mono *,
 [class*="font-mono"],
+[class*="font-mono"] *,
 td.text-right,
+td.text-right *,
 th.text-right,
+th.text-right *,
 table td.text-right,
+table td.text-right *,
 table th.text-right,
+table th.text-right *,
 tfoot td,
+tfoot td *,
+button.font-mono,
+button.font-mono *,
+span.font-mono,
+span.font-mono *,
 input.font-mono,
-input[type="number"] {
-  font-family: var(--font-mono) !important;
+input[type="number"],
+.nominal-rupiah,
+.nominal-rupiah * {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 1;
 }

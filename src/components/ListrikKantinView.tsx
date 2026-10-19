@@ -884,7 +884,7 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
                               <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                                 {formatRupiah(m.piutang)}
                               </td>
-                              <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400 whitespace-nowrap font-mono text-[11px]">
+                              <td className="py-2.5 px-3 text-slate-900 dark:text-zinc-100 whitespace-nowrap font-mono font-bold text-[11px]">
                                 {m.tanggalPembayaran}
                               </td>
                               <td className="py-2.5 px-3 text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400">
