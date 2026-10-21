@@ -1106,73 +1106,75 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Import Spreadsheet (Hanya Tampil untuk PIC Hutang Saja) */}
-          {isPicHutang && (
+        {isUserLoggedIn && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Import Spreadsheet (Hanya Tampil untuk PIC Hutang Saja) */}
+            {isPicHutang && (
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-600/50"
+                title="Import Spreadsheet (Google Sheets & Excel) - Khusus PIC Hutang"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
+                <span>Import Spreadsheet</span>
+              </button>
+            )}
+
+            {/* Export Excel (.xlsx) */}
             <button
-              onClick={() => setIsImportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-emerald-600/50"
-              title="Import Spreadsheet (Google Sheets & Excel) - Khusus PIC Hutang"
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
+              title="Download Format Excel (.xlsx)"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
-              <span>Import Spreadsheet</span>
+              <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel
             </button>
-          )}
 
-          {/* Export Excel (.xlsx) */}
-          <button
-            onClick={handleExportExcel}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
-            title="Download Format Excel (.xlsx)"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel
-          </button>
+            {/* Template Excel */}
+            <button
+              onClick={() => downloadInvoiceHutangExcelTemplate(2026)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-teal-950/80 dark:hover:bg-teal-900 text-emerald-800 dark:text-teal-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-teal-700/50 transition transform active:scale-95"
+              title="Download Template Format Excel Kosong / Contoh (26 Kolom Lengkap)"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-teal-400" /> Template Excel
+            </button>
 
-          {/* Template Excel */}
-          <button
-            onClick={() => downloadInvoiceHutangExcelTemplate(2026)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-teal-950/80 dark:hover:bg-teal-900 text-emerald-800 dark:text-teal-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-teal-700/50 transition transform active:scale-95"
-            title="Download Template Format Excel Kosong / Contoh (26 Kolom Lengkap)"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-teal-400" /> Template Excel
-          </button>
+            {/* Export CSV */}
+            <button
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-800 dark:text-white font-semibold rounded-xl text-xs border border-emerald-200 dark:border-slate-600 transition transform active:scale-95"
+              title="Download CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-slate-300" /> CSV
+            </button>
 
-          {/* Export CSV */}
-          <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-800 dark:text-white font-semibold rounded-xl text-xs border border-emerald-200 dark:border-slate-600 transition transform active:scale-95"
-            title="Download CSV"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-slate-300" /> CSV
-          </button>
+            {/* Print */}
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-900 dark:text-white font-semibold rounded-xl text-xs border border-emerald-200 dark:border-slate-600 transition transform active:scale-95 shadow-2xs"
+              title="Cetak Tabel"
+            >
+              <Printer className="w-3.5 h-3.5 text-emerald-700 dark:text-slate-300" /> Cetak
+            </button>
 
-          {/* Print */}
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-900 dark:text-white font-semibold rounded-xl text-xs border border-emerald-200 dark:border-slate-600 transition transform active:scale-95 shadow-2xs"
-            title="Cetak Tabel"
-          >
-            <Printer className="w-3.5 h-3.5 text-emerald-700 dark:text-slate-300" /> Cetak
-          </button>
-
-          {isPicHutangOrAdmin && (
-            <>
-              <button
-                onClick={handleRefreshNominal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-sky-950/80 dark:hover:bg-sky-900 text-emerald-800 dark:text-sky-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-sky-800/60 transition"
-                title="Kalkulasi ulang (refresh) nominal seluruh invoice"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-emerald-700 dark:text-sky-300" /> Refresh Nominal
-              </button>
-              <button
-                onClick={handleOpenAdd}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95"
-              >
-                <Plus className="w-4 h-4" /> Entri Invoice
-              </button>
-            </>
-          )}
-        </div>
+            {isPicHutangOrAdmin && (
+              <>
+                <button
+                  onClick={handleRefreshNominal}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-sky-950/80 dark:hover:bg-sky-900 text-emerald-800 dark:text-sky-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-sky-800/60 transition"
+                  title="Kalkulasi ulang (refresh) nominal seluruh invoice"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-emerald-700 dark:text-sky-300" /> Refresh Nominal
+                </button>
+                <button
+                  onClick={handleOpenAdd}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95"
+                >
+                  <Plus className="w-4 h-4" /> Entri Invoice
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 2. KPI Summary Cards */}

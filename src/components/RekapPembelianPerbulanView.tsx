@@ -12,9 +12,10 @@ const MONTHS = [
 
 interface RekapPembelianPerbulanViewProps {
   type: 'pembelian' | 'pembayaran';
+  user?: any;
 }
 
-export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProps> = ({ type }) => {
+export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProps> = ({ type, user }) => {
   const [invoices, setInvoices] = useState<InvoiceHutang2026Record[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -199,12 +200,14 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
               className="w-full pl-9 pr-4 py-2 bg-emerald-50/40 dark:bg-[#12181f] border border-emerald-200 dark:border-zinc-800 rounded-lg text-sm text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
-          <button 
-            onClick={handleExportExcel}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold shadow-xs transition"
-          >
-            <FileSpreadsheet className="w-4 h-4" /> Export Excel
-          </button>
+          {Boolean(user) && (
+            <button 
+              onClick={handleExportExcel}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold shadow-xs transition"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Export Excel
+            </button>
+          )}
         </div>
       </div>
 

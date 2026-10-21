@@ -581,46 +581,48 @@ export const ListrikKantinView: React.FC<ListrikKantinViewProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Update / Input Tagihan Button */}
-            {isPicPiutangOrAdmin && (
+          {isUserLoggedIn && (
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Update / Input Tagihan Button */}
+              {isPicPiutangOrAdmin && (
+                <button
+                  onClick={handleOpenNewTagihan}
+                  className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Update / Input Tagihan</span>
+                </button>
+              )}
+
+              {/* Upload Spreadsheet modal trigger */}
+              {onOpenUploadModal && isPicPiutangOrAdmin && (
+                <button
+                  onClick={onOpenUploadModal}
+                  className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+                  title="Upload spreadsheet file XLSX / CSV"
+                >
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>Upload Sheet</span>
+                </button>
+              )}
+
               <button
-                onClick={handleOpenNewTagihan}
-                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
+                onClick={handleExportExcel}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-2xs"
               >
-                <Plus className="w-4 h-4" />
-                <span>Update / Input Tagihan</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Ekspor Excel</span>
               </button>
-            )}
 
-            {/* Upload Spreadsheet modal trigger */}
-            {onOpenUploadModal && isPicPiutangOrAdmin && (
               <button
-                onClick={onOpenUploadModal}
-                className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
-                title="Upload spreadsheet file XLSX / CSV"
+                onClick={() => window.print()}
+                className="px-3 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
               >
-                <UploadCloud className="w-3.5 h-3.5" />
-                <span>Upload Sheet</span>
+                <Printer className="w-3.5 h-3.5" />
+                <span>Cetak</span>
               </button>
-            )}
-
-            <button
-              onClick={handleExportExcel}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-2xs"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Ekspor Excel</span>
-            </button>
-
-            <button
-              onClick={() => window.print()}
-              className="px-3 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Cetak</span>
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
 

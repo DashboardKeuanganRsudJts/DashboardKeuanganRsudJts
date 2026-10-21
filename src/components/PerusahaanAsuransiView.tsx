@@ -1340,49 +1340,51 @@ export const PerusahaanAsuransiView: React.FC<PerusahaanAsuransiViewProps> = ({ 
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            
-            {/* Primary Action 1: Tambah Rekanan Baru (Hanya Admin Piutang) */}
-            {isOnlyAdminPiutang && (
+          {isUserLoggedIn && (
+            <div className="flex flex-wrap items-center gap-2">
+              
+              {/* Primary Action 1: Tambah Rekanan Baru (Hanya Admin Piutang) */}
+              {isOnlyAdminPiutang && (
+                <button
+                  onClick={handleOpenAddPartner}
+                  className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-teal-400/30"
+                  title="Daftarkan mitra perusahaan atau asuransi baru ke direktori RSUD"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>🏢 + Rekanan Baru</span>
+                </button>
+              )}
+
+              {/* Primary Action 2: Input Pembayaran Invoice (Hanya Admin Piutang) */}
+              {isOnlyAdminPiutang && (
+                <button
+                  onClick={() => handleOpenPayment()}
+                  className="px-3.5 py-2 bg-teal-700 hover:bg-teal-600 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-teal-400/30"
+                  title="Input pembayaran pelunasan tagihan invoice"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>💸 Bayar Invoice</span>
+                </button>
+              )}
+
               <button
-                onClick={handleOpenAddPartner}
-                className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-teal-400/30"
-                title="Daftarkan mitra perusahaan atau asuransi baru ke direktori RSUD"
+                onClick={handleExportExcel}
+                className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-emerald-800 dark:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 dark:border-slate-600"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>🏢 + Rekanan Baru</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Ekspor Excel</span>
               </button>
-            )}
 
-            {/* Primary Action 2: Input Pembayaran Invoice (Hanya Admin Piutang) */}
-            {isOnlyAdminPiutang && (
               <button
-                onClick={() => handleOpenPayment()}
-                className="px-3.5 py-2 bg-teal-700 hover:bg-teal-600 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-teal-400/30"
-                title="Input pembayaran pelunasan tagihan invoice"
+                onClick={() => window.print()}
+                className="px-3 py-2 bg-white text-emerald-950 hover:bg-emerald-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 shadow-2xs"
               >
-                <CreditCard className="w-4 h-4" />
-                <span>💸 Bayar Invoice</span>
+                <Printer className="w-3.5 h-3.5" />
+                <span>Cetak</span>
               </button>
-            )}
 
-            <button
-              onClick={handleExportExcel}
-              className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-emerald-800 dark:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 dark:border-slate-600"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Ekspor Excel</span>
-            </button>
-
-            <button
-              onClick={() => window.print()}
-              className="px-3 py-2 bg-white text-emerald-950 hover:bg-emerald-50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200 shadow-2xs"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Cetak</span>
-            </button>
-
-          </div>
+            </div>
+          )}
         </div>
       </div>
 

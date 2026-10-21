@@ -748,11 +748,11 @@ export const HutangView: React.FC<HutangViewProps> = ({
   }
 
   if (currentSubTab === 'rekap_pembelian_invoice') {
-    return <RekapPembelianPerbulanView type="pembelian" />;
+    return <RekapPembelianPerbulanView type="pembelian" user={user} />;
   }
 
   if (currentSubTab === 'rekap_pembayaran_perbulan') {
-    return <RekapPembelianPerbulanView type="pembayaran" />;
+    return <RekapPembelianPerbulanView type="pembayaran" user={user} />;
   }
 
   if (currentSubTab === 'rekap_supplier_2026') {
@@ -784,6 +784,7 @@ export const HutangView: React.FC<HutangViewProps> = ({
   if (currentSubTab === 'database_kode_rekening') {
     return (
       <DatabaseKodeRekeningView 
+        user={user}
         onShowToast={onShowToast}
       />
     );

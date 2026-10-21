@@ -547,28 +547,30 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
           </p>
         </div>
 
-        <div className="relative z-10 flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          {isPicHutangOrAdmin && (
-            <button
-              onClick={() => syncAllHutangData(true)}
-              disabled={isSyncing}
-              className="px-3.5 py-2 bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-800 dark:text-emerald-300 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 border border-emerald-300 dark:border-slate-700 disabled:opacity-50 cursor-pointer shadow-2xs"
-              title="Sinkronkan data dari Invoice Hutang 2025 & 2026"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>SINKRONISASI DATA</span>
-            </button>
-          )}
+        {isUserLoggedIn && (
+          <div className="relative z-10 flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {isPicHutangOrAdmin && (
+              <button
+                onClick={() => syncAllHutangData(true)}
+                disabled={isSyncing}
+                className="px-3.5 py-2 bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-800 dark:text-emerald-300 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 border border-emerald-300 dark:border-slate-700 disabled:opacity-50 cursor-pointer shadow-2xs"
+                title="Sinkronkan data dari Invoice Hutang 2025 & 2026"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>SINKRONISASI DATA</span>
+              </button>
+            )}
 
-          <button
-            onClick={handleExportCombinedExcel}
-            className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
-            title="Export Excel Rekap Hutang"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>EXPORT EXCEL</span>
-          </button>
-        </div>
+            <button
+              onClick={handleExportCombinedExcel}
+              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              title="Export Excel Rekap Hutang"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>EXPORT EXCEL</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2. MAIN MANDATORY KPI STATS PANELS */}

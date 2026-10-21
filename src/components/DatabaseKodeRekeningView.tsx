@@ -3,10 +3,11 @@ import { Database, Search, Download } from 'lucide-react';
 import { INITIAL_KODE_REKENING, DatabaseKodeRekeningRecord } from '../data/databaseKodeRekeningData';
 
 interface DatabaseKodeRekeningViewProps {
+  user?: any;
   onShowToast?: (msg: string, type: 'success'|'error'|'info') => void;
 }
 
-export default function DatabaseKodeRekeningView({ onShowToast }: DatabaseKodeRekeningViewProps) {
+export default function DatabaseKodeRekeningView({ user, onShowToast }: DatabaseKodeRekeningViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   
   const filteredData = useMemo(() => {
@@ -52,15 +53,17 @@ export default function DatabaseKodeRekeningView({ onShowToast }: DatabaseKodeRe
           </p>
         </div>
         
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
-            title="Download CSV"
-          >
-            <Download className="w-3.5 h-3.5" /> Export CSV
-          </button>
-        </div>
+        {Boolean(user) && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95"
+              title="Download CSV"
+            >
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2. Search Bar */}

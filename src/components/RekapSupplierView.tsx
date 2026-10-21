@@ -67,6 +67,7 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
   onNavigateSubmenu
 }) => {
   const { isDark } = useTheme();
+  const isUserLoggedIn = Boolean(user);
   const idbKey = year === 2026 ? 'rsud_invoice_hutang_2026' : 'rsud_invoice_hutang_2025';
   const initialFallback = year === 2026 ? INITIAL_INVOICE_HUTANG_2026 : INITIAL_INVOICE_HUTANG_2025;
   const updateEventName = year === 2026 ? 'rsud_invoice_hutang_2026_updated' : 'rsud_invoice_hutang_2025_updated';
@@ -534,26 +535,28 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button
-            onClick={() => syncData(true)}
-            disabled={isLoading}
-            className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 flex items-center gap-1.5 border border-emerald-600/40 disabled:opacity-50 cursor-pointer"
-            title={`Sinkronkan ulang data dari INVOICE HUTANG ${year}`}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>SINKRONKAN DATA</span>
-          </button>
+        {isUserLoggedIn && (
+          <div className="relative z-10 flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button
+              onClick={() => syncData(true)}
+              disabled={isLoading}
+              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 flex items-center gap-1.5 border border-emerald-600/40 disabled:opacity-50 cursor-pointer"
+              title={`Sinkronkan ulang data dari INVOICE HUTANG ${year}`}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>SINKRONKAN DATA</span>
+            </button>
 
-          <button
-            onClick={handleExportExcel}
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 flex items-center gap-1.5 border border-emerald-500/40 cursor-pointer"
-            title="Export Excel Rekap Persupplier"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>EXPORT EXCEL</span>
-          </button>
-        </div>
+            <button
+              onClick={handleExportExcel}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-xs transition transform active:scale-95 flex items-center gap-1.5 border border-emerald-500/40 cursor-pointer"
+              title="Export Excel Rekap Persupplier"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>EXPORT EXCEL</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2. SUMMARY KPI STATS CARDS */}
