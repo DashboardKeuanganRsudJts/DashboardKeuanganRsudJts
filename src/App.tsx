@@ -32,7 +32,6 @@ import {
   ShieldCheck,
   Search,
   Bell,
-  RefreshCw,
   Sparkles,
   Sun,
   Moon,
@@ -444,20 +443,6 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
                 <option value="Januari" className={isDark ? 'bg-[#0a0d0e] text-zinc-100' : 'bg-white text-slate-800'}>Januari</option>
               </select>
             </div>
-
-            {/* Google Sheets Sync Trigger */}
-            <button
-              onClick={() => performSync(true)}
-              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 font-medium rounded-lg text-xs transition border ${
-                isDark 
-                  ? 'bg-[#070b0c] hover:bg-zinc-800 text-emerald-400 border-emerald-950/80' 
-                  : 'bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
-              }`}
-              title="Sinkronisasi Google Sheets"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${syncConfig.isSyncing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Sync</span>
-            </button>
 
             {/* Light / Dark Mode Toggle Button */}
             <button

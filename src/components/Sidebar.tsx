@@ -19,7 +19,6 @@ import {
   PanelLeftOpen, 
   Search, 
   Bell, 
-  RefreshCw,
   FileText,
   DollarSign,
   CheckCircle2,
@@ -923,48 +922,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           )}
 
-          <button 
-            onClick={onOpenSettingsModal} 
-            className={`p-1.5 rounded-lg transition ${
-              isDark ? 'hover:bg-zinc-800 hover:text-zinc-200' : 'hover:bg-slate-100 hover:text-slate-800'
-            }`} 
-            title="Pengaturan Sistem & Tema"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-
-          <button 
-            onClick={() => window.dispatchEvent(new Event('rsud_data_updated'))} 
-            className={`p-1.5 rounded-lg transition ${
-              isDark ? 'hover:bg-zinc-800 hover:text-zinc-200' : 'hover:bg-slate-100 hover:text-slate-800'
-            }`} 
-            title="Muat Ulang Data"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-
-          {/* Quick Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition ${
-              isDark 
-                ? 'bg-emerald-950/50 hover:bg-emerald-900/60 text-amber-300 border border-emerald-800/40' 
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
-            }`}
-            title={isDark ? 'Beralih ke Mode Terang (RSUD Green-Blue)' : 'Beralih ke Mode Gelap (Hitam-Hijau)'}
-          >
-            {isDark ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-[10px]">Gelap</span>
-              </>
-            ) : (
-              <>
-                <Moon className="w-3.5 h-3.5 text-emerald-700" />
-                <span className="text-[10px]">Terang</span>
-              </>
-            )}
-          </button>
+          {user && (
+            <button 
+              onClick={onOpenSettingsModal} 
+              className={`p-1.5 rounded-lg transition ${
+                isDark ? 'hover:bg-zinc-800 hover:text-zinc-200' : 'hover:bg-slate-100 hover:text-slate-800'
+              }`} 
+              title="Pengaturan Sistem & Tema"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md border ${
