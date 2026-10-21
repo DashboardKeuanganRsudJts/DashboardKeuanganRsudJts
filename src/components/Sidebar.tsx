@@ -1050,7 +1050,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ) : (
           <button
             onClick={onOpenLoginModal}
-            className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs shadow-md transition transform active:scale-98 group"
+            className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow-md transition transform active:scale-98 group"
           >
             <LogIn className="w-4 h-4 text-white group-hover:translate-x-0.5 transition" />
             <span>Login / Masuk PIC</span>
