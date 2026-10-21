@@ -391,7 +391,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(50);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   // Sorting
   const [sortField, setSortField] = useState<keyof InvoiceHutang2025Record>('no');
