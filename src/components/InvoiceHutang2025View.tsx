@@ -1361,56 +1361,56 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-zinc-800">
-          <table className="w-full text-xs text-left border-collapse whitespace-nowrap">
-            <thead className="bg-[#f0f9f6] dark:bg-[#12181f] text-[#0d4a36] dark:text-[#a2f0d4] font-bold border-b border-teal-200 dark:border-emerald-900 uppercase text-[10px] tracking-wider select-none">
+        <div className="overflow-x-auto overflow-y-auto max-h-[65vh] min-h-[380px] rounded-xl border border-slate-200 dark:border-zinc-800 overscroll-contain custom-scrollbar relative shadow-inner">
+          <table className="w-full text-xs text-left border-separate border-spacing-0 whitespace-nowrap">
+            <thead className="sticky top-0 z-20 text-[#0d4a36] dark:text-[#a2f0d4] font-bold uppercase text-[10px] tracking-wider select-none shadow-xs">
               <tr>
-                <th onClick={() => handleSort('no')} className="px-3 py-3 text-center w-12 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('no')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center w-12 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">NO <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th onClick={() => handleSort('rekanan')} className="px-4 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('rekanan')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center gap-1">PERUSAHAAN / VENDOR <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3">BIDANG</th>
-                <th className="px-4 py-3">JENIS PENGADAAN</th>
-                <th onClick={() => handleSort('tglRekap')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Rekap">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3">BIDANG</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3">JENIS PENGADAAN</th>
+                <th onClick={() => handleSort('tglRekap')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Rekap">
                   <div className="flex items-center gap-1">TANGGAL REKAP <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglRekap' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('bulanRekap' as any)} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e] bg-teal-50/50 dark:bg-emerald-950/40" title="Klik untuk sortir berdasarkan Bulan Rekap">
+                <th onClick={() => handleSort('bulanRekap' as any)} className="sticky top-0 z-20 bg-[#e2f3ec] dark:bg-[#0d2a21] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/90 dark:hover:bg-[#164436]" title="Klik untuk sortir berdasarkan Bulan Rekap">
                   <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN REKAP <ArrowUpDown className={`w-3 h-3 ${sortField === ('bulanRekap' as any) ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
                 </th>
-                <th onClick={() => handleSort('tglInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Invoice">
+                <th onClick={() => handleSort('tglInvoice')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Invoice">
                   <div className="flex items-center gap-1">TANGGAL INVOICE <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglInvoice' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('bulanInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e] bg-teal-50/50 dark:bg-emerald-950/40" title="Klik untuk sortir berdasarkan Bulan Invoice">
+                <th onClick={() => handleSort('bulanInvoice')} className="sticky top-0 z-20 bg-[#e2f3ec] dark:bg-[#0d2a21] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/90 dark:hover:bg-[#164436]" title="Klik untuk sortir berdasarkan Bulan Invoice">
                   <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN INVOICE <ArrowUpDown className={`w-3 h-3 ${sortField === 'bulanInvoice' ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
                 </th>
-                <th onClick={() => handleSort('noInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('noInvoice')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center gap-1">NOMOR INVOICE/SPK/PO <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th onClick={() => handleSort('jatuhTempo')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Jatuh Tempo">
+                <th onClick={() => handleSort('jatuhTempo')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Jatuh Tempo">
                   <div className="flex items-center gap-1">TANGGAL JATUH TEMPO <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'jatuhTempo' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('jumlahInvoice')} className="px-4 py-3 text-right cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('jumlahInvoice')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">JUMLAH <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-right">KOREKSI</th>
-                <th className="px-4 py-3 text-right">NILAI SPJ</th>
-                <th onClick={() => handleSort('pembayaran')} className="px-4 py-3 text-right cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-right">KOREKSI</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right">NILAI SPJ</th>
+                <th onClick={() => handleSort('pembayaran')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">DIBAYAR <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-center">JENIS ANGGARAN BLUD / APBD</th>
-                <th onClick={() => handleSort('sisaHutang')} className="px-4 py-3 text-right cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">JENIS ANGGARAN BLUD / APBD</th>
+                <th onClick={() => handleSort('sisaHutang')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">SISA <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-center">A</th>
-                <th className="px-3 py-3">TANGGAL BAYAR</th>
-                <th className="px-3 py-3 text-center">BULAN BAYAR</th>
-                <th className="px-4 py-3">NOMOR SP2D</th>
-                <th onClick={() => handleSort('lamaHariHutang')} className="px-3 py-3 text-center cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">A</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3">TANGGAL BAYAR</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">BULAN BAYAR</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3">NOMOR SP2D</th>
+                <th onClick={() => handleSort('lamaHariHutang')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">UMUR HUTANG <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-center w-24 border-l border-teal-200 dark:border-emerald-900">AKSI</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center w-24 border-l">AKSI</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">

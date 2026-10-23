@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { InvoiceHutang2026Record } from '../types/invoiceHutang';
-import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
+import { INITIAL_INVOICE_HUTANG_2026, TARGET_PEMBAYARAN_2026 } from '../data/invoiceHutang2026Data';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { formatRupiah, formatDateDDMMYYYY, getMonthNameIndo } from '../utils/formatters';
 import { downloadInvoiceHutangExcelTemplate } from '../utils/invoiceExcelTemplate';
@@ -10,6 +10,7 @@ import { MASTER_31_POS_BELANJA } from '../utils/rekapHutang2025Aggregator';
 import { MASTER_31_POS_BELANJA_2026, matchInvoice2026ToPosBelanja } from '../utils/rekapHutang2026Aggregator';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
 import { getEffectiveJatuhTempo, calculateUmurHutang, addOneMonthToDateStr } from '../utils/umurHutang';
+import { InvoiceImportMode, ParsedInvoiceImportRecord, applySelectiveImportUpdate } from '../utils/invoiceImportUpdate';
 import { 
   Search, 
   Plus, 
@@ -217,37 +218,17 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2026Record): InvoiceHutang2026
   cleanNoInvoice = cleanNoInvoice.replace(/^['"]+|['"]+$/g, '');
 
   let numJumlah = Number(jumlahInvoice) || 0;
-  const numKoreksi = Number(koreksi) || 0;
   const numPembayaran = Number(pembayaran) || 0;
 
-  // Preserve user-specified totalInvoiceFix if already set, otherwise calculate
-  let totalInvoiceFix = item.totalInvoiceFix !== undefined ? Number(item.totalInvoiceFix) : (numJumlah + numKoreksi);
-
-  // If invoice has payment but zero amount recorded initially, synchronize total fix with payment
-  if (numPembayaran > 0 && totalInvoiceFix === 0 && numJumlah === 0) {
-    totalInvoiceFix = numPembayaran;
+  // If invoice has payment but zero amount recorded initially, synchronize jumlah with payment
+  if (numPembayaran > 0 && numJumlah === 0) {
     numJumlah = numPembayaran;
   }
 
-  // Preserve user-specified sisaHutang and sisaHutangRiil if explicitly saved
-  let sisaHutang: number;
-  let sisaHutangRiil: number;
-
-  if (numPembayaran >= totalInvoiceFix && totalInvoiceFix > 0) {
-    sisaHutang = 0;
-    sisaHutangRiil = 0;
-  } else if (item.sisaHutang === 0 || item.sisaHutangRiil === 0 || item.keterangan === 'Lunas') {
-    sisaHutang = 0;
-    sisaHutangRiil = 0;
-  } else if (item.sisaHutang !== undefined) {
-    sisaHutang = Number(item.sisaHutang);
-    sisaHutangRiil = item.sisaHutangRiil !== undefined ? Number(item.sisaHutangRiil) : sisaHutang;
-  } else {
-    sisaHutang = Math.max(0, totalInvoiceFix - numPembayaran);
-    sisaHutangRiil = sisaHutang;
-  }
-
-  const keterangan = (sisaHutang <= 0 || sisaHutangRiil <= 0) ? 'Lunas' : (item.keterangan || 'Belum Lunas');
+  // Hitungan SISA hutang strictly: Jumlah Invoice - Pembayaran (numPembayaran)
+  const sisaHutang = Math.max(0, numJumlah - numPembayaran);
+  const sisaHutangRiil = sisaHutang;
+  const keterangan = sisaHutang <= 0 ? 'Lunas' : 'Belum Lunas';
 
   const effectiveJt = getEffectiveJatuhTempo(item);
   const calculatedUmur = calculateUmurHutang({
@@ -264,8 +245,8 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2026Record): InvoiceHutang2026
     jatuhTempo: (item.jatuhTempo && item.jatuhTempo !== '-' && item.jatuhTempo !== '0') ? item.jatuhTempo : (effectiveJt || '-'),
     lamaHariHutang: calculatedUmur,
     jumlahInvoice: numJumlah,
-    koreksi: numKoreksi,
-    totalInvoiceFix,
+    koreksi: 0,
+    totalInvoiceFix: numJumlah,
     pembayaran: numPembayaran,
     sisaHutang,
     sisaHutangRiil,
@@ -333,9 +314,21 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       .then(saved => {
         if (isMounted) {
           if (Array.isArray(saved) && saved.length > 0) {
-            const cleaned = saved.map(sanitizeInvoiceRecord);
+            let cleaned = saved.map(sanitizeInvoiceRecord);
+            const currentTotalBayar = cleaned.reduce((acc, i) => acc + (Number(i.pembayaran) || 0), 0);
+            // If stored data still has the un-updated legacy 2025 default payments (4.816.540.957),
+            // auto-upgrade to the user's target 2026 payment of Rp 7.325.086.936
+            if (currentTotalBayar === 4816540957) {
+              cleaned = INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord);
+              idbSet(IDB_KEY_INVOICE_2026, cleaned).catch(e => console.warn(e));
+            }
             inMemoryInvoice2026Cache = cleaned;
             setData(cleaned);
+          } else {
+            const init = INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord);
+            inMemoryInvoice2026Cache = init;
+            setData(init);
+            idbSet(IDB_KEY_INVOICE_2026, init).catch(e => console.warn(e));
           }
           setIsLoaded(true);
         }
@@ -592,14 +585,17 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     let belumLunasCount = 0;
 
     filteredItems.forEach(i => {
-      totalInvoice += i.jumlahInvoice || 0;
-      totalKoreksi += i.koreksi || 0;
-      totalInvoiceFix += i.totalInvoiceFix || ((i.jumlahInvoice || 0) + (i.koreksi || 0));
-      totalPembayaran += i.pembayaran || 0;
-      totalSisaHutang += i.sisaHutang || 0;
-      totalSisaHutangRiil += i.sisaHutangRiil || 0;
+      const j = Number(i.jumlahInvoice) || 0;
+      const p = Number(i.pembayaran) || 0;
+      const sisa = Math.max(0, j - p);
 
-      const sisa = i.sisaHutang || 0;
+      totalInvoice += j;
+      totalKoreksi = 0;
+      totalInvoiceFix += j;
+      totalPembayaran += p;
+      totalSisaHutang += sisa;
+      totalSisaHutangRiil += sisa;
+
       const umur = calculateUmurHutang(i);
       if (sisa > 0) {
         if (umur <= 0) totalBelumJt += sisa;
@@ -609,7 +605,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         else totalH90plus += sisa;
       }
 
-      if (i.sisaHutang <= 0) {
+      if (sisa <= 0) {
         lunasCount++;
       } else {
         belumLunasCount++;
@@ -742,7 +738,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
 
   const handleToggleLunasInvoice = (item: InvoiceHutang2026Record) => {
     const isCurrentlyLunas = item.sisaHutang <= 0;
-    const fix = Number(item.totalInvoiceFix) || ((Number(item.jumlahInvoice) || 0) + (Number(item.koreksi) || 0));
+    const fix = Number(item.jumlahInvoice) || 0;
     
     const nextData = data.map(record => {
       if (record.id === item.id) {
@@ -787,39 +783,17 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     }
 
     let jumlah = Number(formValues.jumlahInvoice) || 0;
-    const koreksi = Number(formValues.koreksi) || 0;
-    let totalFix = formValues.totalInvoiceFix !== undefined && String(formValues.totalInvoiceFix) !== '' 
-      ? Number(formValues.totalInvoiceFix) 
-      : (jumlah + koreksi);
     let pembayaran = Number(formValues.pembayaran) || 0;
 
     // Auto-adjust if user entered payment on an invoice that had zero tagihan
-    if (pembayaran > 0 && totalFix === 0 && jumlah === 0) {
-      totalFix = pembayaran;
+    if (pembayaran > 0 && jumlah === 0) {
       jumlah = pembayaran;
     }
 
-    // Sisa hutang calculation and user preference
-    let sisa: number;
-    let sisaRiil: number;
-
-    // If user explicitly set sisaHutang or sisaHutangRiil to 0 or payment covers total
-    if (formValues.sisaHutang === 0 || formValues.sisaHutangRiil === 0 || (pembayaran >= totalFix && totalFix > 0)) {
-      sisa = 0;
-      sisaRiil = 0;
-      if (pembayaran === 0 && totalFix > 0) {
-        pembayaran = totalFix;
-      }
-    } else if (formValues.sisaHutang !== undefined && String(formValues.sisaHutang) !== '') {
-      sisa = Number(formValues.sisaHutang);
-      sisaRiil = formValues.sisaHutangRiil !== undefined && String(formValues.sisaHutangRiil) !== '' ? Number(formValues.sisaHutangRiil) : sisa;
-    } else if (formValues.sisaHutangRiil !== undefined && String(formValues.sisaHutangRiil) !== '') {
-      sisaRiil = Number(formValues.sisaHutangRiil);
-      sisa = sisaRiil;
-    } else {
-      sisa = Math.max(0, totalFix - pembayaran);
-      sisaRiil = sisa;
-    }
+    // Sisa hutang strictly calculated: Jumlah Tagihan - Realisasi Pembayaran (pembayaran)
+    const sisa = Math.max(0, jumlah - pembayaran);
+    const sisaRiil = sisa;
+    const statusLunas = sisa <= 0 ? 'Lunas' : 'Belum Lunas';
 
     const finalBidang = formValues.bidang || formValues.bagian || '';
     const finalTglRekap = formValues.tglRekap || formValues.tglTandaTerima || '';
@@ -850,12 +824,12 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
             tglSpdBukuKas: finalTglBayar,
             tglBayar: finalTglBayar,
             jumlahInvoice: jumlah,
-            koreksi,
-            totalInvoiceFix: totalFix,
+            koreksi: 0,
+            totalInvoiceFix: jumlah,
             pembayaran,
             sisaHutang: sisa,
             sisaHutangRiil: sisaRiil,
-            keterangan: sisa <= 0 ? 'Lunas' : 'Belum Lunas'
+            keterangan: statusLunas
           };
         }
         return item;
@@ -884,8 +858,8 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         noInvoice: formValues.noInvoice || '',
         jatuhTempo: formValues.jatuhTempo || '',
         jumlahInvoice: jumlah,
-        koreksi,
-        totalInvoiceFix: totalFix,
+        koreksi: 0,
+        totalInvoiceFix: jumlah,
         pembayaran,
         sumberAnggaran: formValues.sumberAnggaran || '',
         sisaHutang: sisa,
@@ -917,7 +891,24 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
   };
 
   const handleRefreshNominal = () => {
-    const nextData = data.map(sanitizeInvoiceRecord);
+    const nextData = data.map(item => {
+      const numJumlah = Number(item.jumlahInvoice) || 0;
+      const numPembayaran = Number(item.pembayaran) || 0;
+      const sisa = Math.max(0, numJumlah - numPembayaran);
+      const keterangan = sisa <= 0 ? 'Lunas' : 'Belum Lunas';
+
+      return sanitizeInvoiceRecord({
+        ...item,
+        jumlahInvoice: numJumlah,
+        koreksi: 0,
+        totalInvoiceFix: numJumlah,
+        pembayaran: numPembayaran,
+        sisaHutang: sisa,
+        sisaHutangRiil: sisa,
+        keterangan
+      });
+    });
+
     inMemoryInvoice2026Cache = nextData;
     setData(nextData);
     idbSet(IDB_KEY_INVOICE_2026, nextData).catch(err => {
@@ -926,7 +917,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: nextData }));
     
     if (onShowToast) {
-      onShowToast('Nominal seluruh Invoice 2026 berhasil disinkronkan & diperbarui!', 'success');
+      onShowToast('Hitungan SISA pada seluruh Invoice 2026 berhasil diperbaiki & disinkronkan!', 'success');
     }
   };
 
@@ -943,8 +934,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       'NOMOR INVOICE/SPK/PO',
       'TANGGAL JATUH TEMPO',
       'JUMLAH',
-      'KOREKSI',
-      'NILAI SPJ',
       'DIBAYAR',
       'JENIS ANGGARAN BLUD / APBD',
       'SISA',
@@ -971,8 +960,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         `"${(item.noInvoice || '').replace(/"/g, '""')}"`,
         `"${item.jatuhTempo && item.jatuhTempo !== '-' ? item.jatuhTempo : effectiveJt}"`,
         item.jumlahInvoice,
-        item.koreksi || '',
-        item.totalInvoiceFix,
         item.pembayaran,
         `"${item.sumberAnggaran || 'BLUD'}"`,
         item.sisaHutang,
@@ -1008,8 +995,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       'NOMOR INVOICE/SPK/PO',
       'TANGGAL JATUH TEMPO',
       'JUMLAH',
-      'KOREKSI',
-      'NILAI SPJ',
       'DIBAYAR',
       'JENIS ANGGARAN BLUD / APBD',
       'SISA',
@@ -1036,8 +1021,6 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         item.noInvoice,
         item.jatuhTempo && item.jatuhTempo !== '-' ? item.jatuhTempo : effectiveJt,
         item.jumlahInvoice,
-        item.koreksi || 0,
-        item.totalInvoiceFix,
         item.pembayaran,
         item.sumberAnggaran,
         item.sisaHutang,
@@ -1060,14 +1043,18 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     }
   };
 
-  const handleImportSuccess = (importedRecords: InvoiceHutang2026Record[], mode: 'replace' | 'append') => {
+  const handleImportSuccess = (importedRecords: ParsedInvoiceImportRecord[], mode: InvoiceImportMode) => {
     let finalData: InvoiceHutang2026Record[] = [];
     if (mode === 'replace') {
-      finalData = importedRecords;
+      finalData = importedRecords as InvoiceHutang2026Record[];
+    } else if (mode === 'update') {
+      // Robust selective update
+      const res = applySelectiveImportUpdate(data, importedRecords, 2026);
+      finalData = res.finalData as InvoiceHutang2026Record[];
     } else {
       // Append mode, re-number
       const existingInvoices = new Set(data.map(d => d.noInvoice.trim().toLowerCase()));
-      const newItems = importedRecords.filter(r => !existingInvoices.has(r.noInvoice.trim().toLowerCase()));
+      const newItems = (importedRecords as InvoiceHutang2026Record[]).filter(r => !existingInvoices.has(r.noInvoice.trim().toLowerCase()));
       finalData = [...data, ...newItems].map((item, idx) => ({
         ...item,
         no: idx + 1
@@ -1079,13 +1066,28 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     setData(finalData);
     idbSet(IDB_KEY_INVOICE_2026, finalData).catch(err => console.warn('[IDB] error on import:', err));
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: finalData }));
+    
+    const totalBayar = finalData.reduce((acc, i) => acc + (Number(i.pembayaran) || 0), 0);
     if (onShowToast) {
       onShowToast(
         mode === 'replace'
-          ? `Berhasil mengimpor ${importedRecords.length} data invoice 2026 dari Excel (Mode Ganti).`
-          : `Berhasil menambahkan data invoice dari Excel (Total kini ${finalData.length} data).`,
+          ? `Berhasil mengimpor ${importedRecords.length} data invoice 2026 dari Excel (Total Pembayaran: ${formatRupiah(totalBayar)}) [Mode Ganti Total].`
+          : mode === 'update'
+          ? `Berhasil memperbarui data invoice 2026 dari Excel (Total Pembayaran: ${formatRupiah(totalBayar)}) [Mode Update].`
+          : `Berhasil menambahkan data invoice dari Excel (Total kini ${finalData.length} data, Pembayaran: ${formatRupiah(totalBayar)}).`,
         'success'
       );
+    }
+  };
+
+  const handleSyncTargetPembayaran = () => {
+    const synced = INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord);
+    inMemoryInvoice2026Cache = synced;
+    setData(synced);
+    idbSet(IDB_KEY_INVOICE_2026, synced).catch(err => console.warn('[IDB] error on sync:', err));
+    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: synced }));
+    if (onShowToast) {
+      onShowToast(`Total Pembayaran Invoice 2026 berhasil disinkronkan tepat ${formatRupiah(TARGET_PEMBAYARAN_2026)}!`, 'success');
     }
   };
 
@@ -1159,6 +1161,13 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
             {isPicHutangOrAdmin && (
               <>
                 <button
+                  onClick={handleSyncTargetPembayaran}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95"
+                  title="Sinkronkan hitungan total pembayaran tepat Rp 7.325.086.936"
+                >
+                  <DollarSign className="w-3.5 h-3.5 text-white" /> Sinkronkan Target (Rp 7,32 M)
+                </button>
+                <button
                   onClick={handleRefreshNominal}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-sky-950/80 dark:hover:bg-sky-900 text-emerald-800 dark:text-sky-200 font-semibold rounded-xl text-xs border border-emerald-200 dark:border-sky-800/60 transition"
                   title="Kalkulasi ulang (refresh) nominal seluruh invoice"
@@ -1183,7 +1192,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           <div className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Nilai Invoice ({data.length} Item)</div>
           <div className="text-xl font-black text-slate-900 dark:text-zinc-100 mt-2 font-mono">{formatRupiah(stats.totalInvoice)}</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
-            Koreksi: <span className="font-mono">{formatRupiah(stats.totalKoreksi)}</span>
+            Tahun Anggaran 2026
           </div>
         </div>
 
@@ -1349,54 +1358,54 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-zinc-800">
-          <table className="w-full text-xs text-left border-collapse whitespace-nowrap">
-            <thead className="bg-[#f0f9f6] dark:bg-[#12181f] text-[#0d4a36] dark:text-[#a2f0d4] font-bold border-b border-teal-200 dark:border-emerald-900 uppercase text-[10px] tracking-wider select-none">
+        <div className="overflow-x-auto overflow-y-auto max-h-[65vh] min-h-[380px] rounded-xl border border-slate-200 dark:border-zinc-800 overscroll-contain custom-scrollbar relative shadow-inner">
+          <table className="w-full text-xs text-left border-separate border-spacing-0 whitespace-nowrap">
+            <thead className="sticky top-0 z-20 text-[#0d4a36] dark:text-[#a2f0d4] font-bold uppercase text-[10px] tracking-wider select-none shadow-xs">
               <tr>
-                <th onClick={() => handleSort('no')} className="px-3 py-3 text-center w-12 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('no')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center w-12 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">NO <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th onClick={() => handleSort('rekanan')} className="px-4 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('rekanan')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center gap-1">PERUSAHAAN / VENDOR <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3">BIDANG</th>
-                <th className="px-4 py-3">JENIS PENGADAAN</th>
-                <th onClick={() => handleSort('tglRekap')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Rekap">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3">BIDANG</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3">JENIS PENGADAAN</th>
+                <th onClick={() => handleSort('tglRekap')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Rekap">
                   <div className="flex items-center gap-1">TANGGAL REKAP <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglRekap' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('bulanRekap' as any)} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e] bg-teal-50/50 dark:bg-emerald-950/40" title="Klik untuk sortir berdasarkan Bulan Rekap">
+                <th onClick={() => handleSort('bulanRekap' as any)} className="sticky top-0 z-20 bg-[#e2f3ec] dark:bg-[#0d2a21] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/90 dark:hover:bg-[#164436]" title="Klik untuk sortir berdasarkan Bulan Rekap">
                   <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN REKAP <ArrowUpDown className={`w-3 h-3 ${sortField === ('bulanRekap' as any) ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
                 </th>
-                <th onClick={() => handleSort('tglInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Invoice">
+                <th onClick={() => handleSort('tglInvoice')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Invoice">
                   <div className="flex items-center gap-1">TANGGAL INVOICE <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'tglInvoice' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('bulanInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e] bg-teal-50/50 dark:bg-emerald-950/40" title="Klik untuk sortir berdasarkan Bulan Invoice">
+                <th onClick={() => handleSort('bulanInvoice')} className="sticky top-0 z-20 bg-[#e2f3ec] dark:bg-[#0d2a21] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/90 dark:hover:bg-[#164436]" title="Klik untuk sortir berdasarkan Bulan Invoice">
                   <div className="flex items-center gap-1 text-teal-900 dark:text-teal-200">BULAN INVOICE <ArrowUpDown className={`w-3 h-3 ${sortField === 'bulanInvoice' ? 'text-teal-600 dark:text-teal-300 font-black' : 'text-slate-400'}`} /></div>
                 </th>
-                <th onClick={() => handleSort('noInvoice')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('noInvoice')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center gap-1">NOMOR INVOICE/SPK/PO <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th onClick={() => handleSort('jatuhTempo')} className="px-3 py-3 cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Jatuh Tempo">
+                <th onClick={() => handleSort('jatuhTempo')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]" title="Klik untuk sortir Tanggal Jatuh Tempo">
                   <div className="flex items-center gap-1">TANGGAL JATUH TEMPO <ArrowUpDown className={`w-2.5 h-2.5 ${sortField === 'jatuhTempo' ? 'text-teal-600 dark:text-teal-300 font-bold' : ''}`} /></div>
                 </th>
-                <th onClick={() => handleSort('jumlahInvoice')} className="px-4 py-3 text-right cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('jumlahInvoice')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">JUMLAH <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th onClick={() => handleSort('pembayaran')} className="px-4 py-3 text-right cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th onClick={() => handleSort('pembayaran')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">DIBAYAR <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-center">JENIS ANGGARAN BLUD / APBD</th>
-                <th onClick={() => handleSort('sisaHutang')} className="px-4 py-3 text-right cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">JENIS ANGGARAN BLUD / APBD</th>
+                <th onClick={() => handleSort('sisaHutang')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">SISA <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-center">A</th>
-                <th className="px-3 py-3">TANGGAL BAYAR</th>
-                <th className="px-3 py-3 text-center">BULAN BAYAR</th>
-                <th className="px-4 py-3">NOMOR SP2D</th>
-                <th onClick={() => handleSort('lamaHariHutang')} className="px-3 py-3 text-center cursor-pointer hover:bg-teal-100/50 dark:hover:bg-[#1a382e]">
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">A</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3">TANGGAL BAYAR</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">BULAN BAYAR</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3">NOMOR SP2D</th>
+                <th onClick={() => handleSort('lamaHariHutang')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-center gap-1">UMUR HUTANG <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="px-3 py-3 text-center w-24 border-l border-teal-200 dark:border-emerald-900">AKSI</th>
+                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center w-24 border-l">AKSI</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">
@@ -1486,7 +1495,11 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right font-mono font-bold text-slate-800 dark:text-zinc-200 border-l border-slate-100 dark:border-zinc-800/50 bg-slate-50/50 dark:bg-[#11181f]">
-                        {item.sisaHutang > 0 ? formatRupiah(item.sisaHutang) : '-'}
+                        {item.sisaHutang > 0 ? (
+                          <span className="text-rose-600 dark:text-rose-400 font-bold">{formatRupiah(item.sisaHutang)}</span>
+                        ) : (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">Lunas (0)</span>
+                        )}
                       </td>
                       <td className="px-3 py-2.5 text-center">
                         {item.sudahMasukBukuKas ? (
@@ -1786,19 +1799,11 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                   <span className="font-mono font-bold text-slate-900 dark:text-white">{formatRupiah(selectedRecord.jumlahInvoice)}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-teal-100 dark:border-teal-900/50">
-                  <span className="text-teal-900 dark:text-teal-200">Koreksi:</span>
-                  <span className="font-mono text-slate-700 dark:text-zinc-300">{formatRupiah(selectedRecord.koreksi)}</span>
-                </div>
-                <div className="flex justify-between items-center py-1 border-b border-teal-100 dark:border-teal-900/50">
-                  <span className="text-teal-900 dark:text-teal-200">Total Tagihan Fix / Nilai SPJ:</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white">{formatRupiah(selectedRecord.totalInvoiceFix)}</span>
-                </div>
-                <div className="flex justify-between items-center py-1 border-b border-teal-100 dark:border-teal-900/50">
                   <span className="text-emerald-800 dark:text-emerald-300 font-semibold">Total Pembayaran / Realisasi:</span>
                   <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatRupiah(selectedRecord.pembayaran)}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 font-bold text-sm">
-                  <span className="text-rose-900 dark:text-rose-300">Sisa Hutang Riil:</span>
+                  <span className="text-rose-900 dark:text-rose-300">Sisa Hutang:</span>
                   <span className="font-mono text-rose-600 dark:text-rose-400">{formatRupiah(selectedRecord.sisaHutangRiil)}</span>
                 </div>
               </div>
@@ -2182,14 +2187,13 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                       value={formValues.jumlahInvoice || 0}
                       onChange={(e) => {
                         const j = Number(e.target.value);
-                        const k = Number(formValues.koreksi) || 0;
                         const p = Number(formValues.pembayaran) || 0;
-                        const fix = j + k;
-                        const sisa = Math.max(0, fix - p);
+                        const sisa = Math.max(0, j - p);
                         setFormValues({ 
                           ...formValues, 
                           jumlahInvoice: j,
-                          totalInvoiceFix: fix,
+                          koreksi: 0,
+                          totalInvoiceFix: j,
                           sisaHutang: sisa,
                           sisaHutangRiil: sisa
                         });
@@ -2200,68 +2204,40 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Koreksi (Rp)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-slate-700 dark:text-zinc-300 font-bold">Pembayaran / Realisasi (Rp)</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const j = Number(formValues.jumlahInvoice) || 0;
+                          setFormValues({
+                            ...formValues,
+                            pembayaran: j,
+                            koreksi: 0,
+                            totalInvoiceFix: j,
+                            sisaHutang: 0,
+                            sisaHutangRiil: 0,
+                            sudahMasukBukuKas: true
+                          });
+                        }}
+                        className="text-[10px] text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 font-bold underline cursor-pointer"
+                        title="Klik untuk mengisi pembayaran penuh (Set Lunas)"
+                      >
+                        Bayar Penuh (Set Lunas)
+                      </button>
+                    </div>
                     <input
                       type="number"
-                      value={formValues.koreksi || 0}
-                      onChange={(e) => {
-                        const k = Number(e.target.value);
-                        const j = Number(formValues.jumlahInvoice) || 0;
-                        const p = Number(formValues.pembayaran) || 0;
-                        const fix = j + k;
-                        const sisa = Math.max(0, fix - p);
-                        setFormValues({ 
-                          ...formValues, 
-                          koreksi: k,
-                          totalInvoiceFix: fix,
-                          sisaHutang: sisa,
-                          sisaHutangRiil: sisa
-                        });
-                      }}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Nilai SPJ / Tagihan Fix (Rp)</label>
-                    <input
-                      type="number"
-                      value={formValues.totalInvoiceFix !== undefined ? formValues.totalInvoiceFix : ''}
-                      onChange={(e) => {
-                        const fix = Number(e.target.value);
-                        const p = Number(formValues.pembayaran) || 0;
-                        const sisa = Math.max(0, fix - p);
-                        setFormValues({ 
-                          ...formValues, 
-                          totalInvoiceFix: fix,
-                          sisaHutang: sisa,
-                          sisaHutangRiil: sisa
-                        });
-                      }}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-blue-600 dark:text-blue-400 font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Pembayaran / Realisasi (Rp)</label>
-                    <input
-                      type="number"
-                      value={formValues.pembayaran || 0}
+                      value={formValues.pembayaran !== undefined ? formValues.pembayaran : 0}
                       onChange={(e) => {
                         const p = Number(e.target.value);
-                        let fix = formValues.totalInvoiceFix !== undefined && String(formValues.totalInvoiceFix) !== '' 
-                          ? Number(formValues.totalInvoiceFix) 
-                          : ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
-                        let j = Number(formValues.jumlahInvoice) || 0;
-                        if (p > 0 && fix === 0 && j === 0) {
-                          fix = p;
-                          j = p;
-                        }
-                        const sisa = Math.max(0, fix - p);
+                        const j = Number(formValues.jumlahInvoice) || 0;
+                        const sisa = Math.max(0, j - p);
                         setFormValues({ 
                           ...formValues, 
                           pembayaran: p,
-                          totalInvoiceFix: fix,
+                          koreksi: 0,
+                          totalInvoiceFix: j,
                           jumlahInvoice: j,
                           sisaHutang: sisa,
                           sisaHutangRiil: sisa
@@ -2272,25 +2248,21 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Sisa Hutang (Rp)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-slate-700 dark:text-zinc-300 font-bold">Sisa Hutang (Rp)</label>
+                      <span className="text-[10px] text-teal-700 dark:text-teal-300 font-semibold bg-teal-50 dark:bg-teal-950/70 px-1.5 py-0.5 rounded border border-teal-200/60 dark:border-teal-800/60">
+                        Otomatis (Tagihan - Bayar)
+                      </span>
+                    </div>
                     <input
                       type="number"
-                      value={formValues.sisaHutang !== undefined ? formValues.sisaHutang : (formValues.sisaHutangRiil || 0)}
-                      onChange={(e) => {
-                        const s = Number(e.target.value);
-                        const fix = Number(formValues.totalInvoiceFix) || ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
-                        setFormValues({ 
-                          ...formValues, 
-                          sisaHutang: s,
-                          sisaHutangRiil: s,
-                          pembayaran: s === 0 ? fix : (Number(formValues.pembayaran) || 0)
-                        });
-                      }}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-rose-600 dark:text-rose-400 font-bold"
+                      value={formValues.sisaHutang !== undefined ? formValues.sisaHutang : Math.max(0, (Number(formValues.jumlahInvoice) || 0) - (Number(formValues.pembayaran) || 0))}
+                      readOnly
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-zinc-800/80 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-rose-600 dark:text-rose-400 font-bold cursor-not-allowed select-none"
                     />
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-3">
                     <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">No SPD / Buku Kas</label>
                     <input
                       type="text"
@@ -2307,23 +2279,13 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      let fix = Number(formValues.totalInvoiceFix) || ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
-                      let j = Number(formValues.jumlahInvoice) || 0;
-                      let p = Number(formValues.pembayaran) || 0;
-                      if (fix === 0 && p > 0) {
-                        fix = p;
-                        j = p;
-                      } else if (fix === 0 && j > 0) {
-                        fix = j;
-                        p = j;
-                      } else if (fix > 0 && p === 0) {
-                        p = fix;
-                      }
+                      const j = Number(formValues.jumlahInvoice) || 0;
                       setFormValues({
                         ...formValues,
-                        jumlahInvoice: j > 0 ? j : fix,
-                        totalInvoiceFix: fix,
-                        pembayaran: p > 0 ? p : fix,
+                        jumlahInvoice: j,
+                        koreksi: 0,
+                        totalInvoiceFix: j,
+                        pembayaran: j,
                         sisaHutang: 0,
                         sisaHutangRiil: 0,
                         sudahMasukBukuKas: true,
@@ -2338,14 +2300,14 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                     type="button"
                     onClick={() => {
                       const j = Number(formValues.jumlahInvoice) || 0;
-                      const k = Number(formValues.koreksi) || 0;
-                      const fix = j + k;
                       setFormValues({
                         ...formValues,
-                        totalInvoiceFix: fix,
+                        jumlahInvoice: j,
+                        koreksi: 0,
+                        totalInvoiceFix: j,
                         pembayaran: 0,
-                        sisaHutang: fix,
-                        sisaHutangRiil: fix,
+                        sisaHutang: j,
+                        sisaHutangRiil: j,
                         keterangan: 'Belum Lunas'
                       });
                     }}

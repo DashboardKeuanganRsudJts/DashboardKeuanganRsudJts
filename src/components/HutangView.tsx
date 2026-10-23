@@ -40,6 +40,7 @@ import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { idbGet, idbSet } from '../utils/indexedDbStorage';
+import { applySelectiveImportUpdate } from '../utils/invoiceImportUpdate';
 import { RekapHutang2026View } from './RekapHutang2026View';
 import { SemuaRekapHutangView } from './SemuaRekapHutangView';
 import DatabaseKodeRekeningView from './DatabaseKodeRekeningView';
@@ -833,13 +834,19 @@ export const HutangView: React.FC<HutangViewProps> = ({
           existingCount={0}
           onImportSuccess={async (records, mode) => {
             let newRecords = records;
-            if (mode === 'append') {
-               const existing = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025') || [];
-               newRecords = [...existing, ...records];
+            let toastMsg = `Berhasil mengimpor ${records.length} data Invoice Hutang 2025!`;
+            if (mode === 'update') {
+              const existing = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025') || [];
+              const res = applySelectiveImportUpdate(existing, records, 2025);
+              newRecords = res.finalData;
+              toastMsg = `Berhasil memperbarui ${res.updatedCount} data invoice 2025 (kolom kosong dipertahankan).`;
+            } else if (mode === 'append') {
+              const existing = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025') || [];
+              newRecords = [...existing, ...records];
             }
             await idbSet('rsud_invoice_hutang_2025', newRecords);
             window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: newRecords }));
-            if (onShowToast) onShowToast(`Berhasil mengimpor ${records.length} data Invoice Hutang 2025!`, 'success');
+            if (onShowToast) onShowToast(toastMsg, 'success');
           }}
         />
       )}

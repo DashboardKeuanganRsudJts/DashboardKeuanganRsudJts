@@ -23,11 +23,12 @@ import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { formatRupiah, getMonthNameIndo } from '../utils/formatters';
 import { downloadInvoiceHutangExcelTemplate, INVOICE_HUTANG_EXCEL_COLUMNS } from '../utils/invoiceExcelTemplate';
 import { GoogleSheetsService } from '../services/googleSheetsService';
+import { InvoiceImportMode, ParsedInvoiceImportRecord } from '../utils/invoiceImportUpdate';
 
 interface ImportInvoiceExcelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImportSuccess: (records: InvoiceHutang2025Record[], mode: 'replace' | 'append') => void;
+  onImportSuccess: (records: ParsedInvoiceImportRecord[], mode: InvoiceImportMode) => void | Promise<void>;
   existingCount: number;
   year?: number;
 }
@@ -49,39 +50,73 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [parsedRecords, setParsedRecords] = useState<InvoiceHutang2025Record[]>([]);
+  const [parsedRecords, setParsedRecords] = useState<ParsedInvoiceImportRecord[]>([]);
   const [sheetNames, setSheetNames] = useState<string[]>([]);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [workbookObj, setWorkbookObj] = useState<XLSX.WorkBook | null>(null);
   
-  const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
+  const [importMode, setImportMode] = useState<InvoiceImportMode>('update');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  // Helper parser number
+  // Helper to check if a cell actually has content (non-empty)
+  const hasCellValue = (val: any): boolean => {
+    if (val === undefined || val === null) return false;
+    if (typeof val === 'number') return !isNaN(val);
+    if (typeof val === 'boolean') return true;
+    const str = String(val).trim();
+    if (str === '' || str === '-' || str === '#REF!' || str === 'null') return false;
+    return true;
+  };
+
+  // Helper parser number with full Indonesian accounting support (dots as thousands, commas as decimals)
   const parseNum = (val: any): number => {
     if (val === null || val === undefined || val === '') return 0;
     if (typeof val === 'number') return isNaN(val) ? 0 : val;
     const str = String(val).trim();
-    if (str === '-' || str === 'Rp-' || str.startsWith('Rp-') || str.includes('#REF!')) return 0;
-    let clean = str.replace(/[^0-9,.-]/g, '');
+    if (str === '-' || str === 'Rp-' || str.startsWith('Rp-') || str.includes('#REF!') || str.toLowerCase() === 'null') return 0;
     
+    let clean = str.replace(/[^0-9,.-]/g, '');
+    if (!clean) return 0;
+
     if (clean.includes('.') && clean.includes(',')) {
       const lastDot = clean.lastIndexOf('.');
       const lastComma = clean.lastIndexOf(',');
       if (lastComma > lastDot) {
+        // e.g. 7.325.086,50 -> dot is thousand separator, comma is decimal
         clean = clean.replace(/\./g, '').replace(',', '.');
       } else {
+        // e.g. 7,325,086.50 -> comma is thousand separator, dot is decimal
         clean = clean.replace(/,/g, '');
       }
-    } else if (clean.includes(',')) {
-      clean = clean.replace(/,/g, '');
     } else if (clean.includes('.')) {
-      clean = clean.replace(/\./g, '');
+      const dotCount = (clean.match(/\./g) || []).length;
+      if (dotCount > 1) {
+        // Multiple dots: 7.325.086.936 -> pure thousand separators
+        clean = clean.replace(/\./g, '');
+      } else {
+        const parts = clean.split('.');
+        if (parts[1].length === 3) {
+          // Single thousand separator: 1.000 or 359.363
+          clean = clean.replace(/\./g, '');
+        }
+      }
+    } else if (clean.includes(',')) {
+      const commaCount = (clean.match(/,/g) || []).length;
+      if (commaCount > 1) {
+        clean = clean.replace(/,/g, '');
+      } else {
+        const parts = clean.split(',');
+        if (parts[1].length === 3) {
+          clean = clean.replace(/,/g, '');
+        } else {
+          clean = clean.replace(',', '.');
+        }
+      }
     }
-    
+
     const num = parseFloat(clean);
     return isNaN(num) ? 0 : num;
   };
@@ -119,123 +154,214 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
       const sheet = wb.Sheets[sheetName];
       if (!sheet) return;
 
-      const rawJson = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
-      if (!rawJson || rawJson.length === 0) {
+      // Read raw array of arrays to handle title banners, merged headers, and irregular rows
+      const aoa = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, defval: '' });
+      if (!aoa || aoa.length === 0) {
         throw new Error(`Sheet "${sheetName}" kosong atau tidak memiliki data.`);
       }
 
-      const records: InvoiceHutang2025Record[] = [];
+      // 1. Detect the actual header row (scanning first 20 rows)
+      const HEADER_KEY_CLUES = [
+        'rekanan', 'vendor', 'perusahaan', 'penyedia', 'mitra',
+        'jumlah', 'tagihan', 'nominal', 'bruto', 'invoice',
+        'dibayar', 'pembayaran', 'realisasi', 'bayar',
+        'sisa', 'kurang bayar', 'jatuh tempo', 'tempo',
+        'pengadaan', 'uraian', 'kegiatan', 'belanja', 'bidang',
+        'sp2d', 'spd', 'buku kas'
+      ];
 
-      rawJson.forEach((row, idx) => {
-        // Find keys case-insensitively and support positional fallback matching
-        const keys = Object.keys(row);
-        const getVal = (...matchers: string[]): any => {
-          // 1. Exact match (case insensitive, stripped of non-alphanumeric except / and _)
-          for (const m of matchers) {
-            const mClean = m.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
-            for (const k of keys) {
-              const kClean = k.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
-              if (kClean === mClean && row[k] !== undefined && row[k] !== '') {
-                return row[k];
+      let headerRowIdx = -1;
+      let highestClueScore = 0;
+
+      for (let r = 0; r < Math.min(20, aoa.length); r++) {
+        const row = aoa[r];
+        if (!Array.isArray(row)) continue;
+        let clueCount = 0;
+        for (let c = 0; c < row.length; c++) {
+          const cellStr = String(row[c] || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (cellStr.length >= 2 && HEADER_KEY_CLUES.some(kw => cellStr.includes(kw) || kw.includes(cellStr))) {
+            clueCount++;
+          }
+        }
+        if (clueCount > highestClueScore) {
+          highestClueScore = clueCount;
+          headerRowIdx = r;
+        }
+      }
+
+      if (headerRowIdx === -1 || highestClueScore < 2) {
+        headerRowIdx = 0;
+      }
+
+      const headerRow = (aoa[headerRowIdx] || []).map(c => String(c || '').trim().toLowerCase().replace(/[^a-z0-9/]/g, ''));
+      const colCount = headerRow.length;
+
+      // Helper to find column index by synonyms
+      const findCol = (...matchers: string[]): number => {
+        // Exact match
+        for (const m of matchers) {
+          const mClean = m.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
+          for (let c = 0; c < headerRow.length; c++) {
+            if (headerRow[c] === mClean) return c;
+          }
+        }
+        // Substring match
+        for (const m of matchers) {
+          const mClean = m.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
+          if (mClean.length >= 3) {
+            for (let c = 0; c < headerRow.length; c++) {
+              if (headerRow[c].includes(mClean) || mClean.includes(headerRow[c])) {
+                return c;
               }
             }
           }
-          // 2. Substring match (only for matchers >= 3 chars, preventing false positives for short keys like 'a')
-          for (const m of matchers) {
-            const mClean = m.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
-            if (mClean.length >= 3) {
-              for (const k of keys) {
-                const kClean = k.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
-                if ((kClean.includes(mClean) || mClean.includes(kClean)) && row[k] !== undefined && row[k] !== '') {
-                  return row[k];
-                }
-              }
-            }
-          }
-          return '';
-        };
+        }
+        return -1;
+      };
 
-        // Positional fallback according to the 26 template columns
-        const getValWithPos = (pos: number, ...matchers: string[]): any => {
-          const matched = getVal(...matchers);
-          if (matched !== undefined && matched !== null && matched !== '') return matched;
-          if (pos >= 0 && pos < keys.length && row[keys[pos]] !== undefined && row[keys[pos]] !== '') {
-            return row[keys[pos]];
-          }
-          return '';
-        };
+      // Column mapping
+      const cNo = findCol('no', 'nomor', 'no.');
+      const cRekanan = findCol('perusahaan / vendor', 'perusahaan/vendor', 'perusahaan', 'vendor', 'nama rekanan / vendor', 'rekanan / vendor', 'nama rekanan', 'rekanan', 'mitra', 'penyedia');
+      const cBidang = findCol('bidang', 'bagian / bidang', 'bagian', 'unit', 'instalasi', 'ruangan');
+      const cUraian = findCol('jenis pengadaan', 'uraian / kegiatan', 'uraian / pos belanja', 'pos belanja', 'uraian', 'rincian', 'nama barang', 'kegiatan', 'belanja', 'sub belanja', 'keterangan pengadaan', 'sub_belanja', 'jenis belanja', 'kategori');
+      const cTglRekap = findCol('tanggal rekap', 'tgl rekap', 'tanggal tanda terima', 'tgl tanda terima', 'tanda terima', 'tgl_terima', 'terima');
+      const cBulanRekap = findCol('bulan rekap', 'bln rekap');
+      const cTglInvoice = findCol('tanggal invoice', 'tgl invoice', 'tgl faktur', 'tanggal faktur', 'tanggal');
+      const cBulanInvoice = findCol('bulan invoice', 'bulan', 'bln');
+      const cNoInvoice = findCol('nomor invoice/spk/po', 'nomor invoice', 'no invoice', 'no faktur', 'faktur', 'kwitansi', 'no kwitansi', 'inv');
+      const cJatuhTempo = findCol('tanggal jatuh tempo', 'tgl jatuh tempo', 'jatuh tempo', 'due date', 'tempo', 'tgl tempo');
+      const cJumlah = findCol('jumlah', 'jumlah invoice', 'nilai tagihan (rp)', 'nilai tagihan', 'nilai invoice', 'nominal', 'bruto', 'tagihan', 'total tagihan');
+      const cKoreksi = findCol('koreksi', 'nilai koreksi');
+      const cNilaiSpj = findCol('nilai spj', 'total invoice fix', 'total fix', 'setelah koreksi', 'total_fix', 'netto');
+      const cPembayaran = findCol(
+        'dibayar', 'pembayaran (rp)', 'pembayaran', 'sudah dibayar', 'realisasi', 
+        'realisasi pembayaran', 'bayar', 'jumlah bayar', 'total bayar', 'nilai bayar', 
+        'spd dibayar', 'realisasi (rp)', 'pembayaran rp', 'jumlah pembayaran'
+      );
+      const cSumber = findCol('jenis anggaran blud / apbd', 'jenis anggaran', 'sumber anggaran', 'sumber dana', 'sumber', 'anggaran');
+      const cSisa = findCol('sisa', 'sisa hutang (rp)', 'sisa hutang', 'kurang bayar', 'outstanding', 'sisa tagihan');
+      const cSudahMasukKas = findCol('a', 'sudah masuk buku kas', 'buku kas', 'kas', 'masuk kas');
+      const cTglBayar = findCol('tanggal bayar', 'tgl bayar', 'tanggal pembayaran', 'tgl pembayaran', 'tanggal spd', 'tgl spd', 'tgl_spd');
+      const cBulanBayar = findCol('bulan bayar', 'bulan spd', 'bln spd', 'bln bayar');
+      const cNoSpd = findCol('nomor sp2d', 'no sp2d', 'sp2d', 'nomor spd', 'no spd', 'no_spd', 'no spd kas', 'spd buku kas', 'buku kas', 'spd kas');
+      const cUmur = findCol('umur hutang', 'lama hari hutang', 'lama hari', 'lama hutang', 'hari');
+      const cKeterangan = findCol('keterangan', 'status', 'ket', 'catatan');
+      const cTglMasukSpj = findCol('tanggal masuk spj', 'masuk spj', 'tgl spb', 'spk', 'po', 'spb/spk/po', 'tgl spj', 'tgl po');
 
-        const rekanan = String(
-          getValWithPos(1, 'perusahaan / vendor', 'perusahaan/vendor', 'perusahaan', 'vendor', 'nama rekanan / vendor', 'rekanan / vendor', 'nama rekanan', 'rekanan', 'mitra', 'penyedia') || ''
-        ).trim();
-        const uraian = String(
-          getValWithPos(3, 'jenis pengadaan', 'uraian / kegiatan', 'uraian / pos belanja', 'pos belanja', 'uraian', 'rincian', 'nama barang', 'kegiatan', 'belanja', 'sub belanja') || ''
-        ).trim();
+      // Adaptive positional fallback based on column structure (26-column vs 19-column)
+      const isLegacy26Cols = cKoreksi !== -1 || cNilaiSpj !== -1 || colCount >= 22;
 
-        // Skip rows that look like empty headers/summaries
-        if (!rekanan && !uraian && !row[keys[0]]) return;
-        if (rekanan.toLowerCase().includes('total') || uraian.toLowerCase().includes('total')) return;
+      const finalColNo = cNo !== -1 ? cNo : 0;
+      const finalColRekanan = cRekanan !== -1 ? cRekanan : 1;
+      const finalColBidang = cBidang !== -1 ? cBidang : 2;
+      const finalColUraian = cUraian !== -1 ? cUraian : 3;
+      const finalColTglRekap = cTglRekap !== -1 ? cTglRekap : 4;
+      const finalColBulanRekap = cBulanRekap !== -1 ? cBulanRekap : 5;
+      const finalColTglInvoice = cTglInvoice !== -1 ? cTglInvoice : 6;
+      const finalColBulanInvoice = cBulanInvoice !== -1 ? cBulanInvoice : 7;
+      const finalColNoInvoice = cNoInvoice !== -1 ? cNoInvoice : 8;
+      const finalColJatuhTempo = cJatuhTempo !== -1 ? cJatuhTempo : 9;
+      const finalColJumlah = cJumlah !== -1 ? cJumlah : 10;
+      
+      const finalColKoreksi = isLegacy26Cols ? (cKoreksi !== -1 ? cKoreksi : 11) : -1;
+      const finalColNilaiSpj = isLegacy26Cols ? (cNilaiSpj !== -1 ? cNilaiSpj : 12) : -1;
+      
+      // CRITICAL: In 19-col template (without Koreksi/Nilai SPJ), DIBAYAR is column 11!
+      const finalColPembayaran = cPembayaran !== -1 
+        ? cPembayaran 
+        : (isLegacy26Cols ? 13 : 11);
 
-        const no = parseNum(getValWithPos(0, 'no', 'nomor', 'no.') || (idx + 1));
-        const bagian = String(getValWithPos(2, 'bidang', 'bagian / bidang', 'bagian', 'unit', 'instalasi', 'ruangan') || 'Bidang Pelayanan Non Medik').trim();
-        const subBelanja = String(getValWithPos(3, 'jenis pengadaan', 'keterangan pengadaan', 'sub belanja', 'sub_belanja', 'jenis belanja', 'kategori') || uraian || 'BELANJA OBAT').trim();
-        
-        const tglTandaTerima = parseDateStr(getValWithPos(4, 'tanggal rekap', 'tgl rekap', 'tanggal tanda terima', 'tgl tanda terima', 'tanda terima', 'tgl_terima', 'terima'));
+      const finalColSumber = cSumber !== -1 ? cSumber : (isLegacy26Cols ? 14 : 12);
+      const finalColSisa = cSisa !== -1 ? cSisa : (isLegacy26Cols ? 15 : 13);
+      const finalColSudahMasukKas = cSudahMasukKas !== -1 ? cSudahMasukKas : (isLegacy26Cols ? 16 : 14);
+      const finalColTglBayar = cTglBayar !== -1 ? cTglBayar : (isLegacy26Cols ? 17 : 15);
+      const finalColBulanBayar = cBulanBayar !== -1 ? cBulanBayar : (isLegacy26Cols ? 18 : 16);
+      const finalColNoSpd = cNoSpd !== -1 ? cNoSpd : (isLegacy26Cols ? 19 : 17);
+      const finalColUmur = cUmur !== -1 ? cUmur : (isLegacy26Cols ? 20 : 18);
+
+      const records: ParsedInvoiceImportRecord[] = [];
+
+      for (let r = headerRowIdx + 1; r < aoa.length; r++) {
+        const row = aoa[r];
+        if (!row || row.length === 0) continue;
+
+        const rawRekanan = String(row[finalColRekanan] ?? '').trim();
+        const rawUraian = String(row[finalColUraian] ?? '').trim();
+        const rawNo = row[finalColNo];
+
+        // Skip blank rows or summary/total rows
+        if (!rawRekanan && !rawUraian && !hasCellValue(rawNo)) continue;
+        if (rawRekanan.toLowerCase().includes('total') || rawUraian.toLowerCase().includes('total') || String(rawNo).toLowerCase().includes('total')) continue;
+        if (rawRekanan.toLowerCase().includes('rekapitulasi') || rawUraian.toLowerCase().includes('rekapitulasi')) continue;
+
+        const parsedNo = parseNum(rawNo);
+        const no = parsedNo || (records.length + 1);
+        const bagian = String(row[finalColBidang] || 'Bidang Pelayanan Non Medik').trim();
+        const subBelanja = String(rawUraian || 'BELANJA OBAT').trim();
+        const rekanan = rawRekanan || 'Penyedia Barang/Jasa';
+
+        const tglTandaTerima = parseDateStr(row[finalColTglRekap]);
         const tglRekap = tglTandaTerima;
-        const rawBulanRekap = String(getValWithPos(5, 'bulan rekap', 'bln rekap') || '').trim();
+        const rawBulanRekap = String(row[finalColBulanRekap] || '').trim();
         const derivedBulanRekap = getMonthNameIndo(tglRekap);
         const bulanRekap = derivedBulanRekap || rawBulanRekap || '';
 
-        const tglSpbSpk = parseDateStr(getVal('tanggal masuk spj', 'masuk spj', 'tgl spb', 'spk', 'po', 'spb/spk/po', 'tgl spj', 'tgl po'));
-        const tglInvoice = parseDateStr(getValWithPos(6, 'tanggal invoice', 'tgl invoice', 'tgl faktur', 'tanggal faktur', 'tanggal'));
-        const rawBulanInvoice = String(getValWithPos(7, 'bulan invoice', 'bulan', 'bln') || '').trim();
+        const tglSpbSpk = parseDateStr(cTglMasukSpj !== -1 ? row[cTglMasukSpj] : '');
+        const tglInvoice = parseDateStr(row[finalColTglInvoice]);
+        const rawBulanInvoice = String(row[finalColBulanInvoice] || '').trim();
         const derivedBulanInvoice = getMonthNameIndo(tglInvoice);
         const bulanInvoice = derivedBulanInvoice || rawBulanInvoice || '-';
 
-        const rawNoInvoice = String(getValWithPos(8, 'nomor invoice/spk/po', 'nomor invoice', 'no invoice', 'no faktur', 'faktur', 'kwitansi', 'no kwitansi', 'inv') || (no ? `INV/${no}/${year}` : '')).trim();
+        const cellNoInvoice = row[finalColNoInvoice];
+        const rawNoInvoice = String(hasCellValue(cellNoInvoice) ? cellNoInvoice : (no ? `INV/${no}/${year}` : '')).trim();
         let noInvoice = rawNoInvoice;
         if (noInvoice.startsWith('Rp') || noInvoice.startsWith('rp') || noInvoice.startsWith('RP')) {
           noInvoice = noInvoice.replace(/^Rp\.?\s*/i, '').replace(/,/g, '');
         }
         noInvoice = noInvoice.replace(/^['"]+|['"]+$/g, '');
-        const jatuhTempo = parseDateStr(getValWithPos(9, 'tanggal jatuh tempo', 'tgl jatuh tempo', 'jatuh tempo', 'due date', 'tempo', 'tgl tempo'));
+        const hasExplicitNoInvoice = hasCellValue(cellNoInvoice) && String(cellNoInvoice).trim() !== '-';
 
-        const jumlahInvoice = parseNum(getValWithPos(10, 'jumlah', 'jumlah invoice', 'nilai tagihan (rp)', 'nilai tagihan', 'nilai invoice', 'nominal', 'bruto', 'tagihan', 'total tagihan'));
-        const koreksi = parseNum(getValWithPos(11, 'koreksi', 'nilai koreksi'));
-        
-        const rawSpj = getValWithPos(12, 'nilai spj', 'total invoice fix', 'total fix', 'setelah koreksi', 'total_fix', 'netto');
-        const parsedSpj = parseNum(rawSpj);
-        const totalInvoiceFix = (rawSpj !== undefined && rawSpj !== '' && rawSpj !== null) ? parsedSpj : (jumlahInvoice + koreksi);
-        
-        const pembayaran = parseNum(getValWithPos(13, 'dibayar', 'pembayaran (rp)', 'pembayaran', 'sudah dibayar', 'realisasi', 'bayar', 'jumlah bayar'));
-        const sumberAnggaran = String(getValWithPos(14, 'jenis anggaran blud / apbd', 'jenis anggaran', 'sumber anggaran', 'sumber dana', 'sumber', 'anggaran') || 'BLUD').trim();
-        
-        const rawSisa = getValWithPos(15, 'sisa', 'sisa hutang (rp)', 'sisa hutang', 'kurang bayar', 'outstanding', 'sisa tagihan');
-        const parsedSisa = parseNum(rawSisa);
-        const sisaHutang = (rawSisa !== undefined && rawSisa !== '' && rawSisa !== null) ? parsedSisa : Math.max(0, totalInvoiceFix - pembayaran);
-        const sudahMasukBukuKas = parseBool(getValWithPos(16, 'a', 'sudah masuk buku kas', 'buku kas', 'kas', 'masuk kas'));
-        const tglSpdBukuKas = parseDateStr(getValWithPos(17, 'tanggal bayar', 'tgl bayar', 'tanggal pembayaran', 'tgl pembayaran', 'tanggal spd', 'tgl spd', 'tgl_spd'));
+        const jatuhTempo = parseDateStr(row[finalColJatuhTempo]);
+        const jumlahInvoice = parseNum(row[finalColJumlah]);
+
+        // TA 2026: Koreksi & Nilai SPJ are removed (koreksi = 0, totalInvoiceFix = jumlahInvoice)
+        const koreksi = (year === 2026 || finalColKoreksi === -1) ? 0 : parseNum(row[finalColKoreksi]);
+        const totalInvoiceFix = (year === 2026 || finalColNilaiSpj === -1)
+          ? jumlahInvoice
+          : (hasCellValue(row[finalColNilaiSpj]) ? parseNum(row[finalColNilaiSpj]) : (jumlahInvoice + koreksi));
+
+        // Exact payment parsing
+        const pembayaran = parseNum(row[finalColPembayaran]);
+        const sumberAnggaran = String(row[finalColSumber] || 'BLUD').trim();
+
+        // SISA strictly calculated as Max(0, Jumlah - Pembayaran)
+        const calculatedSisa = Math.max(0, totalInvoiceFix - pembayaran);
+        const sisaHutang = (pembayaran >= totalInvoiceFix && totalInvoiceFix > 0)
+          ? 0
+          : (year === 2026 ? calculatedSisa : (hasCellValue(row[finalColSisa]) ? parseNum(row[finalColSisa]) : calculatedSisa));
+
+        const sudahMasukBukuKas = hasCellValue(row[finalColSudahMasukKas])
+          ? parseBool(row[finalColSudahMasukKas])
+          : (sisaHutang <= 0 || pembayaran > 0);
+
+        const tglSpdBukuKas = parseDateStr(row[finalColTglBayar]);
         const tglBayar = tglSpdBukuKas;
-        const rawBulanBayar = String(getValWithPos(18, 'bulan bayar', 'bulan spd', 'bln spd', 'bln bayar') || '').trim();
+        const rawBulanBayar = String(row[finalColBulanBayar] || '').trim();
         const derivedBulanBayar = getMonthNameIndo(tglBayar);
         const bulanSpd = derivedBulanBayar || rawBulanBayar || '-';
 
-        const noSpdBukuKas = String(getValWithPos(19, 'nomor sp2d', 'no sp2d', 'sp2d', 'nomor spd', 'no spd', 'no_spd', 'no spd kas', 'spd buku kas', 'buku kas', 'spd kas') || '-').trim();
-        const lamaHariHutang = parseNum(getValWithPos(20, 'umur hutang', 'lama hari hutang', 'lama hari', 'lama hutang', 'hari'));
-        const keterangan = String(getVal('keterangan', 'status', 'ket', 'catatan') || (sisaHutang <= 0 ? 'Lunas' : 'Belum Lunas')).trim();
-        
-        const koreksiPlusMinus = parseNum(getVal('koreksi plus minus', 'koreksi (+/-)', 'koreksi +/-'));
-        const koreksiMinusBlud = parseNum(getVal('koreksi minus blud', 'koreksi blud', 'minus blud'));
-        const koreksiMinusApbd = parseNum(getVal('koreksi minus apbd', 'koreksi apbd', 'minus apbd'));
-        const sisaHutangRiil = parseNum(getVal('sisa hutang riil', 'sisa riil', 'riil')) || sisaHutang;
+        const noSpdBukuKas = String(row[finalColNoSpd] || '-').trim();
+        const lamaHariHutang = parseNum(row[finalColUmur]);
+        const keterangan = String((cKeterangan !== -1 ? row[cKeterangan] : '') || (sisaHutang <= 0 ? 'Lunas' : 'Belum Lunas')).trim();
+        const sisaHutangRiil = sisaHutang;
 
         records.push({
-          id: `inv-excel-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+          id: `inv-excel-${Date.now()}-${records.length}-${Math.random().toString(36).substring(2, 6)}`,
           no: no || (records.length + 1),
-          rekanan: rekanan || 'Penyedia Barang/Jasa',
+          rekanan,
           bagian,
           bidang: bagian,
-          uraian: uraian || 'Pengadaan Barang & Jasa',
+          uraian: rawUraian || 'Pengadaan Barang & Jasa',
           subBelanja,
           tglTandaTerima,
           tglRekap,
@@ -259,19 +385,57 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
           noSpdBukuKas,
           lamaHariHutang,
           keterangan,
-          koreksiPlusMinus,
-          koreksiMinusBlud,
-          koreksiMinusApbd,
-          sisaHutangRiil
+          koreksiPlusMinus: 0,
+          koreksiMinusBlud: 0,
+          koreksiMinusApbd: 0,
+          sisaHutangRiil,
+          _hasExplicitNoInvoice: hasExplicitNoInvoice,
+          _presentFields: {
+            no: hasCellValue(row[finalColNo]),
+            rekanan: hasCellValue(row[finalColRekanan]),
+            bidang: hasCellValue(row[finalColBidang]),
+            bagian: hasCellValue(row[finalColBidang]),
+            uraian: hasCellValue(row[finalColUraian]),
+            subBelanja: hasCellValue(row[finalColUraian]),
+            tglRekap: hasCellValue(row[finalColTglRekap]),
+            tglTandaTerima: hasCellValue(row[finalColTglRekap]),
+            bulanRekap: hasCellValue(row[finalColBulanRekap]),
+            tglMasukSpj: cTglMasukSpj !== -1 && hasCellValue(row[cTglMasukSpj]),
+            tglSpbSpk: cTglMasukSpj !== -1 && hasCellValue(row[cTglMasukSpj]),
+            tglInvoice: hasCellValue(row[finalColTglInvoice]),
+            bulanInvoice: hasCellValue(row[finalColBulanInvoice]),
+            noInvoice: hasExplicitNoInvoice,
+            jatuhTempo: hasCellValue(row[finalColJatuhTempo]),
+            jumlahInvoice: finalColJumlah !== -1,
+            koreksi: finalColKoreksi !== -1,
+            totalInvoiceFix: finalColNilaiSpj !== -1 || finalColJumlah !== -1,
+            pembayaran: finalColPembayaran !== -1,
+            sumberAnggaran: hasCellValue(row[finalColSumber]),
+            sisaHutang: finalColSisa !== -1 || finalColJumlah !== -1,
+            sudahMasukBukuKas: hasCellValue(row[finalColSudahMasukKas]),
+            tglBayar: hasCellValue(row[finalColTglBayar]),
+            tglSpdBukuKas: hasCellValue(row[finalColTglBayar]),
+            bulanSpd: hasCellValue(row[finalColBulanBayar]),
+            noSpdBukuKas: hasCellValue(row[finalColNoSpd]),
+            lamaHariHutang: hasCellValue(row[finalColUmur]),
+            keterangan: cKeterangan !== -1 && hasCellValue(row[cKeterangan]),
+            koreksiPlusMinus: false,
+            koreksiMinusBlud: false,
+            koreksiMinusApbd: false,
+            sisaHutangRiil: true
+          }
         });
-      });
+      }
 
       if (records.length === 0) {
-        throw new Error('Tidak ditemukan data baris valid pada file Spreadsheet.');
+        throw new Error('Tidak ditemukan data baris transaksi invoice yang valid pada file Spreadsheet.');
       }
 
       setParsedRecords(records);
-      setSuccessMessage(`Berhasil membaca ${records.length} baris invoice dari sheet "${sheetName}". Smart Column Mapping telah mencocokkan kolom secara otomatis.`);
+      const totalBayar = records.reduce((acc, r) => acc + (r.pembayaran || 0), 0);
+      setSuccessMessage(
+        `Berhasil membaca ${records.length} baris invoice (Total Pembayaran: ${formatRupiah(totalBayar)}) dari sheet "${sheetName}". Smart Column Mapping berhasil memetakan seluruh kolom.`
+      );
       setErrorMessage(null);
     } catch (err: any) {
       console.error(err);
@@ -710,15 +874,54 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
           {/* Import Mode Options */}
           {parsedRecords.length > 0 && (
             <div className="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800">
-              <div className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                Pilih Mode Penyimpanan ({parsedRecords.length} Baris Data):
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                  Pilih Mode Penyimpanan Data ({parsedRecords.length} Baris Data Terbaca):
+                </div>
+                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold bg-teal-50 dark:bg-teal-950/60 px-2.5 py-0.5 rounded-full border border-teal-200 dark:border-teal-800/60">
+                  Tersedia 3 Mode Import
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              <div className="grid grid-cols-1 gap-2.5">
+                {/* 1. Mode Update / Timpa Parsial (Direkomendasikan) */}
+                <label 
+                  onClick={() => setImportMode('update')}
+                  className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
+                    importMode === 'update'
+                      ? 'border-teal-500 bg-teal-500/10 dark:bg-teal-950/40 text-teal-950 dark:text-teal-200 ring-2 ring-teal-500/30'
+                      : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 hover:border-slate-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="update"
+                    checked={importMode === 'update'}
+                    onChange={() => setImportMode('update')}
+                    className="mt-1 text-teal-600 focus:ring-teal-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-black text-slate-900 dark:text-white">
+                        Perbarui / Timpa Data Cocok (Kolom Kosong Dipertahankan)
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/40 font-bold uppercase tracking-wider">
+                        Direkomendasikan
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-zinc-300 mt-1 leading-relaxed">
+                      Mencocokkan baris data invoice dan <strong>hanya mengupdate kolom yang terisi di Excel</strong> (misal: Jumlah &amp; Pembayaran). Jika kolom dalam file Excel itu kosong, <strong>maka data yang ada pada dashboard ini TIDAK akan diubah atau dihapus</strong>.
+                    </p>
+                  </div>
+                </label>
+
+                {/* 2. Mode Replace Total */}
                 <label 
                   onClick={() => setImportMode('replace')}
                   className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
                     importMode === 'replace'
-                      ? 'border-teal-500 bg-teal-500/10 dark:bg-teal-950/40 text-teal-950 dark:text-teal-200'
+                      ? 'border-amber-500 bg-amber-500/10 dark:bg-amber-950/40 text-amber-950 dark:text-amber-200 ring-2 ring-amber-500/30'
                       : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 hover:border-slate-300'
                   }`}
                 >
@@ -728,21 +931,22 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
                     value="replace"
                     checked={importMode === 'replace'}
                     onChange={() => setImportMode('replace')}
-                    className="mt-0.5 text-teal-600 focus:ring-teal-500"
+                    className="mt-1 text-amber-600 focus:ring-amber-500"
                   />
-                  <div>
-                    <div className="text-xs font-bold">Ganti Seluruh Data (Replace Mode)</div>
-                    <div className="text-[11px] opacity-80 mt-0.5">
-                      Menghapus {existingCount} data sebelumnya dan menggantikannya dengan {parsedRecords.length} data dari spreadsheet ini.
-                    </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white">Ganti Seluruh Data (Replace Total)</div>
+                    <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                      Menghapus {existingCount} data sebelumnya dan menggantikannya secara total dengan {parsedRecords.length} data dari spreadsheet ini (kolom kosong di Excel akan menjadi default/kosong).
+                    </p>
                   </div>
                 </label>
 
+                {/* 3. Mode Append */}
                 <label 
                   onClick={() => setImportMode('append')}
                   className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
                     importMode === 'append'
-                      ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200'
+                      ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 ring-2 ring-emerald-500/30'
                       : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 hover:border-slate-300'
                   }`}
                 >
@@ -752,16 +956,26 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
                     value="append"
                     checked={importMode === 'append'}
                     onChange={() => setImportMode('append')}
-                    className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                    className="mt-1 text-emerald-600 focus:ring-emerald-500"
                   />
-                  <div>
-                    <div className="text-xs font-bold">Tambahkan ke Data yang Ada (Append Mode)</div>
-                    <div className="text-[11px] opacity-80 mt-0.5">
-                      Menambahkan data baru tanpa menghapus data sebelumnya (mengecek duplikasi nomor invoice).
-                    </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white">Tambahkan ke Data yang Ada (Append Mode)</div>
+                    <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                      Menambahkan {parsedRecords.length} baris baru ke bawah daftar tanpa menghapus atau menimpa data yang sudah ada sebelumnya.
+                    </p>
                   </div>
                 </label>
               </div>
+
+              {/* Informative banner when update mode is active */}
+              {importMode === 'update' && (
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-teal-500/10 border border-teal-500/30 text-[11px] text-teal-800 dark:text-teal-200">
+                  <ShieldCheck className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Proteksi Data Aktif:</strong> Kolom kosong pada file Excel Anda TIDAK akan mengubah atau menghapus data yang tersimpan di dashboard ini. Hanya kolom dengan nilai terisi di Excel yang akan menimpa baris yang cocok.
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
@@ -890,7 +1104,12 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
               </>
             ) : (
               <>
-                <Check className="w-4 h-4" /> Simpan &amp; Perbarui Data ({parsedRecords.length} Baris)
+                <Check className="w-4 h-4" />{' '}
+                {importMode === 'update'
+                  ? `Perbarui Data Cocok (${parsedRecords.length} Baris)`
+                  : importMode === 'replace'
+                  ? `Ganti Seluruh Data (${parsedRecords.length} Baris)`
+                  : `Tambahkan (${parsedRecords.length} Baris Baru)`}
               </>
             )}
           </button>

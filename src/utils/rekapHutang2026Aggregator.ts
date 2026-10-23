@@ -287,18 +287,24 @@ export function aggregateRekapHutang2026(invoices: InvoiceHutang2026Record[]): P
 
     const item = posMap.get(key)!;
     const invJumlah = Number(inv.jumlahInvoice) || 0;
-    const invKoreksi = Number(inv.koreksi) || 0;
     const invBayar = Number(inv.pembayaran) || 0;
-    const invSisa = inv.sisaHutang !== undefined && inv.sisaHutang !== null 
-      ? Number(inv.sisaHutang) 
-      : Math.max(0, invJumlah + invKoreksi - invBayar);
+    const invSisa = Math.max(0, invJumlah - invBayar);
 
     item.totalTagihan += invJumlah;
-    item.koreksi += invKoreksi;
+    item.koreksi = 0;
     item.jumlahBayar += invBayar;
     item.sisaHutang += invSisa;
     item.invoiceCount += 1;
-    item.invoices.push(inv);
+    item.invoices.push({
+      ...inv,
+      jumlahInvoice: invJumlah,
+      koreksi: 0,
+      totalInvoiceFix: invJumlah,
+      pembayaran: invBayar,
+      sisaHutang: invSisa,
+      sisaHutangRiil: invSisa,
+      keterangan: invSisa <= 0 ? 'Lunas' : 'Belum Lunas'
+    });
   });
 
   // Convert to array

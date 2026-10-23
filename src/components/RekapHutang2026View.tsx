@@ -27,6 +27,7 @@ import {
 import { InvoiceHutang2026Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
 import { idbGet, idbSet } from '../utils/indexedDbStorage';
+import { applySelectiveImportUpdate } from '../utils/invoiceImportUpdate';
 import { formatRupiah } from '../utils/formatters';
 
 const STORAGE_KEY = 'rsud_rekap_pengadaan_hutang_2026_master_v3';
@@ -446,13 +447,19 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
           existingCount={0}
           onImportSuccess={async (records, mode) => {
             let newRecords = records;
-            if (mode === 'append') {
+            let toastMsg = `Berhasil mengimpor ${records.length} data Invoice Hutang 2026!`;
+            if (mode === 'update') {
+              const existing = await idbGet<InvoiceHutang2026Record[]>('rsud_invoice_hutang_2026') || [];
+              const res = applySelectiveImportUpdate(existing, records, 2026);
+              newRecords = res.finalData;
+              toastMsg = `Berhasil memperbarui ${res.updatedCount} data invoice 2026 (kolom kosong dipertahankan).`;
+            } else if (mode === 'append') {
                const existing = await idbGet<InvoiceHutang2026Record[]>('rsud_invoice_hutang_2026') || [];
                newRecords = [...existing, ...records];
             }
             await idbSet('rsud_invoice_hutang_2026', newRecords);
             window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: newRecords }));
-            if (onShowToast) onShowToast(`Berhasil mengimpor ${records.length} data Invoice Hutang 2026!`, 'success');
+            if (onShowToast) onShowToast(toastMsg, 'success');
           }}
         />
       )}
