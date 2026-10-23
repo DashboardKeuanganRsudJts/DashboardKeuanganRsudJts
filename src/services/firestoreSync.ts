@@ -1,6 +1,13 @@
 import { collection, doc, writeBatch, onSnapshot, getDocs, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { idbGet, idbSet, idbSetLocalOnly } from '../utils/indexedDbStorage';
+import { 
+  checkIsQuotaExceeded, 
+  markQuotaExceeded, 
+  isQuotaExceededError, 
+  handleFirestoreError, 
+  OperationType 
+} from '../utils/firestoreErrorHandler';
 
 // Keeps track of active listeners so we don't duplicate them
 const listeners: Record<string, () => void> = {};
@@ -136,6 +143,9 @@ export function sanitizeForFirestore<T>(data: T): T {
  */
 export async function syncDocumentToFirestore(docId: string, payload: any) {
   if (!auth.currentUser) return; // Only sync if logged in
+  if (checkIsQuotaExceeded()) {
+    return; // Circuit breaker: skip writing to Firestore while daily write quota is exceeded
+  }
 
   try {
     const docRef = doc(db, 'appData', docId);
@@ -145,8 +155,11 @@ export async function syncDocumentToFirestore(docId: string, payload: any) {
       updatedAt: new Date().toISOString(),
       updatedBy: auth.currentUser.email || auth.currentUser.uid
     }, { merge: true });
-  } catch (err) {
-    console.error(`Error syncing appData/${docId} to Firestore:`, err);
+  } catch (err: any) {
+    if (isQuotaExceededError(err)) {
+      markQuotaExceeded(err?.message);
+    }
+    console.warn(`[Firestore] Sync skipped for appData/${docId}:`, err?.message || err);
   }
 }
 
@@ -156,6 +169,10 @@ export async function syncDocumentToFirestore(docId: string, payload: any) {
 export async function pushAllLocalDataToFirestore() {
   if (!auth.currentUser) {
     throw new Error('Harap login terlebih dahulu untuk melakukan sinkronisasi data ke Cloud.');
+  }
+
+  if (checkIsQuotaExceeded()) {
+    throw new Error('Batas kuota penulisan harian Cloud Firestore (Free Tier) telah tercapai untuk hari ini. Data Anda tetap tersimpan aman di browser (IndexedDB) dan kuota akan otomatis di-reset besok.');
   }
 
   // 1. AppData docs
@@ -180,6 +197,7 @@ export async function pushAllLocalDataToFirestore() {
   ];
 
   for (const key of idbKeys) {
+    if (checkIsQuotaExceeded()) break;
     try {
       const data = await idbGet<any[]>(key);
       if (data && Array.isArray(data) && data.length > 0) {
@@ -192,6 +210,7 @@ export async function pushAllLocalDataToFirestore() {
 
   // 3. Highlights
   for (const year of ['2025', '2026'] as const) {
+    if (checkIsQuotaExceeded()) break;
     try {
       const raw = localStorage.getItem(`rsud_rekap_${year}_highlights`);
       if (raw) {
@@ -204,6 +223,10 @@ export async function pushAllLocalDataToFirestore() {
 
 export async function syncArrayToFirestore(key: string, newData: any[]) {
   if (!auth.currentUser) return; // Only sync if logged in
+  if (checkIsQuotaExceeded()) {
+    // When free daily write units quota is reached, do not dispatch batches to Firestore
+    return;
+  }
 
   const colName = key === 'rsud_invoice_hutang_2025' ? 'invoices2025' : 
                   key === 'rsud_invoice_hutang_2026' ? 'invoices2026' : 
@@ -271,19 +294,78 @@ export async function syncArrayToFirestore(key: string, newData: any[]) {
   
   try {
     await Promise.all(batches);
-  } catch (err) {
-    console.error(`Error syncing ${colName} batch to Firestore:`, err);
+  } catch (err: any) {
+    if (isQuotaExceededError(err)) {
+      markQuotaExceeded(err?.message);
+    }
+    console.warn(`[Firestore] Sync to ${colName} paused:`, err?.message || err);
   }
 }
 
 export async function syncHighlightsToFirestore(year: '2025' | '2026', data: Record<number, boolean>) {
   if (!auth.currentUser) return; // Only sync if logged in
+  if (checkIsQuotaExceeded()) return;
   
   try {
     const docRef = doc(db, 'appState', `highlights${year}`);
     const cleanData = sanitizeForFirestore(data);
     await setDoc(docRef, cleanData, { merge: true });
-  } catch (err) {
-    console.error(`Error syncing highlights${year} to Firestore:`, err);
+  } catch (err: any) {
+    if (isQuotaExceededError(err)) {
+      markQuotaExceeded(err?.message);
+    }
+    console.warn(`[Firestore] Sync highlights${year} skipped:`, err?.message || err);
   }
 }
+
+/**
+ * Deletes all documents in a specific Firestore collection (e.g. 'invoices2025' or 'invoices2026')
+ */
+export async function clearFirestoreCollection(colName: string): Promise<{ success: boolean; count: number; error?: string }> {
+  if (!auth.currentUser) {
+    return { success: true, count: 0 };
+  }
+
+  if (checkIsQuotaExceeded()) {
+    console.warn(`[Firestore] clearFirestoreCollection skipped for ${colName} due to quota limit.`);
+    return { success: false, count: 0, error: 'Batas kuota penulisan Firestore tercapai.' };
+  }
+
+  try {
+    const colRef = collection(db, colName);
+    const snapshot = await getDocs(colRef);
+    if (snapshot.empty) {
+      return { success: true, count: 0 };
+    }
+
+    const batches = [];
+    let currentBatch = writeBatch(db);
+    let opCount = 0;
+    let totalDeleted = 0;
+
+    for (const docSnap of snapshot.docs) {
+      currentBatch.delete(docSnap.ref);
+      opCount++;
+      totalDeleted++;
+      if (opCount >= 450) {
+        batches.push(currentBatch.commit());
+        currentBatch = writeBatch(db);
+        opCount = 0;
+      }
+    }
+
+    if (opCount > 0) {
+      batches.push(currentBatch.commit());
+    }
+
+    await Promise.all(batches);
+    return { success: true, count: totalDeleted };
+  } catch (err: any) {
+    console.error(`[Firestore] Error clearing collection ${colName}:`, err);
+    if (isQuotaExceededError(err)) {
+      markQuotaExceeded(err?.message);
+    }
+    return { success: false, count: 0, error: err?.message || String(err) };
+  }
+}
+

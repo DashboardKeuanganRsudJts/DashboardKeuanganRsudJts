@@ -24,6 +24,7 @@ import {
   CheckCircle2, 
   Clock, 
   AlertCircle,
+  AlertTriangle,
   Eye,
   Filter,
   ArrowUpDown,
@@ -37,6 +38,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { User } from 'firebase/auth';
+import { clearFirestoreCollection } from '../services/firestoreSync';
 
 const IDB_KEY_INVOICE_2025 = 'rsud_invoice_hutang_2025';
 
@@ -313,15 +315,19 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
   // State for dataset - initialize with in-memory singleton or localStorage cache first, then load from IndexedDB
   const [data, setData] = useState<InvoiceHutang2025Record[]>(() => {
-    if (inMemoryInvoice2025Cache && Array.isArray(inMemoryInvoice2025Cache) && inMemoryInvoice2025Cache.length > 0) {
+    if (inMemoryInvoice2025Cache !== null && Array.isArray(inMemoryInvoice2025Cache)) {
       return inMemoryInvoice2025Cache;
     }
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
+        if (localStorage.getItem(`${IDB_KEY_INVOICE_2025}_cleared`) === 'true') {
+          inMemoryInvoice2025Cache = [];
+          return [];
+        }
         const saved = localStorage.getItem(IDB_KEY_INVOICE_2025);
-        if (saved) {
+        if (saved !== null) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             const cleaned = parsed.map(sanitizeInvoiceRecord);
             inMemoryInvoice2025Cache = cleaned;
             return cleaned;
@@ -345,7 +351,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     idbGet<InvoiceHutang2025Record[]>(IDB_KEY_INVOICE_2025)
       .then(saved => {
         if (isMounted) {
-          if (Array.isArray(saved) && saved.length > 0) {
+          const isExplicitlyCleared = typeof window !== 'undefined' && localStorage.getItem(`${IDB_KEY_INVOICE_2025}_cleared`) === 'true';
+          if (isExplicitlyCleared) {
+            inMemoryInvoice2025Cache = [];
+            setData([]);
+          } else if (Array.isArray(saved)) {
             const cleaned = saved.map(sanitizeInvoiceRecord);
             inMemoryInvoice2025Cache = cleaned;
             setData(cleaned);
@@ -402,6 +412,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [formValues, setFormValues] = useState<Partial<InvoiceHutang2025Record>>({});
   const [isCustomPosBelanja, setIsCustomPosBelanja] = useState(false);
@@ -917,11 +929,56 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     setData(sanitizedData);
     setIsFormOpen(false);
 
+    try {
+      localStorage.removeItem(`${IDB_KEY_INVOICE_2025}_cleared`);
+    } catch (e) {}
+
     // Save immediately and synchronously across storage layers
     idbSet(IDB_KEY_INVOICE_2025, sanitizedData).catch(err => {
       console.warn('[IDB] Error persisting invoice 2025:', err);
     });
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: sanitizedData }));
+  };
+
+  const handleResetAllData = async () => {
+    setIsResetting(true);
+    try {
+      // 1. Delete all documents in Firestore collection
+      const firestoreResult = await clearFirestoreCollection('invoices2025');
+
+      // 2. Mark as explicitly cleared and empty localStorage
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(`${IDB_KEY_INVOICE_2025}_cleared`, 'true');
+        localStorage.setItem(IDB_KEY_INVOICE_2025, '[]');
+      }
+
+      // 3. Empty IndexedDB
+      await idbSet(IDB_KEY_INVOICE_2025, []);
+
+      // 4. Update in-memory & state
+      inMemoryInvoice2025Cache = [];
+      setData([]);
+
+      // 5. Broadcast update event
+      window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: [] }));
+
+      setIsResetModalOpen(false);
+
+      if (onShowToast) {
+        if (firestoreResult.success) {
+          onShowToast(`Seluruh data invoice hutang 2025 berhasil direset dan dihapus (${firestoreResult.count} dokumen di Firestore dihapus).`, 'success');
+        } else {
+          onShowToast(`Data invoice hutang 2025 berhasil dikosongkan secara lokal. Catatan cloud: ${firestoreResult.error || 'Periksa kuota/koneksi'}.`, 'info');
+        }
+      }
+    } catch (err: any) {
+      console.error('Gagal mereset data invoice 2025:', err);
+      if (onShowToast) {
+        onShowToast(`Gagal mereset data: ${err?.message || 'Terjadi kesalahan'}`, 'error');
+      }
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   const handleRefreshNominal = () => {
@@ -1089,6 +1146,9 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     const sanitizedFinalData = finalData.map(sanitizeInvoiceRecord);
     inMemoryInvoice2025Cache = sanitizedFinalData;
     setData(sanitizedFinalData);
+    try {
+      localStorage.removeItem(`${IDB_KEY_INVOICE_2025}_cleared`);
+    } catch (e) {}
     idbSet(IDB_KEY_INVOICE_2025, sanitizedFinalData).catch(err => console.warn('[IDB] error on import:', err));
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: sanitizedFinalData }));
     if (onShowToast) {
@@ -1182,6 +1242,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95"
                 >
                   <Plus className="w-4 h-4" /> Entri Invoice
+                </button>
+                <button
+                  onClick={() => setIsResetModalOpen(true)}
+                  disabled={isResetting || data.length === 0}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs shadow-xs transition transform active:scale-95 border border-rose-500/40 cursor-pointer"
+                  title="Reset dan hapus seluruh data invoice hutang 2025 (termasuk di Firestore)"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-100" />
+                  <span>Reset Semua Data</span>
                 </button>
               </>
             )}
@@ -2398,6 +2467,73 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         onImportSuccess={handleImportSuccess}
         existingCount={data.length}
       />
+
+      {/* Modal Konfirmasi Reset Semua Data (Ya / Tidak) */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 border border-rose-200 dark:border-rose-900/60 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Konfirmasi Reset Semua Data
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                  Invoice Hutang Tahun 2025
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-600 dark:text-zinc-300">
+              <p>
+                Apakah Anda yakin ingin menghapus dan mengosongkan <strong>SEMUA</strong> data Invoice Hutang Tahun 2025?
+              </p>
+              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-800 dark:text-rose-300 leading-relaxed space-y-1.5">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  Perhatian Penting:
+                </p>
+                <ul className="list-disc list-inside space-y-1 pl-1">
+                  <li>Menghapus seluruh <strong>{data.length} transaksi invoice</strong> TA 2025 yang tersimpan.</li>
+                  <li>Data akan dihapus permanen dari browser lokal (IndexedDB) dan <strong>Cloud Firestore</strong>.</li>
+                  <li>Tindakan ini tidak dapat dibatalkan. Pastikan Anda telah mengunduh cadangan (Export Excel) jika data masih dibutuhkan.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-zinc-800">
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={() => setIsResetModalOpen(false)}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
+              >
+                Tidak
+              </button>
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={handleResetAllData}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isResetting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Sedang Menghapus...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Ya</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

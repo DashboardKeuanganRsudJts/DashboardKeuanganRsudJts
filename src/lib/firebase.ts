@@ -31,6 +31,10 @@ import('firebase/firestore').then(({ doc, getDocFromServer }) => {
   getDocFromServer(doc(db, 'test', 'connection')).catch((error) => {
     if (error instanceof Error && error.message.includes('the client is offline')) {
       console.warn("Please check your Firebase configuration or network status.");
+    } else if (error && (String(error).includes('Quota') || String(error).includes('resource-exhausted'))) {
+      import('../utils/firestoreErrorHandler').then(({ markQuotaExceeded }) => {
+        markQuotaExceeded(String(error));
+      }).catch(() => {});
     }
   });
 });

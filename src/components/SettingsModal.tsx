@@ -6,6 +6,7 @@ import { pushAllLocalDataToFirestore } from '../services/firestoreSync';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
 import { updateAppFavicon } from '../utils/faviconHelper';
+import { UPGRADE_URL, checkIsQuotaExceeded } from '../utils/firestoreErrorHandler';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -270,9 +271,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </p>
 
               {syncCloudError && (
-                <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
-                  <span>{syncCloudError}</span>
+                <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 text-xs flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                    <span>{syncCloudError}</span>
+                  </div>
+                  {(syncCloudError.includes('kuota') || syncCloudError.includes('Quota') || checkIsQuotaExceeded()) && (
+                    <div className="pt-1 border-t border-rose-200/60 dark:border-rose-800/40 flex items-center gap-2">
+                      <a
+                        href={UPGRADE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400 underline hover:no-underline"
+                      >
+                        Buka Firebase Console / Upgrade ke Blaze Plan &rarr;
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 
