@@ -46,7 +46,6 @@ import { useUserProfile } from './utils/userProfile';
 import { useTheme } from './context/ThemeContext';
 import { initFirestoreSync, syncDocumentToFirestore } from './services/firestoreSync';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
-import { FirestoreQuotaBanner } from './components/FirestoreQuotaBanner';
 
 interface AppProps {
   user: User | null;
@@ -500,9 +499,6 @@ export default function App({ user, isAdmin, role, isLoginModalOpen, openLoginMo
             )}
           </div>
         </header>
-
-        {/* Quota Exhaustion Circuit Breaker Alert Banner */}
-        <FirestoreQuotaBanner />
 
         {/* Dynamic Main Body Scroll Area */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-24 md:pb-8 custom-scrollbar bg-emerald-50/15 dark:bg-[#12181f]">
