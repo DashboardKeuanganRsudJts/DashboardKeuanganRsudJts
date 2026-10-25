@@ -411,8 +411,13 @@ export const HutangView: React.FC<HutangViewProps> = ({
 
   const totalHutangAktif = useMemo(() => {
     return displayedItems
-      .reduce((acc, curr) => acc + (curr.sisaHutang ?? ((curr.totalTagihan || 0) + (curr.koreksi || 0) - (curr.jumlahBayar || 0))), 0);
-  }, [displayedItems]);
+      .reduce((acc, curr) => {
+        const sisa = currentSubTab.includes('2025')
+          ? Math.max(0, (curr.totalTagihan || 0) - (curr.jumlahBayar || 0))
+          : (curr.sisaHutang ?? Math.max(0, (curr.totalTagihan || 0) + (curr.koreksi || 0) - (curr.jumlahBayar || 0)));
+        return acc + sisa;
+      }, 0);
+  }, [displayedItems, currentSubTab]);
 
   const totalSudahDibayar = useMemo(() => {
     return displayedItems.reduce((acc, curr) => acc + (curr.jumlahBayar || 0), 0);
@@ -427,10 +432,12 @@ export const HutangView: React.FC<HutangViewProps> = ({
 
   const lunasCount = useMemo(() => {
     return displayedItems.filter(i => {
-      const sisa = i.sisaHutang ?? ((i.totalTagihan || 0) + (i.koreksi || 0) - (i.jumlahBayar || 0));
+      const sisa = currentSubTab.includes('2025')
+        ? Math.max(0, (i.totalTagihan || 0) - (i.jumlahBayar || 0))
+        : (i.sisaHutang ?? ((i.totalTagihan || 0) + (i.koreksi || 0) - (i.jumlahBayar || 0)));
       return sisa <= 0;
     }).length;
-  }, [displayedItems]);
+  }, [displayedItems, currentSubTab]);
 
   const belumLunasCount = useMemo(() => {
     return displayedItems.length - lunasCount;
@@ -456,7 +463,8 @@ export const HutangView: React.FC<HutangViewProps> = ({
       const saldoAwal = item.totalTagihan || 0;
       const koreksi = item.koreksi || 0;
       const pembayaran = item.jumlahBayar || 0;
-      const saldoAkhir = item.sisaHutang ?? (saldoAwal + koreksi - pembayaran);
+      // SALDO AKHIR = TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+      const saldoAkhir = Math.max(0, saldoAwal - pembayaran);
       return {
         'NO': item.noUrut || (idx + 1),
         'KODE REKENING': item.kodeRekening || '',
@@ -529,7 +537,10 @@ export const HutangView: React.FC<HutangViewProps> = ({
     const totalVal = parseFloat(formTotal) || 0;
     const koreksiVal = parseFloat(formKoreksi) || 0;
     const bayarVal = parseFloat(formPembayaran) || 0;
-    const calculatedSisa = Math.max(0, totalVal + koreksiVal - bayarVal);
+    // Saldo Akhir 2025: Total Saldo Awal - Pembayaran (tanpa koreksi)
+    const calculatedSisa = (formTahun === '2025' || currentSubTab.includes('2025'))
+      ? Math.max(0, totalVal - bayarVal)
+      : Math.max(0, totalVal + koreksiVal - bayarVal);
 
     const newItem: HutangItem = {
       id: `HUT-${formTahun.slice(-2)}-${Date.now().toString().slice(-4)}`,
@@ -584,7 +595,10 @@ export const HutangView: React.FC<HutangViewProps> = ({
     const koreksiVal = parseFloat(formKoreksi) || 0;
     const bayarVal = parseFloat(formPembayaran) || 0;
     const noUrutVal = parseInt(formNoUrut) || undefined;
-    const calculatedSisa = Math.max(0, totalVal + koreksiVal - bayarVal);
+    // Saldo Akhir 2025: Total Saldo Awal - Pembayaran (tanpa koreksi)
+    const calculatedSisa = (formTahun === '2025' || currentSubTab.includes('2025'))
+      ? Math.max(0, totalVal - bayarVal)
+      : Math.max(0, totalVal + koreksiVal - bayarVal);
 
     // 1. Save highlight override to localStorage
     const targetNo = noUrutVal || editingItem.noUrut;
@@ -1015,7 +1029,10 @@ export const HutangView: React.FC<HutangViewProps> = ({
                   const saldoAwal = item.totalTagihan || 0;
                   const koreksi = item.koreksi || 0;
                   const pembayaran = item.jumlahBayar || 0;
-                  const saldoAkhir = item.sisaHutang ?? (saldoAwal + koreksi - pembayaran);
+                  // SALDO AKHIR = TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+                  const saldoAkhir = currentSubTab.includes('2025')
+                    ? Math.max(0, saldoAwal - pembayaran)
+                    : (item.sisaHutang ?? Math.max(0, saldoAwal + koreksi - pembayaran));
                   const isHigh = Boolean(item.isHighlighted);
                   const canModify = canModifyRecord(item);
                   const invoiceCount = (item as any).invoiceCount ?? 0;
@@ -1571,10 +1588,18 @@ export const HutangView: React.FC<HutangViewProps> = ({
               <div className="p-3 bg-slate-50 dark:bg-[#12181f] rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-zinc-400">Estimasi Saldo Akhir:</div>
-                  <div className="text-[10px] text-slate-400 dark:text-zinc-500">Saldo Awal + Koreksi - Pembayaran</div>
+                  <div className="text-[10px] text-slate-400 dark:text-zinc-500">
+                    {formTahun === '2025' || currentSubTab.includes('2025')
+                      ? 'Total Saldo Awal - Pembayaran (Tanpa Koreksi)'
+                      : 'Saldo Awal + Koreksi - Pembayaran'}
+                  </div>
                 </div>
                 <div className="text-sm font-bold font-mono text-rose-700 dark:text-rose-400">
-                  {formatRupiah(Math.max(0, (parseFloat(formTotal) || 0) + (parseFloat(formKoreksi) || 0) - (parseFloat(formPembayaran) || 0)))}
+                  {formatRupiah(
+                    formTahun === '2025' || currentSubTab.includes('2025')
+                      ? Math.max(0, (parseFloat(formTotal) || 0) - (parseFloat(formPembayaran) || 0))
+                      : Math.max(0, (parseFloat(formTotal) || 0) + (parseFloat(formKoreksi) || 0) - (parseFloat(formPembayaran) || 0))
+                  )}
                 </div>
               </div>
 
@@ -1754,8 +1779,9 @@ export const HutangView: React.FC<HutangViewProps> = ({
                     'KOREKSI': inv.koreksi || 0,
                     'FIX': (inv.jumlahInvoice || 0) + (inv.koreksi || 0),
                     'PEMBAYARAN': inv.pembayaran || 0,
-                    'SISA HUTANG': Math.max(0, ((inv.jumlahInvoice || 0) + (inv.koreksi || 0)) - (inv.pembayaran || 0)),
-                    'STATUS': ((inv.jumlahInvoice || 0) + (inv.koreksi || 0)) <= (inv.pembayaran || 0) ? 'LUNAS' : 'BELUM LUNAS'
+                    // SALDO AKHIR = TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+                    'SISA HUTANG': Math.max(0, (inv.jumlahInvoice || 0) - (inv.pembayaran || 0)),
+                    'STATUS': (inv.jumlahInvoice || 0) <= (inv.pembayaran || 0) ? 'LUNAS' : 'BELUM LUNAS'
                   }));
                   const ws = XLSX.utils.json_to_sheet(rows);
                   const wb = XLSX.utils.book_new();
@@ -1826,7 +1852,8 @@ export const HutangView: React.FC<HutangViewProps> = ({
                           const rawKoreksi = inv.koreksi || 0;
                           const fix = inv.totalInvoiceFix || (rawJumlah + rawKoreksi);
                           const bayar = inv.pembayaran || 0;
-                          const sisa = inv.sisaHutang !== undefined ? inv.sisaHutang : Math.max(0, fix - bayar);
+                          // SALDO AKHIR = TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+                          const sisa = inv.sisaHutang !== undefined ? inv.sisaHutang : Math.max(0, rawJumlah - bayar);
                           const isLunas = sisa <= 0;
                           const noInvoiceStr = inv.noInvoice || (inv as any).nomorInvoice || '-';
                           const tglInvoiceStr = inv.tglInvoice || (inv as any).tanggalInvoice || '-';

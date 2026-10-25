@@ -36,6 +36,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   X,
   Save,
   Calendar,
@@ -254,21 +255,19 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025
     numJumlah = numPembayaran;
   }
 
-  // Preserve user-specified sisaHutang and sisaHutangRiil if explicitly saved
+  // Sisa Hutang: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
   let sisaHutang: number;
   let sisaHutangRiil: number;
 
-  if (numPembayaran >= totalInvoiceFix && totalInvoiceFix > 0) {
+  if (numPembayaran >= numJumlah && numJumlah > 0) {
     sisaHutang = 0;
     sisaHutangRiil = 0;
   } else if (item.sisaHutang === 0 || item.sisaHutangRiil === 0 || item.keterangan === 'Lunas') {
     sisaHutang = 0;
     sisaHutangRiil = 0;
-  } else if (item.sisaHutang !== undefined) {
-    sisaHutang = Number(item.sisaHutang);
-    sisaHutangRiil = item.sisaHutangRiil !== undefined ? Number(item.sisaHutangRiil) : sisaHutang;
   } else {
-    sisaHutang = Math.max(0, totalInvoiceFix - numPembayaran);
+    // SALDO AKHIR = TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+    sisaHutang = Math.max(0, numJumlah - numPembayaran);
     sisaHutangRiil = sisaHutang;
   }
 
@@ -453,8 +452,13 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [formValues, setFormValues] = useState<Partial<InvoiceHutang2025Record>>({});
   const [isCustomPosBelanja, setIsCustomPosBelanja] = useState(false);
+  const [isPosDropdownOpen, setIsPosDropdownOpen] = useState(false);
+  const posBelanjaDropdownRef = useRef<HTMLDivElement>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<InvoiceHutang2025Record | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Unique list of Rekanan for dropdown filters & KPI count (deduplicated case-insensitively like Excel)
   const uniqueRekanan = useMemo(() => {
@@ -526,6 +530,40 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     });
 
     return Array.from(map.values()).sort((a, b) => a.uraian.localeCompare(b.uraian));
+  }, []);
+
+  // Filtered Pos Belanja options for searchable autocomplete combobox
+  const filteredPosOptions = useMemo(() => {
+    const q = (formValues.subBelanja || '').trim().toLowerCase();
+    if (!q) return availablePosBelanja;
+    return availablePosBelanja.filter(p => 
+      p.uraian.toLowerCase().includes(q) ||
+      p.kodeRekening.toLowerCase().includes(q) ||
+      p.label.toLowerCase().includes(q)
+    );
+  }, [availablePosBelanja, formValues.subBelanja]);
+
+  const handleSelectPosBelanja = (pos: { kodeRekening: string; uraian: string; label: string }) => {
+    setFormValues(prev => ({
+      ...prev,
+      subBelanja: pos.uraian,
+      uraian: pos.uraian,
+      kodeRekening: pos.kodeRekening && pos.kodeRekening !== '-' ? pos.kodeRekening : prev.kodeRekening || ''
+    }));
+    setIsPosDropdownOpen(false);
+  };
+
+  // Close pos belanja autocomplete dropdown when clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (posBelanjaDropdownRef.current && !posBelanjaDropdownRef.current.contains(event.target as Node)) {
+        setIsPosDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   // Filtered & Sorted items
@@ -722,6 +760,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     const currentMonth = getMonthNameFromDate(todayStr);
 
     setIsCustomPosBelanja(false);
+    setIsPosDropdownOpen(false);
     setFormValues({
       no: nextNo,
       rekanan: '',
@@ -764,6 +803,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   const handleOpenEdit = (record: InvoiceHutang2025Record) => {
     setFormError(null);
     setIsCustomPosBelanja(false);
+    setIsPosDropdownOpen(false);
     const effRekap = record.tglRekap || record.tglTandaTerima || '';
     const effBulanRekap = getMonthNameFromDate(effRekap) || record.bulanRekap || '';
     const effInvoice = record.tglInvoice || '';
@@ -798,41 +838,68 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     setIsDetailOpen(true);
   };
 
-  const handleDeleteRecord = async (id: string, no: number) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus data Invoice No. ${no}?`)) {
-      const nextData = data.filter(item => item.id !== id);
+  const handleRequestDelete = (record: InvoiceHutang2025Record) => {
+    setRecordToDelete(record);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!recordToDelete) return;
+    setIsDeleting(true);
+    try {
+      const targetId = recordToDelete.id;
+      const targetNo = recordToDelete.no;
+      const targetRekanan = recordToDelete.rekanan;
+
+      const nextData = data.filter(item => item.id !== targetId);
       inMemoryInvoice2025Cache = nextData;
       setData(nextData);
-      idbSet(IDB_KEY_INVOICE_2025, nextData).catch(err => console.warn('[IDB] error on delete:', err));
-      deleteInvoiceFromFirestore('invoices2025', id).catch(err => console.warn('[Firestore] error on delete sync:', err));
+
+      // Save to IndexedDB
+      await idbSet(IDB_KEY_INVOICE_2025, nextData);
+
+      // Direct authoritative deletion from Firestore
+      await deleteInvoiceFromFirestore('invoices2025', targetId);
+
       window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: nextData }));
-      if (onShowToast) onShowToast(`Data Invoice #${no} berhasil dihapus`, 'info');
+      if (onShowToast) {
+        onShowToast(`Invoice #${targetNo} (${targetRekanan}) berhasil dihapus dari database`, 'info');
+      }
+      setIsDeleteModalOpen(false);
+      setRecordToDelete(null);
+    } catch (err: any) {
+      console.error('Error deleting invoice 2025:', err);
+      if (onShowToast) {
+        onShowToast(`Gagal menghapus invoice: ${err?.message || 'Terjadi kesalahan sistem'}`, 'error');
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleToggleLunasInvoice = (item: InvoiceHutang2025Record) => {
     const isCurrentlyLunas = item.sisaHutang <= 0;
-    const fix = Number(item.totalInvoiceFix) || ((Number(item.jumlahInvoice) || 0) + (Number(item.koreksi) || 0));
+    const jumlah = Number(item.jumlahInvoice) || 0;
     
     let updatedRecord: InvoiceHutang2025Record | null = null;
     const nextData = data.map(record => {
       if (record.id === item.id) {
         if (isCurrentlyLunas) {
-          // Reset to Belum Lunas
+          // Reset to Belum Lunas: Saldo Akhir = Saldo Awal - Pembayaran (0) = Saldo Awal
           updatedRecord = {
             ...record,
             pembayaran: 0,
-            sisaHutang: fix,
-            sisaHutangRiil: fix,
+            sisaHutang: jumlah,
+            sisaHutangRiil: jumlah,
             keterangan: 'Belum Lunas',
             updatedAt: new Date().toISOString()
           };
           return updatedRecord;
         } else {
-          // Mark as Lunas
+          // Mark as Lunas: Pembayaran = Saldo Awal, Sisa = 0
           updatedRecord = {
             ...record,
-            pembayaran: fix,
+            pembayaran: jumlah,
             sisaHutang: 0,
             sisaHutangRiil: 0,
             sudahMasukBukuKas: true,
@@ -883,25 +950,19 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       jumlah = pembayaran;
     }
 
-    // Sisa hutang calculation and user preference
+    // Sisa hutang calculation: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
     let sisa: number;
     let sisaRiil: number;
 
-    // If user explicitly set sisaHutang or sisaHutangRiil to 0 or payment covers total
-    if (formValues.sisaHutang === 0 || formValues.sisaHutangRiil === 0 || (pembayaran >= totalFix && totalFix > 0)) {
+    // If user explicitly set sisaHutang or sisaHutangRiil to 0 or payment covers total tagihan
+    if (formValues.sisaHutang === 0 || formValues.sisaHutangRiil === 0 || (pembayaran >= jumlah && jumlah > 0)) {
       sisa = 0;
       sisaRiil = 0;
-      if (pembayaran === 0 && totalFix > 0) {
-        pembayaran = totalFix;
+      if (pembayaran === 0 && jumlah > 0) {
+        pembayaran = jumlah;
       }
-    } else if (formValues.sisaHutang !== undefined && String(formValues.sisaHutang) !== '') {
-      sisa = Number(formValues.sisaHutang);
-      sisaRiil = formValues.sisaHutangRiil !== undefined && String(formValues.sisaHutangRiil) !== '' ? Number(formValues.sisaHutangRiil) : sisa;
-    } else if (formValues.sisaHutangRiil !== undefined && String(formValues.sisaHutangRiil) !== '') {
-      sisaRiil = Number(formValues.sisaHutangRiil);
-      sisa = sisaRiil;
     } else {
-      sisa = Math.max(0, totalFix - pembayaran);
+      sisa = Math.max(0, jumlah - pembayaran);
       sisaRiil = sisa;
     }
 
@@ -1104,7 +1165,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       'DIBAYAR',
       'JENIS ANGGARAN BLUD / APBD',
       'SISA',
-      'A',
       'TANGGAL BAYAR',
       'BULAN BAYAR',
       'NOMOR SP2D',
@@ -1134,7 +1194,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         item.pembayaran,
         `"${item.sumberAnggaran || 'BLUD'}"`,
         item.sisaHutang,
-        item.sudahMasukBukuKas ? 'TRUE' : 'FALSE',
         `"${item.tglBayar || item.tglSpdBukuKas || ''}"`,
         `"${getMonthNameIndo(item.tglBayar || item.tglSpdBukuKas || '') || item.bulanSpd || ''}"`,
         `"${(item.noSpdBukuKas || '').replace(/"/g, '""')}"`,
@@ -1171,7 +1230,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       'DIBAYAR',
       'JENIS ANGGARAN BLUD / APBD',
       'SISA',
-      'A',
       'TANGGAL BAYAR',
       'BULAN BAYAR',
       'NOMOR SP2D',
@@ -1201,7 +1259,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         item.pembayaran,
         item.sumberAnggaran,
         item.sisaHutang,
-        item.sudahMasukBukuKas ? 'TRUE' : 'FALSE',
         item.tglBayar || item.tglSpdBukuKas || '',
         getMonthNameIndo(item.tglBayar || item.tglSpdBukuKas || '') || item.bulanSpd,
         item.noSpdBukuKas,
@@ -1577,7 +1634,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 <th onClick={() => handleSort('sisaHutang')} className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3 text-right cursor-pointer hover:bg-teal-100/70 dark:hover:bg-[#1a382e]">
                   <div className="flex items-center justify-end gap-1">SISA <ArrowUpDown className="w-2.5 h-2.5" /></div>
                 </th>
-                <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">A</th>
                 <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3">TANGGAL BAYAR</th>
                 <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-3 py-3 text-center">BULAN BAYAR</th>
                 <th className="sticky top-0 z-20 bg-[#f0f9f6] dark:bg-[#12181f] border-b border-teal-200 dark:border-emerald-900 px-4 py-3">NOMOR SP2D</th>
@@ -1590,7 +1646,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">
               {paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={22} className="px-6 py-12 text-center text-slate-500 dark:text-zinc-400">
+                  <td colSpan={21} className="px-6 py-12 text-center text-slate-500 dark:text-zinc-400">
                     Tidak ada data invoice yang sesuai dengan kriteria pencarian/filter.
                   </td>
                 </tr>
@@ -1681,17 +1737,6 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       <td className="px-4 py-2.5 text-right font-mono font-bold text-slate-800 dark:text-zinc-200 border-l border-slate-100 dark:border-zinc-800/50 bg-slate-50/50 dark:bg-[#11181f]">
                         {item.sisaHutang > 0 ? formatRupiah(item.sisaHutang) : '-'}
                       </td>
-                      <td className="px-3 py-2.5 text-center">
-                        {item.sudahMasukBukuKas ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
-                            TRUE
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-emerald-950/80 text-amber-700 dark:text-emerald-300">
-                            FALSE
-                          </span>
-                        )}
-                      </td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-emerald-300/80 font-mono text-[11px]">
                         {formatDateDDMMYYYY(item.tglSpdBukuKas || item.tglBayar || '')}
                       </td>
@@ -1702,25 +1747,18 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         {item.noSpdBukuKas || '-'}
                       </td>
                       <td className="px-3 py-2.5 text-center font-mono font-medium">
-                        {(() => {
-                          const u = calculateUmurHutang(item);
-                          if (item.sisaHutang <= 0) {
-                            return <span className="text-slate-400 dark:text-emerald-400/60 font-sans text-[11px]">Lunas</span>;
-                          }
-                          if (u <= 0) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Belum JT</span>;
-                          }
-                          if (u <= 30) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-50 text-blue-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-blue-200 dark:border-emerald-800">{u} hr</span>;
-                          }
-                          if (u <= 60) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-amber-200 dark:border-emerald-800">{u} hr</span>;
-                          }
-                          if (u <= 90) {
-                            return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-orange-50 text-orange-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-orange-200 dark:border-emerald-800">{u} hr</span>;
-                          }
-                          return <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-100 text-rose-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-rose-300 dark:border-emerald-800">{u} hr</span>;
-                        })()}
+                        {isLunas ? (
+                          <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            Lunas ({calculateUmurHutang(item)} hr)
+                          </span>
+                        ) : (
+                          <span 
+                            className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 shadow-xs"
+                            title={`Belum Lunas: Umur Hutang ${calculateUmurHutang(item)} hari`}
+                          >
+                            {calculateUmurHutang(item)} hr
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-2.5 text-center border-l border-slate-200 dark:border-emerald-900/40">
                         <div className="flex items-center justify-center gap-1">
@@ -1752,7 +1790,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
                               <button
-                                onClick={() => handleDeleteRecord(item.id, item.no)}
+                                onClick={() => handleRequestDelete(item)}
                                 className="p-1 rounded text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
                                 title="Hapus Invoice"
                               >
@@ -1789,7 +1827,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {stats.totalSisaHutang > 0 ? formatRupiah(stats.totalSisaHutang) : '-'}
                 </td>
-                <td colSpan={6} className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
+                <td colSpan={5} className="px-4 py-3.5 text-center text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
                   {stats.lunasCount} Lunas • {stats.belumLunasCount} Belum Lunas
                 </td>
               </tr>
@@ -2110,54 +2148,125 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                  {/* Jenis Pengadaan Dropdown lengkap dengan Kode Rekening */}
-                  <div className="sm:col-span-8">
+                  {/* Jenis Pengadaan Searchable Combobox (Bisa diketik manual & muncul pilihan) */}
+                  <div className="sm:col-span-8 relative" ref={posBelanjaDropdownRef}>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-slate-700 dark:text-zinc-300 font-bold">
                         Jenis Pengadaan <span className="text-red-500">*</span>
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => setIsCustomPosBelanja(!isCustomPosBelanja)}
-                        className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold"
-                      >
-                        {isCustomPosBelanja ? 'Pilih dari Master Pos' : '+ Input Manual'}
-                      </button>
+                      <span className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold flex items-center gap-1">
+                        Ketik untuk cari atau input manual
+                      </span>
                     </div>
-                    {isCustomPosBelanja ? (
+
+                    <div className="relative">
                       <input
                         type="text"
                         value={formValues.subBelanja || ''}
-                        onChange={(e) => setFormValues({ ...formValues, subBelanja: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl"
-                        placeholder="Ketik jenis pengadaan kustom..."
-                      />
-                    ) : (
-                      <select
-                        value={
-                          availablePosBelanja.find(p => p.uraian === formValues.subBelanja)?.label ||
-                          (formValues.subBelanja ? `${formValues.kodeRekening || '[No Rek]'} - ${formValues.subBelanja}` : '')
-                        }
                         onChange={(e) => {
-                          const selected = availablePosBelanja.find(p => p.label === e.target.value);
-                          if (selected) {
-                            setFormValues({
-                              ...formValues,
-                              subBelanja: selected.uraian,
-                              kodeRekening: selected.kodeRekening
-                            });
+                          const val = e.target.value;
+                          const exactMatch = availablePosBelanja.find(
+                            p => p.uraian.toLowerCase() === val.trim().toLowerCase() ||
+                                 p.label.toLowerCase() === val.trim().toLowerCase()
+                          );
+                          setFormValues(prev => ({
+                            ...prev,
+                            subBelanja: val,
+                            uraian: val,
+                            ...(exactMatch ? { kodeRekening: exactMatch.kodeRekening } : {})
+                          }));
+                          setIsPosDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsPosDropdownOpen(true)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setIsPosDropdownOpen(false);
                           }
                         }}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-medium"
-                      >
-                        <option value="">-- Pilih Pos Belanja Lengkap Kode Rekening --</option>
-                        {availablePosBelanja.map((pos, idx) => (
-                          <option key={idx} value={pos.label}>
-                            {pos.label}
-                          </option>
-                        ))}
-                      </select>
+                        className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                        placeholder="Ketik nama pos belanja atau input manual..."
+                        autoComplete="off"
+                        required
+                      />
+
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                        {formValues.subBelanja && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormValues(prev => ({ ...prev, subBelanja: '', uraian: '' }));
+                              setIsPosDropdownOpen(true);
+                            }}
+                            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition rounded"
+                            title="Hapus teks"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setIsPosDropdownOpen(prev => !prev)}
+                          className="p-1 text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition rounded cursor-pointer"
+                          title="Tampilkan semua pilihan jenis pengadaan"
+                        >
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isPosDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Dropdown Suggestions Menu */}
+                    {isPosDropdownOpen && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in-50 duration-150">
+                        <div className="px-3 py-1.5 bg-slate-50 dark:bg-zinc-800/80 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+                          <span>
+                            {filteredPosOptions.length > 0 
+                              ? `Ditemukan ${filteredPosOptions.length} Pos Belanja` 
+                              : 'Tidak ada pos belanja yang cocok'}
+                          </span>
+                          <span className="text-[10px] text-slate-400">Klik untuk memilih</span>
+                        </div>
+
+                        <div className="max-h-56 overflow-y-auto overscroll-contain custom-scrollbar divide-y divide-slate-100 dark:divide-zinc-800/60">
+                          {filteredPosOptions.length > 0 ? (
+                            filteredPosOptions.map((pos, idx) => {
+                              const isSelected = formValues.subBelanja === pos.uraian;
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault(); // Prevents input blur before selection
+                                    handleSelectPosBelanja(pos);
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition flex items-center justify-between gap-2 group cursor-pointer ${
+                                    isSelected ? 'bg-teal-50/80 dark:bg-teal-950/50' : ''
+                                  }`}
+                                >
+                                  <div className="min-w-0 pr-2">
+                                    <div className={`font-semibold text-xs text-slate-800 dark:text-zinc-200 group-hover:text-teal-700 dark:group-hover:text-teal-300 leading-snug ${
+                                      isSelected ? 'text-teal-700 dark:text-teal-300 font-bold' : ''
+                                    }`}>
+                                      {pos.uraian}
+                                    </div>
+                                  </div>
+                                  {pos.kodeRekening && pos.kodeRekening !== '-' && (
+                                    <span className="shrink-0 font-mono text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-1.5 py-0.5 rounded border border-slate-200 dark:border-zinc-700 group-hover:border-teal-300 group-hover:bg-teal-100/60 dark:group-hover:bg-teal-900/60 dark:group-hover:text-teal-200 transition font-medium">
+                                      {pos.kodeRekening}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <div className="px-3 py-3 text-center text-xs text-slate-500 dark:text-zinc-400 italic">
+                              Tidak ada master pos belanja yang cocok dengan &quot;{formValues.subBelanja}&quot;.<br />
+                              <span className="text-[11px] text-teal-600 dark:text-teal-400 font-normal">Teks manual ini tetap akan tersimpan saat Anda menyimpan invoice.</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
+
                     {formValues.kodeRekening && (
                       <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
                         <span className="text-[10px] font-sans text-slate-500 dark:text-zinc-400 font-medium">Kode Rekening Terkait:</span>
@@ -2367,7 +2476,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         const k = Number(formValues.koreksi) || 0;
                         const p = Number(formValues.pembayaran) || 0;
                         const fix = j + k;
-                        const sisa = Math.max(0, fix - p);
+                        const sisa = Math.max(0, j - p);
                         setFormValues({ 
                           ...formValues, 
                           jumlahInvoice: j,
@@ -2391,7 +2500,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         const j = Number(formValues.jumlahInvoice) || 0;
                         const p = Number(formValues.pembayaran) || 0;
                         const fix = j + k;
-                        const sisa = Math.max(0, fix - p);
+                        const sisa = Math.max(0, j - p);
                         setFormValues({ 
                           ...formValues, 
                           koreksi: k,
@@ -2411,8 +2520,9 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       value={formValues.totalInvoiceFix !== undefined ? formValues.totalInvoiceFix : ''}
                       onChange={(e) => {
                         const fix = Number(e.target.value);
+                        const j = Number(formValues.jumlahInvoice) || 0;
                         const p = Number(formValues.pembayaran) || 0;
-                        const sisa = Math.max(0, fix - p);
+                        const sisa = Math.max(0, j - p);
                         setFormValues({ 
                           ...formValues, 
                           totalInvoiceFix: fix,
@@ -2439,7 +2549,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                           fix = p;
                           j = p;
                         }
-                        const sisa = Math.max(0, fix - p);
+                        const sisa = Math.max(0, j - p);
                         setFormValues({ 
                           ...formValues, 
                           pembayaran: p,
@@ -2460,12 +2570,12 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       value={formValues.sisaHutang !== undefined ? formValues.sisaHutang : (formValues.sisaHutangRiil || 0)}
                       onChange={(e) => {
                         const s = Number(e.target.value);
-                        const fix = Number(formValues.totalInvoiceFix) || ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
+                        const j = Number(formValues.jumlahInvoice) || 0;
                         setFormValues({ 
                           ...formValues, 
                           sisaHutang: s,
                           sisaHutangRiil: s,
-                          pembayaran: s === 0 ? fix : (Number(formValues.pembayaran) || 0)
+                          pembayaran: s === 0 ? j : (Number(formValues.pembayaran) || 0)
                         });
                       }}
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-rose-600 dark:text-rose-400 font-bold"
@@ -2579,6 +2689,111 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         onImportSuccess={handleImportSuccess}
         existingCount={data.length}
       />
+
+      {/* Modal Dialog Konfirmasi Hapus Invoice */}
+      {isDeleteModalOpen && recordToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 border border-rose-200 dark:border-rose-900/60 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 flex items-center justify-center shrink-0">
+                <Trash2 className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Konfirmasi Hapus Invoice
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
+                  Invoice Hutang Tahun 2025 #{recordToDelete.no}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setRecordToDelete(null);
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs text-slate-600 dark:text-zinc-300">
+              <p className="text-slate-700 dark:text-zinc-200 text-sm">
+                Apakah Anda yakin ingin menghapus data invoice berikut?
+              </p>
+
+              {/* Rincian Invoice yang akan dihapus */}
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800 space-y-2">
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-slate-500 dark:text-zinc-400">Rekanan / Vendor:</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-right">{recordToDelete.rekanan}</span>
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-slate-500 dark:text-zinc-400">No. Invoice:</span>
+                  <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{recordToDelete.noInvoice || '-'}</span>
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-slate-500 dark:text-zinc-400">Nomor Urut:</span>
+                  <span className="font-semibold text-slate-800 dark:text-zinc-200">#{recordToDelete.no}</span>
+                </div>
+                <div className="flex justify-between items-center gap-2 pt-1 border-t border-slate-200 dark:border-zinc-800">
+                  <span className="text-slate-500 dark:text-zinc-400">Nilai Tagihan:</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">
+                    {formatRupiah(recordToDelete.jumlahInvoice || recordToDelete.totalInvoiceFix || 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-slate-500 dark:text-zinc-400">Sisa Hutang:</span>
+                  <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
+                    {formatRupiah(recordToDelete.sisaHutangRiil !== undefined ? recordToDelete.sisaHutangRiil : recordToDelete.sisaHutang)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 flex items-start gap-2 leading-relaxed">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+                <span>
+                  <strong>Perhatian:</strong> Data yang dihapus akan langsung dihilangkan secara permanen dari browser lokal (IndexedDB) dan <strong>Cloud Database Firestore</strong>.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-zinc-800">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setRecordToDelete(null);
+                }}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Menghapus...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Ya, Hapus Invoice</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Konfirmasi Reset Semua Data (Ya / Tidak) */}
       {isResetModalOpen && (

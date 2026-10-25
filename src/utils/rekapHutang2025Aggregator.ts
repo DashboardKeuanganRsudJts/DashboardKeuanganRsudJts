@@ -305,7 +305,8 @@ export function aggregateRekapHutang2025(invoices: InvoiceHutang2025Record[]): R
     const invJumlah = inv.jumlahInvoice || 0;
     const invKoreksi = inv.koreksi || 0;
     const invBayar = inv.pembayaran || 0;
-    const invSisa = inv.sisaHutang !== undefined ? inv.sisaHutang : Math.max(0, invJumlah + invKoreksi - invBayar);
+    // Perhitungan Saldo Akhir / Sisa Hutang: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+    const invSisa = inv.sisaHutang !== undefined ? inv.sisaHutang : Math.max(0, invJumlah - invBayar);
 
     item.totalTagihan += invJumlah;
     item.koreksi += invKoreksi;
@@ -316,10 +317,12 @@ export function aggregateRekapHutang2025(invoices: InvoiceHutang2025Record[]): R
   });
 
   // Convert to array and format statuses
+  // Saldo Akhir Pos Belanja: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
   const results = Array.from(posMap.values()).map(item => {
-    const finalSisa = item.sisaHutang;
+    const finalSisa = Math.max(0, item.totalTagihan - item.jumlahBayar);
     return {
       ...item,
+      sisaHutang: finalSisa,
       status: (finalSisa <= 0 ? 'Lunas' : 'Belum Lunas') as 'Lunas' | 'Belum Lunas'
     };
   });
