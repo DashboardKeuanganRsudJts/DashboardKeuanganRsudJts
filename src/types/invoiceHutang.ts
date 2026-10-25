@@ -33,6 +33,11 @@ export interface InvoiceHutang2025Record {
   koreksiMinusBlud: number;
   koreksiMinusApbd: number;
   sisaHutangRiil: number;
+  _isImported?: boolean;
+  _isUserCreated?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  _presentFields?: Record<string, boolean>;
 }
 
 export type InvoiceHutang2026Record = InvoiceHutang2025Record;

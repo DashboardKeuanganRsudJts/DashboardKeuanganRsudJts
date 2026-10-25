@@ -43,7 +43,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { User } from 'firebase/auth';
-import { clearFirestoreCollection, syncArrayToFirestore } from '../services/firestoreSync';
+import { clearFirestoreCollection, syncArrayToFirestore, syncSingleInvoiceToFirestore, deleteInvoiceFromFirestore } from '../services/firestoreSync';
 
 const IDB_KEY_INVOICE_2026 = 'rsud_invoice_hutang_2026';
 
@@ -414,6 +414,8 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [formValues, setFormValues] = useState<Partial<InvoiceHutang2026Record>>({});
   const [isCustomPosBelanja, setIsCustomPosBelanja] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Unique list of Rekanan for dropdown filters & KPI count (deduplicated case-insensitively like Excel)
   const uniqueRekanan = useMemo(() => {
@@ -688,12 +690,13 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
 
   // CRUD Handlers
   const handleOpenAdd = () => {
-    const nextNo = data.length > 0 ? Math.max(...data.map(d => d.no)) + 1 : 1;
+    const nextNo = data.length > 0 ? Math.max(...data.map(d => Number(d.no) || 0)) + 1 : 1;
     const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     const todayDisplay = fromInputDate(todayStr); // DD/MM/YYYY
     const currentMonth = getMonthNameFromDate(todayStr);
 
     setIsCustomPosBelanja(false);
+    setFormError('');
     setFormValues({
       no: nextNo,
       rekanan: '',
@@ -710,7 +713,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       tglInvoice: todayDisplay,
       bulanInvoice: currentMonth,
       noInvoice: '',
-      jatuhTempo: '',
+      jatuhTempo: addOneMonthToDateStr(todayDisplay),
       tglBayar: '',
       jumlahInvoice: 0,
       koreksi: 0,
@@ -718,12 +721,12 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       pembayaran: 0,
       sumberAnggaran: 'BLUD',
       sisaHutang: 0,
-      sudahMasukBukuKas: true,
+      sudahMasukBukuKas: false,
       tglSpdBukuKas: '',
       bulanSpd: '',
       noSpdBukuKas: '',
       lamaHariHutang: 0,
-      keterangan: '',
+      keterangan: 'Belum Lunas',
       koreksiPlusMinus: 0,
       koreksiMinusBlud: 0,
       koreksiMinusApbd: 0,
@@ -735,6 +738,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
 
   const handleOpenEdit = (record: InvoiceHutang2026Record) => {
     setIsCustomPosBelanja(false);
+    setFormError('');
     const effRekap = record.tglRekap || record.tglTandaTerima || '';
     const effBulanRekap = getEffectiveBulanRekap(record);
     const effInvoice = record.tglInvoice || '';
@@ -763,13 +767,13 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     setIsDetailOpen(true);
   };
 
-  const handleDeleteRecord = (id: string, no: number) => {
+  const handleDeleteRecord = async (id: string, no: number) => {
     if (window.confirm(`Apakah Anda yakin ingin menghapus data Invoice No. ${no}?`)) {
       const nextData = data.filter(item => item.id !== id);
       inMemoryInvoice2026Cache = nextData;
       setData(nextData);
       idbSet(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[IDB] error on delete:', err));
-      syncArrayToFirestore(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[Firestore] error on delete sync:', err));
+      deleteInvoiceFromFirestore('invoices2026', id).catch(err => console.warn('[Firestore] error on delete sync:', err));
       window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: nextData }));
       if (onShowToast) onShowToast(`Data Invoice #${no} berhasil dihapus`, 'info');
     }
@@ -779,27 +783,32 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     const isCurrentlyLunas = item.sisaHutang <= 0;
     const fix = Number(item.jumlahInvoice) || 0;
     
+    let updatedRecord: InvoiceHutang2026Record | null = null;
     const nextData = data.map(record => {
       if (record.id === item.id) {
         if (isCurrentlyLunas) {
           // Reset to Belum Lunas
-          return {
+          updatedRecord = {
             ...record,
             pembayaran: 0,
             sisaHutang: fix,
             sisaHutangRiil: fix,
-            keterangan: 'Belum Lunas'
+            keterangan: 'Belum Lunas',
+            updatedAt: new Date().toISOString()
           };
+          return updatedRecord;
         } else {
           // Mark as Lunas
-          return {
+          updatedRecord = {
             ...record,
             pembayaran: fix,
             sisaHutang: 0,
             sisaHutangRiil: 0,
             sudahMasukBukuKas: true,
-            keterangan: 'Lunas'
+            keterangan: 'Lunas',
+            updatedAt: new Date().toISOString()
           };
+          return updatedRecord;
         }
       }
       return record;
@@ -808,19 +817,27 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     inMemoryInvoice2026Cache = nextData;
     setData(nextData);
     idbSet(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[IDB] error on toggle:', err));
-    syncArrayToFirestore(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[Firestore] error on toggle sync:', err));
+    if (updatedRecord) {
+      syncSingleInvoiceToFirestore('invoices2026', updatedRecord).catch(err => console.warn('[Firestore] error on toggle sync:', err));
+    }
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: nextData }));
     if (onShowToast) {
       onShowToast(`Status Invoice #${item.no} (${item.rekanan}) diubah menjadi ${isCurrentlyLunas ? 'Belum Lunas' : 'Lunas'}`, 'success');
     }
   };
 
-  const handleSaveForm = (e: React.FormEvent) => {
+  const handleSaveForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formValues.rekanan || !formValues.noInvoice) {
-      alert('Nama Rekanan dan No Invoice wajib diisi.');
+    const cleanRekanan = (formValues.rekanan || '').trim();
+    const cleanNoInvoice = (formValues.noInvoice || '').trim();
+
+    if (!cleanRekanan || !cleanNoInvoice) {
+      setFormError('Nama Rekanan / Vendor dan No Invoice / Kwitansi wajib diisi!');
+      if (onShowToast) onShowToast('Nama Rekanan dan No Invoice wajib diisi.', 'error');
       return;
     }
+    setFormError('');
+    setIsSaving(true);
 
     let jumlah = Number(formValues.jumlahInvoice) || 0;
     let pembayaran = Number(formValues.pembayaran) || 0;
@@ -835,7 +852,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     const sisaRiil = sisa;
     const statusLunas = sisa <= 0 ? 'Lunas' : 'Belum Lunas';
 
-    const finalBidang = formValues.bidang || formValues.bagian || '';
+    const finalBidang = formValues.bidang || formValues.bagian || 'Bidang Pelayanan Non Medik';
     const finalTglRekap = formValues.tglRekap || formValues.tglTandaTerima || '';
     const finalBulanRekap = getMonthNameFromDate(finalTglRekap) || formValues.bulanRekap || '';
     const finalTglInvoice = formValues.tglInvoice || '';
@@ -843,98 +860,126 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     const finalTglSpj = formValues.tglMasukSpj || formValues.tglSpbSpk || '';
     const finalTglBayar = formValues.tglBayar || formValues.tglSpdBukuKas || '';
 
+    let recordToSave: InvoiceHutang2026Record;
     let nextData: InvoiceHutang2026Record[];
 
-    if (isEditMode && formValues.id) {
-      // Update existing record
-      nextData = data.map(item => {
-        if (item.id === formValues.id) {
-          return {
-            ...item,
-            ...(formValues as InvoiceHutang2026Record),
-            bagian: finalBidang,
-            bidang: finalBidang,
-            tglTandaTerima: finalTglRekap,
-            tglRekap: finalTglRekap,
-            bulanRekap: finalBulanRekap,
-            tglInvoice: finalTglInvoice,
-            bulanInvoice: finalBulanInvoice,
-            tglSpbSpk: finalTglSpj,
-            tglMasukSpj: finalTglSpj,
-            tglSpdBukuKas: finalTglBayar,
-            tglBayar: finalTglBayar,
-            jumlahInvoice: jumlah,
-            koreksi: 0,
-            totalInvoiceFix: jumlah,
-            pembayaran,
-            sisaHutang: sisa,
-            sisaHutangRiil: sisaRiil,
-            keterangan: statusLunas
-          };
-        }
-        return item;
-      });
-      if (onShowToast) onShowToast(`Invoice #${formValues.no} (${formValues.rekanan}) berhasil diperbarui & disimpan`, 'success');
-    } else {
-      // Insert new record
-      const newId = `INV-2026-${(formValues.no || data.length + 1).toString().padStart(4, '0')}`;
-      const newRecord: InvoiceHutang2026Record = {
-        id: newId,
-        no: formValues.no || (data.length + 1),
-        rekanan: formValues.rekanan || '',
-        bagian: finalBidang,
-        bidang: finalBidang,
-        uraian: formValues.uraian || '',
-        kodeRekening: formValues.kodeRekening || '',
-        subBelanja: formValues.subBelanja || '',
-        tglTandaTerima: finalTglRekap,
-        tglRekap: finalTglRekap,
-        bulanRekap: finalBulanRekap,
-        tglSpbSpk: finalTglSpj,
-        tglMasukSpj: finalTglSpj,
-        tglInvoice: finalTglInvoice,
-        bulanInvoice: finalBulanInvoice,
-        tglBayar: finalTglBayar,
-        noInvoice: formValues.noInvoice || '',
-        jatuhTempo: formValues.jatuhTempo || '',
-        jumlahInvoice: jumlah,
-        koreksi: 0,
-        totalInvoiceFix: jumlah,
-        pembayaran,
-        sumberAnggaran: formValues.sumberAnggaran || '',
-        sisaHutang: sisa,
-        sudahMasukBukuKas: Boolean(formValues.sudahMasukBukuKas),
-        tglSpdBukuKas: finalTglBayar,
-        bulanSpd: formValues.bulanSpd || '',
-        noSpdBukuKas: formValues.noSpdBukuKas || '',
-        lamaHariHutang: Number(formValues.lamaHariHutang) || 0,
-        keterangan: sisa <= 0 ? 'Lunas' : 'Belum Lunas',
-        koreksiPlusMinus: Number(formValues.koreksiPlusMinus) || 0,
-        koreksiMinusBlud: Number(formValues.koreksiMinusBlud) || 0,
-        koreksiMinusApbd: Number(formValues.koreksiMinusApbd) || 0,
-        sisaHutangRiil: sisaRiil
-      };
-      nextData = [newRecord, ...data];
-      if (onShowToast) onShowToast(`Invoice baru berhasil ditambahkan`, 'success');
-    }
-
-    const sanitizedNextData = nextData.map(sanitizeInvoiceRecord);
-    inMemoryInvoice2026Cache = sanitizedNextData;
-    setData(sanitizedNextData);
-    setIsFormOpen(false);
-
     try {
-      localStorage.removeItem(`${IDB_KEY_INVOICE_2026}_cleared`);
-    } catch (e) {}
+      if (isEditMode && formValues.id) {
+        // Update existing record
+        recordToSave = sanitizeInvoiceRecord({
+          ...(formValues as InvoiceHutang2026Record),
+          bagian: finalBidang,
+          bidang: finalBidang,
+          rekanan: cleanRekanan,
+          noInvoice: cleanNoInvoice,
+          tglTandaTerima: finalTglRekap,
+          tglRekap: finalTglRekap,
+          bulanRekap: finalBulanRekap,
+          tglInvoice: finalTglInvoice,
+          bulanInvoice: finalBulanInvoice,
+          tglSpbSpk: finalTglSpj,
+          tglMasukSpj: finalTglSpj,
+          tglSpdBukuKas: finalTglBayar,
+          tglBayar: finalTglBayar,
+          jumlahInvoice: jumlah,
+          koreksi: 0,
+          totalInvoiceFix: jumlah,
+          pembayaran,
+          sisaHutang: sisa,
+          sisaHutangRiil: sisaRiil,
+          keterangan: statusLunas,
+          _isImported: true,
+          _isUserCreated: true,
+          updatedAt: new Date().toISOString()
+        });
 
-    // Save immediately and synchronously across storage layers
-    idbSet(IDB_KEY_INVOICE_2026, sanitizedNextData).catch(err => {
-      console.warn('[IDB] Error persisting invoice 2026:', err);
-    });
-    syncArrayToFirestore(IDB_KEY_INVOICE_2026, sanitizedNextData).catch(err => {
-      console.warn('[Firestore] Error persisting invoice 2026 sync:', err);
-    });
-    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: sanitizedNextData }));
+        nextData = data.map(item => item.id === formValues.id ? recordToSave : item);
+        if (onShowToast) onShowToast(`Invoice #${recordToSave.no} (${recordToSave.rekanan}) berhasil diperbarui & disimpan`, 'success');
+      } else {
+        // Insert new record
+        const nextNo = Number(formValues.no) || (data.length > 0 ? Math.max(...data.map(d => Number(d.no) || 0)) + 1 : 1);
+        const newId = `inv-2026-${nextNo}`;
+        
+        recordToSave = sanitizeInvoiceRecord({
+          id: newId,
+          no: nextNo,
+          rekanan: cleanRekanan,
+          bagian: finalBidang,
+          bidang: finalBidang,
+          uraian: formValues.uraian || formValues.subBelanja || 'Belanja Pengadaan Barang & Jasa',
+          kodeRekening: formValues.kodeRekening || '',
+          subBelanja: formValues.subBelanja || '',
+          tglTandaTerima: finalTglRekap,
+          tglRekap: finalTglRekap,
+          bulanRekap: finalBulanRekap,
+          tglSpbSpk: finalTglSpj,
+          tglMasukSpj: finalTglSpj,
+          tglInvoice: finalTglInvoice,
+          bulanInvoice: finalBulanInvoice,
+          tglBayar: finalTglBayar,
+          noInvoice: cleanNoInvoice,
+          jatuhTempo: formValues.jatuhTempo || '',
+          jumlahInvoice: jumlah,
+          koreksi: 0,
+          totalInvoiceFix: jumlah,
+          pembayaran,
+          sumberAnggaran: formValues.sumberAnggaran || 'BLUD',
+          sisaHutang: sisa,
+          sudahMasukBukuKas: Boolean(formValues.sudahMasukBukuKas),
+          tglSpdBukuKas: finalTglBayar,
+          bulanSpd: formValues.bulanSpd || '',
+          noSpdBukuKas: formValues.noSpdBukuKas || '',
+          lamaHariHutang: Number(formValues.lamaHariHutang) || 0,
+          keterangan: statusLunas,
+          koreksiPlusMinus: 0,
+          koreksiMinusBlud: 0,
+          koreksiMinusApbd: 0,
+          sisaHutangRiil: sisaRiil,
+          _isImported: true,
+          _isUserCreated: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          _presentFields: {
+            no: true,
+            rekanan: true,
+            noInvoice: true,
+            jumlahInvoice: true,
+            pembayaran: true,
+            sisaHutang: true
+          }
+        });
+
+        nextData = [...data, recordToSave];
+        if (onShowToast) onShowToast(`Invoice #${recordToSave.no} (${recordToSave.rekanan}) berhasil ditambahkan ke database!`, 'success');
+        
+        // Auto-navigate to page containing the newly added item
+        if (pageSize !== -1) {
+          setCurrentPage(Math.ceil(nextData.length / pageSize));
+        }
+      }
+
+      inMemoryInvoice2026Cache = nextData;
+      setData(nextData);
+      setIsFormOpen(false);
+
+      try {
+        localStorage.removeItem(`${IDB_KEY_INVOICE_2026}_cleared`);
+      } catch (e) {}
+
+      // Save to IndexedDB
+      await idbSet(IDB_KEY_INVOICE_2026, nextData);
+
+      // Save directly to Firestore cloud database
+      await syncSingleInvoiceToFirestore('invoices2026', recordToSave);
+
+      window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: nextData }));
+    } catch (err: any) {
+      console.error('Error saving invoice form:', err);
+      setFormError(`Gagal menyimpan: ${err?.message || 'Terjadi kesalahan sistem'}`);
+      if (onShowToast) onShowToast(`Gagal menyimpan: ${err?.message || 'Terjadi kesalahan'}`, 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleResetAllData = async () => {
@@ -1914,6 +1959,12 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
             </div>
 
             <form onSubmit={handleSaveForm} className="p-6 overflow-y-auto space-y-6 text-xs">
+              {formError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                  <span>{formError}</span>
+                </div>
+              )}
               {/* SECTION 1: IDENTITAS DOKUMEN & VENDOR */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200 dark:border-zinc-800">
@@ -2398,9 +2449,10 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition"
+                  disabled={isSaving}
+                  className="px-5 py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
                 >
-                  <Save className="w-4 h-4" /> Simpan Data Invoice 2026
+                  <Save className="w-4 h-4" /> {isSaving ? 'Menyimpan ke Cloud...' : 'Simpan Data Invoice 2026'}
                 </button>
               </div>
             </form>

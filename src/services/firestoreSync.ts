@@ -1,4 +1,4 @@
-import { collection, doc, writeBatch, onSnapshot, getDocs, setDoc } from 'firebase/firestore';
+import { collection, doc, writeBatch, onSnapshot, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { idbGet, idbSet, idbSetLocalOnly } from '../utils/indexedDbStorage';
 import { 
@@ -67,37 +67,43 @@ export function initFirestoreSync() {
         const staleDocRefs: any[] = [];
         const uniqueDocs: any[] = [];
 
-        // Check if snapshot contains real user imported data vs dummy seed data
-        const hasRealImportedDocs = snapshot.docs.some(docSnap => {
+        // Helper to check if a document is a genuine user record (imported from Excel or created by user)
+        const isRealUserDoc = (docSnap: any) => {
           const d = docSnap.data();
           return Boolean(
             d._presentFields || 
             d._isImported || 
+            d._isUserCreated || 
+            d.createdAt || 
+            d.updatedAt ||
             docSnap.id.startsWith('inv-excel-') || 
+            docSnap.id.toLowerCase().startsWith('inv-2026-') ||
             (d.rekanan && typeof d.rekanan === 'string' && d.rekanan.toUpperCase().includes('PMI KARAWANG'))
           );
-        });
+        };
+
+        // Check if snapshot contains real user imported data vs dummy seed data
+        const hasRealImportedDocs = snapshot.docs.some(isRealUserDoc);
 
         // Sort snapshot docs:
         // CRITICAL: When real user imported docs exist, NEVER prioritize seed mockup docs!
         const sortedDocs = [...snapshot.docs].sort((a, b) => {
-          const aData = a.data();
-          const bData = b.data();
-          const aIsReal = Boolean(aData._presentFields || aData._isImported || a.id.startsWith('inv-excel-'));
-          const bIsReal = Boolean(bData._presentFields || bData._isImported || b.id.startsWith('inv-excel-'));
+          const aIsReal = isRealUserDoc(a);
+          const bIsReal = isRealUserDoc(b);
           
           if (aIsReal && !bIsReal) return -1;
           if (!aIsReal && bIsReal) return 1;
 
           // If both have same reality tier, sort by no ascending
-          const aNo = Number(aData.no) || 0;
-          const bNo = Number(bData.no) || 0;
+          const aNo = Number(a.data().no) || 0;
+          const bNo = Number(b.data().no) || 0;
           return aNo - bNo;
         });
 
         for (const docSnap of sortedDocs) {
           const docData = docSnap.data();
-          const isMockSeed = hasRealImportedDocs && !docData._presentFields && !docData._isImported && !docSnap.id.startsWith('inv-excel-');
+          const isReal = isRealUserDoc(docSnap);
+          const isMockSeed = hasRealImportedDocs && !isReal;
           
           if (isMockSeed) {
             // This is an orphaned dummy seed document that was leftover in Firestore
@@ -474,4 +480,51 @@ export async function clearFirestoreCollection(colName: string): Promise<{ succe
     return { success: false, count: 0, error: err?.message || String(err) };
   }
 }
+
+/**
+ * Saves or updates a single invoice directly in Firestore.
+ */
+export async function syncSingleInvoiceToFirestore(colName: 'invoices2025' | 'invoices2026', invoice: any) {
+  if (!auth.currentUser) return;
+  if (checkIsQuotaExceeded()) return;
+  if (!invoice || !invoice.id) return;
+
+  try {
+    const docRef = doc(db, colName, invoice.id);
+    const cleaned = sanitizeForFirestore({
+      ...invoice,
+      _isUserCreated: true,
+      _isImported: true,
+      updatedAt: new Date().toISOString()
+    });
+    await setDoc(docRef, cleaned, { merge: true });
+    console.log(`[Firestore] Successfully saved invoice ${invoice.id} to ${colName}`);
+  } catch (err: any) {
+    if (isQuotaExceededError(err)) {
+      markQuotaExceeded(err?.message);
+    }
+    console.warn(`[Firestore] Failed to save invoice ${invoice.id}:`, err?.message || err);
+  }
+}
+
+/**
+ * Deletes a single invoice directly from Firestore.
+ */
+export async function deleteInvoiceFromFirestore(colName: 'invoices2025' | 'invoices2026', id: string) {
+  if (!auth.currentUser) return;
+  if (checkIsQuotaExceeded()) return;
+  if (!id) return;
+
+  try {
+    const docRef = doc(db, colName, id);
+    await deleteDoc(docRef);
+    console.log(`[Firestore] Successfully deleted invoice ${id} from ${colName}`);
+  } catch (err: any) {
+    if (isQuotaExceededError(err)) {
+      markQuotaExceeded(err?.message);
+    }
+    console.warn(`[Firestore] Failed to delete invoice ${id}:`, err?.message || err);
+  }
+}
+
 
