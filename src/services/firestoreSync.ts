@@ -9,6 +9,8 @@ import {
   OperationType 
 } from '../utils/firestoreErrorHandler';
 
+import { deduplicateInvoiceRecords, getInvoiceDeduplicationKey, getDeterministicInvoiceId } from '../utils/invoiceDeduplicator';
+
 // Keeps track of active listeners so we don't duplicate them
 const listeners: Record<string, () => void> = {};
 
@@ -38,15 +40,117 @@ export function initFirestoreSync() {
         return; 
       }
 
-      const data = snapshot.docs.map(doc => doc.data());
-      
-      data.sort((a: any, b: any) => (a.no || 0) - (b.no || 0));
+      const isInvoiceCol = colName === 'invoices2025' || colName === 'invoices2026';
+      const year = colName === 'invoices2025' ? 2025 : 2026;
 
       let idbKey = '';
       if (colName === 'invoices2025') idbKey = 'rsud_invoice_hutang_2025';
       else if (colName === 'invoices2026') idbKey = 'rsud_invoice_hutang_2026';
       else if (colName === 'legacy_hutang2025') idbKey = 'rsud_hutang_blud_apbd_v2025_complete';
       else if (colName === 'legacy_hutang2026') idbKey = 'rsud_rekap_pengadaan_hutang_2026_master_v3';
+
+      // 1. Prevent resurrection if user explicitly reset/cleared this dataset
+      const isCleared = typeof window !== 'undefined' && localStorage.getItem(`${idbKey}_cleared`) === 'true';
+      if (isCleared) {
+        if (!snapshot.empty && auth.currentUser && !checkIsQuotaExceeded()) {
+          // Asynchronously ensure cloud collection is cleared to match user's explicit reset
+          clearFirestoreCollection(colName).catch(() => {});
+        }
+        return;
+      }
+
+      let data: any[];
+
+      if (isInvoiceCol) {
+        // Collect duplicate doc refs in Firestore strictly by row number 'no' or doc ID
+        const seenRowNumbers = new Set<number>();
+        const staleDocRefs: any[] = [];
+        const uniqueDocs: any[] = [];
+
+        // Check if snapshot contains real user imported data vs dummy seed data
+        const hasRealImportedDocs = snapshot.docs.some(docSnap => {
+          const d = docSnap.data();
+          return Boolean(
+            d._presentFields || 
+            d._isImported || 
+            docSnap.id.startsWith('inv-excel-') || 
+            (d.rekanan && typeof d.rekanan === 'string' && d.rekanan.toUpperCase().includes('PMI KARAWANG'))
+          );
+        });
+
+        // Sort snapshot docs:
+        // CRITICAL: When real user imported docs exist, NEVER prioritize seed mockup docs!
+        const sortedDocs = [...snapshot.docs].sort((a, b) => {
+          const aData = a.data();
+          const bData = b.data();
+          const aIsReal = Boolean(aData._presentFields || aData._isImported || a.id.startsWith('inv-excel-'));
+          const bIsReal = Boolean(bData._presentFields || bData._isImported || b.id.startsWith('inv-excel-'));
+          
+          if (aIsReal && !bIsReal) return -1;
+          if (!aIsReal && bIsReal) return 1;
+
+          // If both have same reality tier, sort by no ascending
+          const aNo = Number(aData.no) || 0;
+          const bNo = Number(bData.no) || 0;
+          return aNo - bNo;
+        });
+
+        for (const docSnap of sortedDocs) {
+          const docData = docSnap.data();
+          const isMockSeed = hasRealImportedDocs && !docData._presentFields && !docData._isImported && !docSnap.id.startsWith('inv-excel-');
+          
+          if (isMockSeed) {
+            // This is an orphaned dummy seed document that was leftover in Firestore
+            staleDocRefs.push(docSnap.ref);
+            continue;
+          }
+
+          const rowNo = Number(docData.no) || 0;
+          if (rowNo > 0) {
+            if (seenRowNumbers.has(rowNo)) {
+              staleDocRefs.push(docSnap.ref);
+            } else {
+              seenRowNumbers.add(rowNo);
+              uniqueDocs.push(docData);
+            }
+          } else {
+            uniqueDocs.push(docData);
+          }
+        }
+
+        // Keep all unique row numbers sequentially
+        data = deduplicateInvoiceRecords(uniqueDocs, year);
+
+        // Background cleanup of stale/duplicate documents from Firestore if user is authenticated
+        if (staleDocRefs.length > 0 && auth.currentUser && !checkIsQuotaExceeded()) {
+          (async () => {
+            try {
+              let batch = writeBatch(db);
+              let count = 0;
+              for (const ref of staleDocRefs) {
+                batch.delete(ref);
+                count++;
+                if (count >= 400) {
+                  await batch.commit();
+                  batch = writeBatch(db);
+                  count = 0;
+                }
+              }
+              if (count > 0) {
+                await batch.commit();
+              }
+              console.log(`[Firestore] Pruned ${staleDocRefs.length} duplicate/stale docs from ${colName}`);
+            } catch (err: any) {
+              console.warn(`[Firestore] Background prune skipped for ${colName}:`, err?.message || err);
+            }
+          })();
+        }
+      } else {
+        data = snapshot.docs.map(doc => doc.data());
+        data.sort((a: any, b: any) => (a.no || 0) - (b.no || 0));
+      }
+
+
       
       const existingData = await idbGet<any[]>(idbKey);
       if (existingData && JSON.stringify(existingData) === JSON.stringify(data)) {
@@ -235,6 +339,10 @@ export async function syncArrayToFirestore(key: string, newData: any[]) {
   
   if (!colName) return;
 
+  const isInvoiceCol = colName === 'invoices2025' || colName === 'invoices2026';
+  const year = colName === 'invoices2025' ? 2025 : 2026;
+  const cleanData = isInvoiceCol ? deduplicateInvoiceRecords(newData, year) : newData;
+
   // Get current from IDB to diff
   const oldData: any[] = (await idbGet(key)) || [];
   
@@ -242,7 +350,7 @@ export async function syncArrayToFirestore(key: string, newData: any[]) {
   const added: any[] = [];
   const modified: any[] = [];
   
-  for (const item of newData) {
+  for (const item of cleanData) {
     if (!item || !item.id) continue;
     const oldItem = oldMap.get(item.id);
     if (!oldItem) {
@@ -338,7 +446,6 @@ export async function clearFirestoreCollection(colName: string): Promise<{ succe
       return { success: true, count: 0 };
     }
 
-    const batches = [];
     let currentBatch = writeBatch(db);
     let opCount = 0;
     let totalDeleted = 0;
@@ -347,18 +454,17 @@ export async function clearFirestoreCollection(colName: string): Promise<{ succe
       currentBatch.delete(docSnap.ref);
       opCount++;
       totalDeleted++;
-      if (opCount >= 450) {
-        batches.push(currentBatch.commit());
+      if (opCount >= 400) {
+        await currentBatch.commit();
         currentBatch = writeBatch(db);
         opCount = 0;
       }
     }
 
     if (opCount > 0) {
-      batches.push(currentBatch.commit());
+      await currentBatch.commit();
     }
 
-    await Promise.all(batches);
     return { success: true, count: totalDeleted };
   } catch (err: any) {
     console.error(`[Firestore] Error clearing collection ${colName}:`, err);

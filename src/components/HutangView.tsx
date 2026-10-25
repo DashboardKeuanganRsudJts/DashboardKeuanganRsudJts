@@ -37,10 +37,10 @@ import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { InvoiceHutang2025View } from './InvoiceHutang2025View';
 import { InvoiceHutang2026View } from './InvoiceHutang2026View';
 import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
-import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { idbGet, idbSet } from '../utils/indexedDbStorage';
 import { applySelectiveImportUpdate } from '../utils/invoiceImportUpdate';
+import { deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 import { RekapHutang2026View } from './RekapHutang2026View';
 import { SemuaRekapHutangView } from './SemuaRekapHutangView';
 import DatabaseKodeRekeningView from './DatabaseKodeRekeningView';
@@ -844,6 +844,7 @@ export const HutangView: React.FC<HutangViewProps> = ({
               const existing = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025') || [];
               newRecords = [...existing, ...records];
             }
+            newRecords = deduplicateInvoiceRecords(newRecords, 2025);
             await idbSet('rsud_invoice_hutang_2025', newRecords);
             window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: newRecords }));
             if (onShowToast) onShowToast(toastMsg, 'success');

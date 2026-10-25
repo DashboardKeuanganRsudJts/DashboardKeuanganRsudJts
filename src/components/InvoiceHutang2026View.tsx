@@ -1,16 +1,22 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { InvoiceHutang2026Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { formatRupiah, formatDateDDMMYYYY, getMonthNameIndo } from '../utils/formatters';
 import { downloadInvoiceHutangExcelTemplate } from '../utils/invoiceExcelTemplate';
-import { idbGet, idbSet, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
+import { idbGet, idbSet, idbSetLocalOnly, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
 import { MASTER_31_POS_BELANJA } from '../utils/rekapHutang2025Aggregator';
 import { MASTER_31_POS_BELANJA_2026, matchInvoice2026ToPosBelanja } from '../utils/rekapHutang2026Aggregator';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
 import { getEffectiveJatuhTempo, calculateUmurHutang, addOneMonthToDateStr } from '../utils/umurHutang';
 import { InvoiceImportMode, ParsedInvoiceImportRecord, applySelectiveImportUpdate } from '../utils/invoiceImportUpdate';
+import { 
+  deduplicateInvoiceRecords, 
+  normalizeVendorName, 
+  getCanonicalVendorKey, 
+  getDeterministicInvoiceId 
+} from '../utils/invoiceDeduplicator';
 import { 
   Search, 
   Plus, 
@@ -37,7 +43,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { User } from 'firebase/auth';
-import { clearFirestoreCollection } from '../services/firestoreSync';
+import { clearFirestoreCollection, syncArrayToFirestore } from '../services/firestoreSync';
 
 const IDB_KEY_INVOICE_2026 = 'rsud_invoice_hutang_2026';
 
@@ -209,9 +215,11 @@ interface InvoiceHutang2026ViewProps {
 
 let inMemoryInvoice2026Cache: InvoiceHutang2026Record[] | null = null;
 
+export { normalizeVendorName, getCanonicalVendorKey };
+
 // Helper to ensure mathematical integrity, General format for invoice number, and preserve user edits
 const sanitizeInvoiceRecord = (item: InvoiceHutang2026Record): InvoiceHutang2026Record => {
-  let { jumlahInvoice, koreksi, pembayaran, noInvoice } = item;
+  let { jumlahInvoice, koreksi, pembayaran, noInvoice, rekanan } = item;
 
   // Sanitize noInvoice to General type (plain text/code, not currency/money format)
   let cleanNoInvoice = String(noInvoice || '').trim();
@@ -219,6 +227,8 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2026Record): InvoiceHutang2026
     cleanNoInvoice = cleanNoInvoice.replace(/^Rp\.?\s*/i, '').replace(/,/g, '');
   }
   cleanNoInvoice = cleanNoInvoice.replace(/^['"]+|['"]+$/g, '');
+
+  const cleanRekanan = normalizeVendorName(rekanan) || rekanan || '';
 
   let numJumlah = Number(jumlahInvoice) || 0;
   const numPembayaran = Number(pembayaran) || 0;
@@ -244,6 +254,7 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2026Record): InvoiceHutang2026
 
   return {
     ...item,
+    rekanan: cleanRekanan,
     noInvoice: cleanNoInvoice,
     jatuhTempo: (item.jatuhTempo && item.jatuhTempo !== '-' && item.jatuhTempo !== '0') ? item.jatuhTempo : (effectiveJt || '-'),
     lamaHariHutang: calculatedUmur,
@@ -271,21 +282,15 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
   // Exclusion for roles belonging to other modules or viewer
   const isExcludedFromHutang = ['viewer', 'pic_piutang', 'pic_pajak', 'pic_ppn', 'pic_pendapatan', 'pic_pengeluaran'].includes(roleLower);
 
-  // Tombol Import Spreadsheet HANYA tampil untuk PIC Hutang saja (atau Super Admin jika tidak sedang preview sebagai role lain)
-  const isPicHutang = isUserLoggedIn && !isExcludedFromHutang && (
-    role === 'pic_hutang' ||
-    roleLower === 'pic_hutang' ||
-    emailLower.includes('pic_hutang') ||
-    emailLower.includes('hutang') ||
-    isSuperAdmin
-  );
+  const isPicHutang = isUserLoggedIn;
+  const isPicHutangOrAdmin = isUserLoggedIn;
 
-  const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || isPicHutang);
+  const isInitialMountRef = useRef(true);
 
   // State for dataset - initialize with in-memory singleton or localStorage cache first, then load from IndexedDB
   const [data, setData] = useState<InvoiceHutang2026Record[]>(() => {
-    if (inMemoryInvoice2026Cache !== null && Array.isArray(inMemoryInvoice2026Cache)) {
-      return inMemoryInvoice2026Cache;
+    if (inMemoryInvoice2026Cache !== null && Array.isArray(inMemoryInvoice2026Cache) && inMemoryInvoice2026Cache.length > 0) {
+      return deduplicateInvoiceRecords(inMemoryInvoice2026Cache, 2026);
     }
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -296,8 +301,8 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         const saved = localStorage.getItem(IDB_KEY_INVOICE_2026);
         if (saved !== null) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            const cleaned = parsed.map(sanitizeInvoiceRecord);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const cleaned = deduplicateInvoiceRecords(parsed.map(sanitizeInvoiceRecord), 2026);
             inMemoryInvoice2026Cache = cleaned;
             return cleaned;
           }
@@ -306,7 +311,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     } catch (e) {
       console.warn('[Invoice2026] Initial localStorage read error:', e);
     }
-    const init = INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord);
+    const init = deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord), 2026);
     inMemoryInvoice2026Cache = init;
     return init;
   });
@@ -324,22 +329,15 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
           if (isExplicitlyCleared) {
             inMemoryInvoice2026Cache = [];
             setData([]);
-          } else if (Array.isArray(saved)) {
-            let cleaned = saved.map(sanitizeInvoiceRecord);
-            const currentTotalBayar = cleaned.reduce((acc, i) => acc + (Number(i.pembayaran) || 0), 0);
-            // If stored data still has the un-updated legacy 2025 default payments (4.816.540.957),
-            // auto-upgrade to the user's target 2026 payment of Rp 7.325.086.936
-            if (currentTotalBayar === 4816540957) {
-              cleaned = INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord);
-              idbSet(IDB_KEY_INVOICE_2026, cleaned).catch(e => console.warn(e));
-            }
+          } else if (Array.isArray(saved) && saved.length > 0) {
+            const cleaned = deduplicateInvoiceRecords(saved.map(sanitizeInvoiceRecord), 2026);
             inMemoryInvoice2026Cache = cleaned;
             setData(cleaned);
           } else {
-            const init = INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord);
+            const init = deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2026.map(sanitizeInvoiceRecord), 2026);
             inMemoryInvoice2026Cache = init;
             setData(init);
-            idbSet(IDB_KEY_INVOICE_2026, init).catch(e => console.warn(e));
+            idbSetLocalOnly(IDB_KEY_INVOICE_2026, init).catch(e => console.warn(e));
           }
           setIsLoaded(true);
         }
@@ -354,14 +352,32 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     };
   }, []);
 
-  // Save to IndexedDB on change (after initial load)
+  // Listen to remote Firestore sync events
+  useEffect(() => {
+    const handleRemoteSync = (e: any) => {
+      const incoming = e.detail;
+      if (Array.isArray(incoming)) {
+        const deduped = deduplicateInvoiceRecords(incoming.map(sanitizeInvoiceRecord), 2026);
+        inMemoryInvoice2026Cache = deduped;
+        setData(deduped);
+      }
+    };
+    window.addEventListener('rsud_invoice_hutang_2026_updated', handleRemoteSync);
+    return () => window.removeEventListener('rsud_invoice_hutang_2026_updated', handleRemoteSync);
+  }, []);
+
+  // Save to IndexedDB on user change only (skip initial mount to prevent infinite write cycles)
   useEffect(() => {
     if (!isLoaded) return;
-    inMemoryInvoice2026Cache = data;
-    idbSet(IDB_KEY_INVOICE_2026, data).catch(err => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+    const deduped = deduplicateInvoiceRecords(data, 2026);
+    inMemoryInvoice2026Cache = deduped;
+    idbSet(IDB_KEY_INVOICE_2026, deduped).catch(err => {
       console.warn('[IDB] Error writing invoice 2026:', err);
     });
-    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: data }));
   }, [data, isLoaded]);
 
   // Filters & Search
@@ -399,13 +415,18 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
   const [formValues, setFormValues] = useState<Partial<InvoiceHutang2026Record>>({});
   const [isCustomPosBelanja, setIsCustomPosBelanja] = useState(false);
 
-  // Unique list of Rekanan & Bulan for dropdown filters
+  // Unique list of Rekanan for dropdown filters & KPI count (deduplicated case-insensitively like Excel)
   const uniqueRekanan = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string>(); // canonicalKey -> cleanestDisplayName
     data.forEach(d => {
-      if (d.rekanan) set.add(d.rekanan);
+      const cleanName = normalizeVendorName(d.rekanan);
+      const key = getCanonicalVendorKey(cleanName);
+      if (!key) return;
+      if (!map.has(key)) {
+        map.set(key, cleanName);
+      }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, [data]);
 
   const uniqueBulan = useMemo(() => {
@@ -492,9 +513,13 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
         if (!matchSearch) return false;
       }
 
-      // Rekanan filter
-      if (filterRekanan !== 'ALL' && item.rekanan !== filterRekanan) {
-        return false;
+      // Rekanan filter (case-insensitive & canonical normalized)
+      if (filterRekanan !== 'ALL') {
+        const itemKey = getCanonicalVendorKey(item.rekanan);
+        const filterKey = getCanonicalVendorKey(filterRekanan);
+        if (itemKey !== filterKey) {
+          return false;
+        }
       }
 
       // Bulan filter (matches either Bulan Invoice or Bulan Rekap)
@@ -744,6 +769,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
       inMemoryInvoice2026Cache = nextData;
       setData(nextData);
       idbSet(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[IDB] error on delete:', err));
+      syncArrayToFirestore(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[Firestore] error on delete sync:', err));
       window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: nextData }));
       if (onShowToast) onShowToast(`Data Invoice #${no} berhasil dihapus`, 'info');
     }
@@ -782,6 +808,7 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     inMemoryInvoice2026Cache = nextData;
     setData(nextData);
     idbSet(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[IDB] error on toggle:', err));
+    syncArrayToFirestore(IDB_KEY_INVOICE_2026, nextData).catch(err => console.warn('[Firestore] error on toggle sync:', err));
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: nextData }));
     if (onShowToast) {
       onShowToast(`Status Invoice #${item.no} (${item.rekanan}) diubah menjadi ${isCurrentlyLunas ? 'Belum Lunas' : 'Lunas'}`, 'success');
@@ -903,6 +930,9 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     // Save immediately and synchronously across storage layers
     idbSet(IDB_KEY_INVOICE_2026, sanitizedNextData).catch(err => {
       console.warn('[IDB] Error persisting invoice 2026:', err);
+    });
+    syncArrayToFirestore(IDB_KEY_INVOICE_2026, sanitizedNextData).catch(err => {
+      console.warn('[Firestore] Error persisting invoice 2026 sync:', err);
     });
     window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: sanitizedNextData }));
   };
@@ -1070,24 +1100,37 @@ export const InvoiceHutang2026View: React.FC<InvoiceHutang2026ViewProps> = ({
     }
   };
 
-  const handleImportSuccess = (importedRecords: ParsedInvoiceImportRecord[], mode: InvoiceImportMode) => {
+  const handleImportSuccess = async (importedRecords: ParsedInvoiceImportRecord[], mode: InvoiceImportMode) => {
     let finalData: InvoiceHutang2026Record[] = [];
     if (mode === 'replace') {
-      finalData = importedRecords as InvoiceHutang2026Record[];
+      finalData = importedRecords.map((item, idx) => ({
+        ...item,
+        no: idx + 1,
+        id: `inv-2026-${idx + 1}`,
+        _isImported: true
+      })) as InvoiceHutang2026Record[];
+
+      // Clear old Firestore collection so no old orphaned documents remain
+      await clearFirestoreCollection('invoices2026').catch(err => console.warn('[Firestore] Clear on replace error:', err));
     } else if (mode === 'update') {
       // Robust selective update
       const res = applySelectiveImportUpdate(data, importedRecords, 2026);
       finalData = res.finalData as InvoiceHutang2026Record[];
     } else {
       // Append mode, re-number
-      const existingInvoices = new Set(data.map(d => d.noInvoice.trim().toLowerCase()));
-      const newItems = (importedRecords as InvoiceHutang2026Record[]).filter(r => !existingInvoices.has(r.noInvoice.trim().toLowerCase()));
-      finalData = [...data, ...newItems].map((item, idx) => ({
+      const newItems = (importedRecords as InvoiceHutang2026Record[]).map((item, idx) => ({
         ...item,
-        no: idx + 1
+        no: data.length + idx + 1,
+        id: `inv-2026-${data.length + idx + 1}`
       }));
+      finalData = [...data, ...newItems];
     }
-    finalData = finalData.map(sanitizeInvoiceRecord);
+
+    finalData = finalData.map((item, idx) => sanitizeInvoiceRecord({
+      ...item,
+      no: idx + 1,
+      id: item.id || `inv-2026-${idx + 1}`
+    }));
 
     inMemoryInvoice2026Cache = finalData;
     setData(finalData);

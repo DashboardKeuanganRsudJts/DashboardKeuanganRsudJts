@@ -3,6 +3,7 @@ import { FileSpreadsheet, Building2, Search } from 'lucide-react';
 import { InvoiceHutang2026Record } from '../types/invoiceHutang';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
 import { idbGet } from '../utils/indexedDbStorage';
+import { deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 import * as XLSX from 'xlsx';
 
 const MONTHS = [
@@ -22,8 +23,8 @@ export const RekapPembelianPerbulanView: React.FC<RekapPembelianPerbulanViewProp
   useEffect(() => {
     const fetchData = async () => {
       const data = await idbGet<InvoiceHutang2026Record[]>('rsud_invoice_hutang_2026');
-      if (data) {
-        setInvoices(data);
+      if (data && Array.isArray(data)) {
+        setInvoices(deduplicateInvoiceRecords(data, 2026));
       }
     };
     fetchData();

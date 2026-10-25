@@ -1,14 +1,20 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { formatRupiah, formatDateDDMMYYYY, getMonthNameIndo } from '../utils/formatters';
 import { downloadInvoiceHutangExcelTemplate } from '../utils/invoiceExcelTemplate';
-import { idbGet, idbSet, idbDelete, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
+import { idbGet, idbSet, idbSetLocalOnly, idbDelete, cleanupLargeLocalStorageKeys } from '../utils/indexedDbStorage';
 import { MASTER_31_POS_BELANJA, matchInvoiceToPosBelanja } from '../utils/rekapHutang2025Aggregator';
 import { INITIAL_KODE_REKENING } from '../data/databaseKodeRekeningData';
 import { getEffectiveJatuhTempo, calculateUmurHutang, addOneMonthToDateStr } from '../utils/umurHutang';
+import { 
+  deduplicateInvoiceRecords, 
+  normalizeVendorName, 
+  getCanonicalVendorKey, 
+  getDeterministicInvoiceId 
+} from '../utils/invoiceDeduplicator';
 import { 
   Search, 
   Plus, 
@@ -210,9 +216,11 @@ interface InvoiceHutang2025ViewProps {
 
 let inMemoryInvoice2025Cache: InvoiceHutang2025Record[] | null = null;
 
+export { normalizeVendorName, getCanonicalVendorKey };
+
 // Helper to ensure mathematical integrity, General format for invoice number, and preserve user edits
 const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025Record => {
-  let { jumlahInvoice, koreksi, pembayaran, noInvoice } = item;
+  let { jumlahInvoice, koreksi, pembayaran, noInvoice, rekanan } = item;
   
   if (jumlahInvoice === 7122025 || jumlahInvoice === 16122025 || jumlahInvoice === 25122025) {
     if (item.no === 341) {
@@ -230,6 +238,8 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025
     cleanNoInvoice = cleanNoInvoice.replace(/^Rp\.?\s*/i, '').replace(/,/g, '');
   }
   cleanNoInvoice = cleanNoInvoice.replace(/^['"]+|['"]+$/g, '');
+
+  const cleanRekanan = normalizeVendorName(rekanan) || rekanan || '';
 
   let numJumlah = Number(jumlahInvoice) || 0;
   const numKoreksi = Number(koreksi) || 0;
@@ -275,6 +285,7 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025
 
   return {
     ...item,
+    rekanan: cleanRekanan,
     noInvoice: cleanNoInvoice,
     jatuhTempo: (item.jatuhTempo && item.jatuhTempo !== '-' && item.jatuhTempo !== '0') ? item.jatuhTempo : (effectiveJt || '-'),
     lamaHariHutang: calculatedUmur,
@@ -313,10 +324,12 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
   const isPicHutangOrAdmin = isUserLoggedIn && (isSuperAdmin || isPicHutang);
 
+  const isInitialMountRef = useRef(true);
+
   // State for dataset - initialize with in-memory singleton or localStorage cache first, then load from IndexedDB
   const [data, setData] = useState<InvoiceHutang2025Record[]>(() => {
-    if (inMemoryInvoice2025Cache !== null && Array.isArray(inMemoryInvoice2025Cache)) {
-      return inMemoryInvoice2025Cache;
+    if (inMemoryInvoice2025Cache !== null && Array.isArray(inMemoryInvoice2025Cache) && inMemoryInvoice2025Cache.length > 0) {
+      return deduplicateInvoiceRecords(inMemoryInvoice2025Cache, 2025);
     }
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -327,8 +340,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         const saved = localStorage.getItem(IDB_KEY_INVOICE_2025);
         if (saved !== null) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            const cleaned = parsed.map(sanitizeInvoiceRecord);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const cleaned = deduplicateInvoiceRecords(parsed.map(sanitizeInvoiceRecord), 2025);
             inMemoryInvoice2025Cache = cleaned;
             return cleaned;
           }
@@ -337,7 +350,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     } catch (e) {
       console.warn('[Invoice2025] Initial localStorage read error:', e);
     }
-    const init = INITIAL_INVOICE_HUTANG_2025.map(sanitizeInvoiceRecord);
+    const init = deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2025.map(sanitizeInvoiceRecord), 2025);
     inMemoryInvoice2025Cache = init;
     return init;
   });
@@ -355,10 +368,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
           if (isExplicitlyCleared) {
             inMemoryInvoice2025Cache = [];
             setData([]);
-          } else if (Array.isArray(saved)) {
-            const cleaned = saved.map(sanitizeInvoiceRecord);
+          } else if (Array.isArray(saved) && saved.length > 0) {
+            const cleaned = deduplicateInvoiceRecords(saved.map(sanitizeInvoiceRecord), 2025);
             inMemoryInvoice2025Cache = cleaned;
             setData(cleaned);
+          } else {
+            const init = deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2025.map(sanitizeInvoiceRecord), 2025);
+            inMemoryInvoice2025Cache = init;
+            setData(init);
+            idbSetLocalOnly(IDB_KEY_INVOICE_2025, init).catch(e => console.warn(e));
           }
           setIsLoaded(true);
         }
@@ -373,14 +391,32 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     };
   }, []);
 
-  // Save to IndexedDB on change (after initial load)
+  // Listen to remote Firestore sync events
+  useEffect(() => {
+    const handleRemoteSync = (e: any) => {
+      const incoming = e.detail;
+      if (Array.isArray(incoming)) {
+        const deduped = deduplicateInvoiceRecords(incoming.map(sanitizeInvoiceRecord), 2025);
+        inMemoryInvoice2025Cache = deduped;
+        setData(deduped);
+      }
+    };
+    window.addEventListener('rsud_invoice_hutang_2025_updated', handleRemoteSync);
+    return () => window.removeEventListener('rsud_invoice_hutang_2025_updated', handleRemoteSync);
+  }, []);
+
+  // Save to IndexedDB on user change only (skip initial mount to prevent write cycles)
   useEffect(() => {
     if (!isLoaded) return;
-    inMemoryInvoice2025Cache = data;
-    idbSet(IDB_KEY_INVOICE_2025, data).catch(err => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+    const deduped = deduplicateInvoiceRecords(data, 2025);
+    inMemoryInvoice2025Cache = deduped;
+    idbSet(IDB_KEY_INVOICE_2025, deduped).catch(err => {
       console.warn('[IDB] Error writing invoice 2025:', err);
     });
-    window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2025_updated', { detail: data }));
   }, [data, isLoaded]);
 
   // Filters & Search
@@ -418,13 +454,18 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
   const [formValues, setFormValues] = useState<Partial<InvoiceHutang2025Record>>({});
   const [isCustomPosBelanja, setIsCustomPosBelanja] = useState(false);
 
-  // Unique list of Rekanan & Bulan for dropdown filters
+  // Unique list of Rekanan for dropdown filters & KPI count (deduplicated case-insensitively like Excel)
   const uniqueRekanan = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string>(); // canonicalKey -> cleanestDisplayName
     data.forEach(d => {
-      if (d.rekanan) set.add(d.rekanan);
+      const cleanName = normalizeVendorName(d.rekanan);
+      const key = getCanonicalVendorKey(cleanName);
+      if (!key) return;
+      if (!map.has(key)) {
+        map.set(key, cleanName);
+      }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, [data]);
 
   const uniqueBulan = useMemo(() => {
@@ -504,9 +545,13 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         if (!matchSearch) return false;
       }
 
-      // Rekanan filter
-      if (filterRekanan !== 'ALL' && item.rekanan !== filterRekanan) {
-        return false;
+      // Rekanan filter (case-insensitive & canonical normalized)
+      if (filterRekanan !== 'ALL') {
+        const itemKey = getCanonicalVendorKey(item.rekanan);
+        const filterKey = getCanonicalVendorKey(filterRekanan);
+        if (itemKey !== filterKey) {
+          return false;
+        }
       }
 
       // Bulan filter (check effective bulanInvoice or effective bulanRekap)
@@ -1129,21 +1174,35 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     }
   };
 
-  const handleImportSuccess = (importedRecords: InvoiceHutang2025Record[], mode: 'replace' | 'append') => {
+  const handleImportSuccess = async (importedRecords: InvoiceHutang2025Record[], mode: 'replace' | 'append') => {
     let finalData: InvoiceHutang2025Record[] = [];
     if (mode === 'replace') {
-      finalData = importedRecords;
+      finalData = importedRecords.map((item, idx) => ({
+        ...item,
+        no: idx + 1,
+        id: `inv-2025-${idx + 1}`,
+        _isImported: true
+      }));
+
+      // Clear old Firestore collection so no old orphaned documents remain
+      await clearFirestoreCollection('invoices2025').catch(err => console.warn('[Firestore] Clear on replace error:', err));
     } else {
       // Append mode, re-number
-      const existingInvoices = new Set(data.map(d => d.noInvoice.trim().toLowerCase()));
-      const newItems = importedRecords.filter(r => !existingInvoices.has(r.noInvoice.trim().toLowerCase()));
-      finalData = [...data, ...newItems].map((item, idx) => ({
+      const newItems = importedRecords.map((item, idx) => ({
         ...item,
-        no: idx + 1
+        no: data.length + idx + 1,
+        id: `inv-2025-${data.length + idx + 1}`,
+        _isImported: true
       }));
+      finalData = [...data, ...newItems];
     }
 
-    const sanitizedFinalData = finalData.map(sanitizeInvoiceRecord);
+    const sanitizedFinalData = finalData.map((item, idx) => sanitizeInvoiceRecord({
+      ...item,
+      no: idx + 1,
+      id: item.id || `inv-2025-${idx + 1}`
+    }));
+
     inMemoryInvoice2025Cache = sanitizedFinalData;
     setData(sanitizedFinalData);
     try {
@@ -1154,8 +1213,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     if (onShowToast) {
       onShowToast(
         mode === 'replace'
-          ? `Berhasil mengimpor ${importedRecords.length} data invoice dari Excel (Mode Ganti).`
-          : `Berhasil menambahkan data invoice dari Excel (Total kini ${finalData.length} data).`,
+          ? `Berhasil mengimpor ${importedRecords.length} data invoice dari Excel (Mode Ganti Total).`
+          : `Berhasil menambahkan data invoice dari Excel (Total kini ${sanitizedFinalData.length} data).`,
         'success'
       );
     }

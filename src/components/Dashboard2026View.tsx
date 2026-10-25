@@ -15,6 +15,7 @@ import { idbGet } from '../utils/indexedDbStorage';
 import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
+import { deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 import { aggregateRekapHutang2025 } from '../utils/rekapHutang2025Aggregator';
 import { aggregateRekapHutang2026 } from '../utils/rekapHutang2026Aggregator';
 import { rollForwardPerusahaanRows, syncSemuaRekapanFromSources } from '../services/rekapanSyncService';
@@ -137,10 +138,10 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       const saved = localStorage.getItem('rsud_invoice_hutang_2025');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return deduplicateInvoiceRecords(parsed, 2025);
       }
     } catch (e) {}
-    return INITIAL_INVOICE_HUTANG_2025;
+    return deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2025, 2025);
   });
 
   const [invoices2026, setInvoices2026] = useState<InvoiceHutang2025Record[]>(() => {
@@ -148,10 +149,10 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       const saved = localStorage.getItem('rsud_invoice_hutang_2026');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return deduplicateInvoiceRecords(parsed, 2026);
       }
     } catch (e) {}
-    return INITIAL_INVOICE_HUTANG_2026;
+    return deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2026, 2026);
   });
 
   // 5. Live Data Pendapatan & Pengeluaran
@@ -172,23 +173,23 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       // Load Hutang 2025 & 2026 from IndexedDB / LocalStorage
       const saved2025 = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025');
       if (saved2025 && Array.isArray(saved2025) && saved2025.length > 0) {
-        setInvoices2025(saved2025);
+        setInvoices2025(deduplicateInvoiceRecords(saved2025, 2025));
       } else {
         const ls2025 = localStorage.getItem('rsud_invoice_hutang_2025');
         if (ls2025) {
           const parsed = JSON.parse(ls2025);
-          if (Array.isArray(parsed) && parsed.length > 0) setInvoices2025(parsed);
+          if (Array.isArray(parsed) && parsed.length > 0) setInvoices2025(deduplicateInvoiceRecords(parsed, 2025));
         }
       }
 
       const saved2026 = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2026');
       if (saved2026 && Array.isArray(saved2026) && saved2026.length > 0) {
-        setInvoices2026(saved2026);
+        setInvoices2026(deduplicateInvoiceRecords(saved2026, 2026));
       } else {
         const ls2026 = localStorage.getItem('rsud_invoice_hutang_2026');
         if (ls2026) {
           const parsed = JSON.parse(ls2026);
-          if (Array.isArray(parsed) && parsed.length > 0) setInvoices2026(parsed);
+          if (Array.isArray(parsed) && parsed.length > 0) setInvoices2026(deduplicateInvoiceRecords(parsed, 2026));
         }
       }
 

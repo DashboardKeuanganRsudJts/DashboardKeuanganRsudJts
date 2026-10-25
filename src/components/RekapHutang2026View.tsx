@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { User } from 'firebase/auth';
-import { syncHighlightsToFirestore } from '../services/firestoreSync';
+import { syncHighlightsToFirestore, clearFirestoreCollection } from '../services/firestoreSync';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
 import { 
   aggregateRekapHutang2026, 
@@ -28,6 +28,7 @@ import { InvoiceHutang2026Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
 import { idbGet, idbSet } from '../utils/indexedDbStorage';
 import { applySelectiveImportUpdate } from '../utils/invoiceImportUpdate';
+import { deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 import { formatRupiah } from '../utils/formatters';
 
 const STORAGE_KEY = 'rsud_rekap_pengadaan_hutang_2026_master_v3';
@@ -116,6 +117,7 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
           invoices = saved;
         }
       }
+      invoices = deduplicateInvoiceRecords(invoices, 2026);
 
       const aggregated = aggregateRekapHutang2026(invoices);
       let customHighlights: Record<number, boolean> = {};
@@ -448,7 +450,15 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
           onImportSuccess={async (records, mode) => {
             let newRecords = records;
             let toastMsg = `Berhasil mengimpor ${records.length} data Invoice Hutang 2026!`;
-            if (mode === 'update') {
+            if (mode === 'replace') {
+              newRecords = records.map((item, idx) => ({
+                ...item,
+                no: idx + 1,
+                id: `inv-2026-${idx + 1}`
+              }));
+              clearFirestoreCollection('invoices2026').catch(err => console.warn('[Firestore] Clear error on replace:', err));
+              toastMsg = `Berhasil mengganti total ${records.length} data Invoice Hutang 2026!`;
+            } else if (mode === 'update') {
               const existing = await idbGet<InvoiceHutang2026Record[]>('rsud_invoice_hutang_2026') || [];
               const res = applySelectiveImportUpdate(existing, records, 2026);
               newRecords = res.finalData;
@@ -457,6 +467,7 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
                const existing = await idbGet<InvoiceHutang2026Record[]>('rsud_invoice_hutang_2026') || [];
                newRecords = [...existing, ...records];
             }
+            newRecords = deduplicateInvoiceRecords(newRecords, 2026);
             await idbSet('rsud_invoice_hutang_2026', newRecords);
             window.dispatchEvent(new CustomEvent('rsud_invoice_hutang_2026_updated', { detail: newRecords }));
             if (onShowToast) onShowToast(toastMsg, 'success');

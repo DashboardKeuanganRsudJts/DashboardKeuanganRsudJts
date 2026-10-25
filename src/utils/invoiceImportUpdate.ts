@@ -1,12 +1,14 @@
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { getEffectiveJatuhTempo, calculateUmurHutang } from './umurHutang';
 import { getMonthNameIndo } from './formatters';
+import { getDeterministicInvoiceId, deduplicateInvoiceRecords } from './invoiceDeduplicator';
 
 export type InvoiceImportMode = 'update' | 'replace' | 'append';
 
 export interface ParsedInvoiceImportRecord extends InvoiceHutang2025Record {
   _presentFields?: Record<string, boolean>;
   _hasExplicitNoInvoice?: boolean;
+  _isImported?: boolean;
 }
 
 export const normalizeStr = (s?: string): string => {
@@ -51,10 +53,16 @@ export const applySelectiveImportUpdate = (
     // Strategy 1: Match by explicit No Invoice (if non-empty and explicit from Excel)
     if (importedRow._hasExplicitNoInvoice && importedRow.noInvoice && importedRow.noInvoice.trim() !== '-') {
       const normImpInv = normalizeInvoice(importedRow.noInvoice);
+      const yearAgnosticImpInv = normImpInv.replace(/2025|2026/g, 'YEAR');
       if (normImpInv.length >= 2) {
         targetIdx = result.findIndex((item, idx) => {
           if (matchedExistingIndices.has(idx)) return false;
-          return normalizeInvoice(item.noInvoice) === normImpInv;
+          const exNorm = normalizeInvoice(item.noInvoice);
+          if (exNorm === normImpInv) return true;
+          if (yearAgnosticImpInv.length >= 4 && exNorm.replace(/2025|2026/g, 'YEAR') === yearAgnosticImpInv) {
+            return true;
+          }
+          return false;
         });
       }
     }
@@ -266,7 +274,7 @@ export const applySelectiveImportUpdate = (
       const newNo = result.length > 0 ? Math.max(...result.map(d => d.no)) + 1 : 1;
       const newRecord: InvoiceHutang2025Record = {
         ...importedRow,
-        id: `inv-excel-${year}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        id: getDeterministicInvoiceId(year, importedRow, result.length),
         no: importedRow.no || newNo
       };
       result.push(newRecord);
@@ -274,8 +282,10 @@ export const applySelectiveImportUpdate = (
     }
   }
 
+  const cleanFinalData = deduplicateInvoiceRecords(result, year);
+
   return {
-    finalData: result,
+    finalData: cleanFinalData,
     updatedCount,
     appendedCount,
     preservedCount: existingData.length - updatedCount

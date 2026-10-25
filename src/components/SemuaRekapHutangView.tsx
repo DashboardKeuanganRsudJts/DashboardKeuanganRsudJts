@@ -46,6 +46,7 @@ import { idbGet } from '../utils/indexedDbStorage';
 import { InvoiceHutang2025Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
+import { deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 import { 
   aggregateRekapHutang2025, 
   RekapPosBelanjaItem 
@@ -137,18 +138,18 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
     setIsSyncing(true);
     try {
       // 1. Fetch 2025 invoices
-      let inv2025 = INITIAL_INVOICE_HUTANG_2025;
+      let inv2025 = deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2025, 2025);
       const saved2025 = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025');
       if (saved2025 && Array.isArray(saved2025) && saved2025.length > 0) {
-        inv2025 = saved2025;
+        inv2025 = deduplicateInvoiceRecords(saved2025, 2025);
       }
       setInvoices2025(inv2025);
 
       // 2. Fetch 2026 invoices
-      let inv2026 = INITIAL_INVOICE_HUTANG_2026;
+      let inv2026 = deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2026, 2026);
       const saved2026 = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2026');
       if (saved2026 && Array.isArray(saved2026) && saved2026.length > 0) {
-        inv2026 = saved2026;
+        inv2026 = deduplicateInvoiceRecords(saved2026, 2026);
       }
       setInvoices2026(inv2026);
 

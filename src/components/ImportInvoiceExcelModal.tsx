@@ -24,6 +24,7 @@ import { formatRupiah, getMonthNameIndo } from '../utils/formatters';
 import { downloadInvoiceHutangExcelTemplate, INVOICE_HUTANG_EXCEL_COLUMNS } from '../utils/invoiceExcelTemplate';
 import { GoogleSheetsService } from '../services/googleSheetsService';
 import { InvoiceImportMode, ParsedInvoiceImportRecord } from '../utils/invoiceImportUpdate';
+import { getDeterministicInvoiceId, deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 
 interface ImportInvoiceExcelModalProps {
   isOpen: boolean;
@@ -196,23 +197,25 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
       const headerRow = (aoa[headerRowIdx] || []).map(c => String(c || '').trim().toLowerCase().replace(/[^a-z0-9/]/g, ''));
       const colCount = headerRow.length;
 
-      // Helper to find column index by synonyms
+      // Helper to find column index by synonyms with strict priority against false substring collisions
       const findCol = (...matchers: string[]): number => {
-        // Exact match
+        // 1. Exact match
         for (const m of matchers) {
           const mClean = m.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
           for (let c = 0; c < headerRow.length; c++) {
             if (headerRow[c] === mClean) return c;
           }
         }
-        // Substring match
+        // 2. Token / word match with collision guard
         for (const m of matchers) {
           const mClean = m.trim().toLowerCase().replace(/[^a-z0-9/]/g, '');
-          if (mClean.length >= 3) {
+          if (mClean.length >= 2) {
             for (let c = 0; c < headerRow.length; c++) {
-              if (headerRow[c].includes(mClean) || mClean.includes(headerRow[c])) {
-                return c;
-              }
+              const h = headerRow[c];
+              if (mClean === 'jumlah' && (h.includes('pembayaran') || h.includes('bayar') || h.includes('sisa'))) continue;
+              if (mClean === 'dibayar' && h.includes('jumlah') && !h.includes('dibayar')) continue;
+              if (mClean === 'sisa' && h.includes('jumlah')) continue;
+              if (h.includes(mClean) || mClean.includes(h)) return c;
             }
           }
         }
@@ -285,20 +288,25 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
         const row = aoa[r];
         if (!row || row.length === 0) continue;
 
-        const rawRekanan = String(row[finalColRekanan] ?? '').trim();
+        const rawRekanan = String(row[finalColRekanan] ?? '')
+          .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ')
+          .replace(/^['"]+|['"]+$/g, '')
+          .trim()
+          .replace(/\s+/g, ' ');
         const rawUraian = String(row[finalColUraian] ?? '').trim();
         const rawNo = row[finalColNo];
 
         // Skip blank rows or summary/total rows
         if (!rawRekanan && !rawUraian && !hasCellValue(rawNo)) continue;
-        if (rawRekanan.toLowerCase().includes('total') || rawUraian.toLowerCase().includes('total') || String(rawNo).toLowerCase().includes('total')) continue;
+        if (rawRekanan.toLowerCase().startsWith('total') || rawUraian.toLowerCase().startsWith('total') || String(rawNo).toLowerCase().startsWith('total')) continue;
         if (rawRekanan.toLowerCase().includes('rekapitulasi') || rawUraian.toLowerCase().includes('rekapitulasi')) continue;
 
         const parsedNo = parseNum(rawNo);
         const no = parsedNo || (records.length + 1);
         const bagian = String(row[finalColBidang] || 'Bidang Pelayanan Non Medik').trim();
         const subBelanja = String(rawUraian || 'BELANJA OBAT').trim();
-        const rekanan = rawRekanan || 'Penyedia Barang/Jasa';
+        const rekanan = rawRekanan || (rawUraian ? 'Penyedia Barang/Jasa' : '');
+        if (!rekanan && !rawUraian) continue;
 
         const tglTandaTerima = parseDateStr(row[finalColTglRekap]);
         const tglRekap = tglTandaTerima;
@@ -356,7 +364,7 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
         const sisaHutangRiil = sisaHutang;
 
         records.push({
-          id: `inv-excel-${Date.now()}-${records.length}-${Math.random().toString(36).substring(2, 6)}`,
+          id: getDeterministicInvoiceId(year, { rekanan, noInvoice, no, jumlahInvoice }, records.length),
           no: no || (records.length + 1),
           rekanan,
           bagian,
@@ -389,6 +397,7 @@ export const ImportInvoiceExcelModal: React.FC<ImportInvoiceExcelModalProps> = (
           koreksiMinusBlud: 0,
           koreksiMinusApbd: 0,
           sisaHutangRiil,
+          _isImported: true,
           _hasExplicitNoInvoice: hasExplicitNoInvoice,
           _presentFields: {
             no: hasCellValue(row[finalColNo]),

@@ -23,6 +23,7 @@ import { User } from 'firebase/auth';
 import { InvoiceHutang2025Record, InvoiceHutang2026Record } from '../types/invoiceHutang';
 import { INITIAL_INVOICE_HUTANG_2025 } from '../data/invoiceHutang2025Data';
 import { INITIAL_INVOICE_HUTANG_2026 } from '../data/invoiceHutang2026Data';
+import { deduplicateInvoiceRecords } from '../utils/invoiceDeduplicator';
 import { formatRupiah, formatRupiahShort, formatDateDDMMYYYY } from '../utils/formatters';
 import { idbGet } from '../utils/indexedDbStorage';
 import { useTheme } from '../context/ThemeContext';
@@ -79,13 +80,13 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
         const saved = localStorage.getItem(idbKey);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) return deduplicateInvoiceRecords(parsed, year);
         }
       }
     } catch (e) {
       console.warn(`[RekapSupplier ${year}] Initial localStorage read error:`, e);
     }
-    return initialFallback;
+    return deduplicateInvoiceRecords(initialFallback, year);
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +118,8 @@ export const RekapSupplierView: React.FC<RekapSupplierViewProps> = ({
           if (Array.isArray(parsed) && parsed.length > 0) data = parsed;
         }
       }
-      setInvoices(data);
+      const dedupedData = deduplicateInvoiceRecords(data, year);
+      setInvoices(dedupedData);
       setLastSyncTime(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
 
       if (showNotification && onShowToast) {
