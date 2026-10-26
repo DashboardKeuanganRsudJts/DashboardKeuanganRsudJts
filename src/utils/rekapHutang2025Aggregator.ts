@@ -302,17 +302,17 @@ export function aggregateRekapHutang2025(invoices: InvoiceHutang2025Record[]): R
     }
 
     const item = posMap.get(key)!;
-    const isTiara = ((inv.rekanan || '').toUpperCase().includes('TIARA KENCANA')) || Number(inv.no) === 414;
+    const isTiara414 = Number(inv.no) === 414 || String(inv.id || '') === 'inv-2025-414' || String(inv.id || '') === 'inv-new-414';
     const invJumlah = inv.jumlahInvoice || 0;
-    const invKoreksi = isTiara ? (inv.koreksi || 360) : (inv.koreksi || 0);
-    // Realisasi pembayaran ditambah dengan koreksi sebesar 360 rupiah dari invoice PT. Tiara Kencana
-    const invBayar = (inv.pembayaran || 0) + (isTiara ? 360 : 0);
+    const invKoreksi = isTiara414 ? (inv.koreksi || 360) : (inv.koreksi || 0);
+    // Realisasi pembayaran khusus invoice PT. Tiara Kencana No 414 (ditambah koreksi 360 agar saldo akhir lunas di pos belanja)
+    const invBayar = (inv.pembayaran || 0) + (isTiara414 ? 360 : 0);
     // Perhitungan Saldo Akhir / Sisa Hutang:
     // Khusus No 467 & 468: JUMLAH - DIBAYAR + KOREKSI
     // Khusus PT. Tiara Kencana No 414 & Belanja Kawat/Internet No 69: JUMLAH - KOREKSI - DIBAYAR
     // Invoice 2025 Lainnya: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
     const isPlusKoreksi = Number(inv.no) === 467 || Number(inv.no) === 468 || String(inv.id || '').includes('467') || String(inv.id || '').includes('468');
-    const isMinusKoreksi = isTiara ||
+    const isMinusKoreksi = isTiara414 ||
       Number(inv.no) === 69 ||
       ((inv.rekanan || '').toUpperCase().includes('KAWAT')) ||
       ((inv.uraian || '').toUpperCase().includes('KAWAT')) ||

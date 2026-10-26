@@ -240,15 +240,14 @@ export const isInvoiceSpecialMinusKoreksi = (item: { no?: number | string; id?: 
   const rekanan = String(item.rekanan || item.namaPerusahaan || '').toUpperCase().trim();
   const uraian = String(item.uraian || item.subBelanja || item.kegiatan || '').toUpperCase().trim();
 
-  // 1. PT. Tiara Kencana No 414
-  const isTiara = rekanan.includes('TIARA KENCANA');
-  const isNo414 = no === 414 || idStr === 'inv-new-414' || idStr === '414';
-  if (isTiara || isNo414) return true;
+  // 1. PT. Tiara Kencana No 414 KHUSUS (bukan semua invoice Tiara Kencana)
+  const isNo414 = no === 414 || idStr === 'inv-new-414' || idStr === 'inv-2025-414' || idStr === '414';
+  if (isNo414) return true;
 
   // 2. Belanja Kawat/Faksimili/Internet/TV Berlangganan No 69
   const isKawatInternet = rekanan.includes('KAWAT') || rekanan.includes('INTERNET') || rekanan.includes('FAKSIMILI') ||
     uraian.includes('KAWAT') || uraian.includes('INTERNET') || uraian.includes('FAKSIMILI') || uraian.includes('TV BERLANGGANAN');
-  const isNo69 = no === 69 || idStr === 'inv-new-69' || idStr === '69';
+  const isNo69 = no === 69 || idStr === 'inv-new-69' || idStr === 'inv-2025-69' || idStr === '69';
   if (isKawatInternet || isNo69) return true;
 
   return false;
@@ -794,9 +793,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
       totalInvoice += i.jumlahInvoice || 0;
       totalKoreksi += i.koreksi || 0;
       // Nilai SPJ dikosongkan dan tidak dimasukkan ke dalam perhitungan
-      totalInvoiceFix = 0;
-      const isTiara = ((i.rekanan || '').toUpperCase().includes('TIARA KENCANA')) || Number(i.no) === 414;
-      totalPembayaran += (i.pembayaran || 0) + (isTiara ? 360 : 0);
+      // Realisasi Pembayaran murni dari kolom DIBAYAR
+      totalPembayaran += i.pembayaran || 0;
       totalSisaHutang += i.sisaHutang || 0;
       totalSisaHutangRiil += i.sisaHutangRiil || 0;
 

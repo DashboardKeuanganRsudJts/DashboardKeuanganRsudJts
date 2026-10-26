@@ -2188,8 +2188,7 @@ export const HutangView: React.FC<HutangViewProps> = ({
                       ? inv.sisaHutang
                       : ((Number(inv.no) === 467 || Number(inv.no) === 468)
                           ? Math.max(0, (inv.jumlahInvoice || 0) - (inv.pembayaran || 0) + (inv.koreksi || 0))
-                          : ((((inv.rekanan || (inv as any).namaPerusahaan || '').toUpperCase().includes('TIARA KENCANA')) ||
-                              Number(inv.no) === 414 ||
+                          : ((Number(inv.no) === 414 ||
                               Number(inv.no) === 69 ||
                               ((inv.rekanan || (inv as any).namaPerusahaan || '').toUpperCase().includes('KAWAT')) ||
                               (((inv.uraian || (inv as any).kegiatan || '').toUpperCase().includes('KAWAT'))))
@@ -2272,8 +2271,7 @@ export const HutangView: React.FC<HutangViewProps> = ({
                           // KHUSUS PT. TIARA KENCANA NO 414 & BELANJA KAWAT NO 69: JUMLAH - KOREKSI - DIBAYAR
                           // INVOICE LAINNYA: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
                           const isPlus = Number(inv.no) === 467 || Number(inv.no) === 468;
-                          const isMinus = ((rekananStr || '').toUpperCase().includes('TIARA KENCANA')) ||
-                            Number(inv.no) === 414 ||
+                          const isMinus = Number(inv.no) === 414 ||
                             Number(inv.no) === 69 ||
                             ((rekananStr || '').toUpperCase().includes('KAWAT')) ||
                             (((inv.uraian || (inv as any).kegiatan || '').toUpperCase().includes('KAWAT')));

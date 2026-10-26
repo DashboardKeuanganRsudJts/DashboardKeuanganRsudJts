@@ -212,8 +212,7 @@ export const applySelectiveImportUpdate = (
         patched.sisaHutang = importedRow.sisaHutang;
       } else if (pf.pembayaran || pf.jumlahInvoice || pf.koreksi || pf.totalInvoiceFix) {
         const isPlus = Number(patched.no) === 467 || Number(patched.no) === 468;
-        const isSpecialKoreksi = ((patched.rekanan || '').toUpperCase().includes('TIARA KENCANA')) ||
-          Number(patched.no) === 414 ||
+        const isSpecialKoreksi = Number(patched.no) === 414 ||
           Number(patched.no) === 69 ||
           ((patched.rekanan || '').toUpperCase().includes('KAWAT')) ||
           ((patched.uraian || '').toUpperCase().includes('KAWAT'));
