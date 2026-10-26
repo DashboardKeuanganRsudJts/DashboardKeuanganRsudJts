@@ -211,7 +211,17 @@ export const applySelectiveImportUpdate = (
       } else if (pf.sisaHutang) {
         patched.sisaHutang = importedRow.sisaHutang;
       } else if (pf.pembayaran || pf.jumlahInvoice || pf.koreksi || pf.totalInvoiceFix) {
-        patched.sisaHutang = Math.max(0, Number(patched.totalInvoiceFix || 0) - Number(patched.pembayaran || 0));
+        const isPlus = Number(patched.no) === 467 || Number(patched.no) === 468;
+        const isSpecialKoreksi = ((patched.rekanan || '').toUpperCase().includes('TIARA KENCANA')) ||
+          Number(patched.no) === 414 ||
+          Number(patched.no) === 69 ||
+          ((patched.rekanan || '').toUpperCase().includes('KAWAT')) ||
+          ((patched.uraian || '').toUpperCase().includes('KAWAT'));
+        patched.sisaHutang = isPlus
+          ? Math.max(0, Number(patched.jumlahInvoice || 0) - Number(patched.pembayaran || 0) + Number(patched.koreksi || 0))
+          : (isSpecialKoreksi
+              ? Math.max(0, Number(patched.jumlahInvoice || 0) - Number(patched.koreksi || 0) - Number(patched.pembayaran || 0))
+              : Math.max(0, Number(patched.jumlahInvoice || 0) - Number(patched.pembayaran || 0)));
       }
 
       // 15. Sudah Masuk Buku Kas (A)

@@ -302,11 +302,28 @@ export function aggregateRekapHutang2025(invoices: InvoiceHutang2025Record[]): R
     }
 
     const item = posMap.get(key)!;
+    const isTiara = ((inv.rekanan || '').toUpperCase().includes('TIARA KENCANA')) || Number(inv.no) === 414;
     const invJumlah = inv.jumlahInvoice || 0;
-    const invKoreksi = inv.koreksi || 0;
-    const invBayar = inv.pembayaran || 0;
-    // Perhitungan Saldo Akhir / Sisa Hutang: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
-    const invSisa = inv.sisaHutang !== undefined ? inv.sisaHutang : Math.max(0, invJumlah - invBayar);
+    const invKoreksi = isTiara ? (inv.koreksi || 360) : (inv.koreksi || 0);
+    // Realisasi pembayaran ditambah dengan koreksi sebesar 360 rupiah dari invoice PT. Tiara Kencana
+    const invBayar = (inv.pembayaran || 0) + (isTiara ? 360 : 0);
+    // Perhitungan Saldo Akhir / Sisa Hutang:
+    // Khusus No 467 & 468: JUMLAH - DIBAYAR + KOREKSI
+    // Khusus PT. Tiara Kencana No 414 & Belanja Kawat/Internet No 69: JUMLAH - KOREKSI - DIBAYAR
+    // Invoice 2025 Lainnya: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+    const isPlusKoreksi = Number(inv.no) === 467 || Number(inv.no) === 468 || String(inv.id || '').includes('467') || String(inv.id || '').includes('468');
+    const isMinusKoreksi = isTiara ||
+      Number(inv.no) === 69 ||
+      ((inv.rekanan || '').toUpperCase().includes('KAWAT')) ||
+      ((inv.uraian || '').toUpperCase().includes('KAWAT')) ||
+      ((inv.subBelanja || '').toUpperCase().includes('KAWAT'));
+    const invSisa = isPlusKoreksi
+      ? Math.max(0, invJumlah - (inv.pembayaran || 0) + invKoreksi)
+      : (isMinusKoreksi
+          ? Math.max(0, invJumlah - invKoreksi - (inv.pembayaran || 0))
+          : (inv.keterangan === 'Lunas' || inv.sisaHutang === 0
+              ? 0
+              : Math.max(0, invJumlah - (inv.pembayaran || 0))));
 
     item.totalTagihan += invJumlah;
     item.koreksi += invKoreksi;
@@ -317,9 +334,9 @@ export function aggregateRekapHutang2025(invoices: InvoiceHutang2025Record[]): R
   });
 
   // Convert to array and format statuses
-  // Saldo Akhir Pos Belanja: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+  // Saldo Akhir Pos Belanja: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI, kecuali jika memuat invoice khusus seperti Tiara Kencana)
   const results = Array.from(posMap.values()).map(item => {
-    const finalSisa = Math.max(0, item.totalTagihan - item.jumlahBayar);
+    const finalSisa = item.invoices.length > 0 ? Math.max(0, item.sisaHutang) : Math.max(0, item.totalTagihan - item.jumlahBayar);
     return {
       ...item,
       sisaHutang: finalSisa,

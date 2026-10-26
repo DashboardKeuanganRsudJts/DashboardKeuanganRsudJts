@@ -2045,24 +2045,24 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "id": "inv-new-69",
     "no": 69,
     "rekanan": "Belanja Kawat/Faksimili/Internet/TV Berlangganan",
-    "bagian": "",
+    "bagian": "SIMRS / IT",
     "uraian": "Belanja Kawat/Faksimili/Internet/TV Berlangganan",
-    "subBelanja": "",
-    "tglTandaTerima": "",
-    "tglSpbSpk": "",
+    "subBelanja": "Belanja Kawat/Faksimili/Internet/TV Berlangganan",
+    "tglTandaTerima": "31/12/2025",
+    "tglSpbSpk": "31/12/2025",
     "tglInvoice": "31/12/2025",
-    "bulanInvoice": "",
+    "bulanInvoice": "Desember",
     "noInvoice": "koreksi",
-    "jatuhTempo": "",
-    "jumlahInvoice": 0,
-    "koreksi": 0,
+    "jatuhTempo": "31/12/2025",
+    "jumlahInvoice": 16505700,
+    "koreksi": 16505700,
     "totalInvoiceFix": 0,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
     "sisaHutang": 0,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "01/01/2026",
-    "bulanSpd": "",
+    "bulanSpd": "Januari",
     "noSpdBukuKas": "",
     "lamaHariHutang": 0,
     "keterangan": "Lunas",
@@ -7249,7 +7249,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 112783940,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 112783940,
+    "sisaHutang": 112283940,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -7259,7 +7259,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 112783940
+    "sisaHutangRiil": 112283940
   },
   {
     "id": "inv-new-243",
@@ -7579,7 +7579,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 4333210,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 4333210,
+    "sisaHutang": 3833210,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -7589,7 +7589,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 4333210
+    "sisaHutangRiil": 3833210
   },
   {
     "id": "inv-new-254",
@@ -8239,7 +8239,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 24481750,
     "pembayaran": 9792700,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 14689050,
+    "sisaHutang": 14189050,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -8249,7 +8249,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 14689050
+    "sisaHutangRiil": 14189050
   },
   {
     "id": "inv-new-276",
@@ -8569,7 +8569,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 75881020,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 75881020,
+    "sisaHutang": 75381020,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -8579,7 +8579,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 75881020
+    "sisaHutangRiil": 75381020
   },
   {
     "id": "inv-new-287",
@@ -9229,7 +9229,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 6279560,
     "pembayaran": 0,
     "sumberAnggaran": "APBD",
-    "sisaHutang": 6279560,
+    "sisaHutang": 5779560,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -9239,7 +9239,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 6279560
+    "sisaHutangRiil": 5779560
   },
   {
     "id": "inv-new-309",
@@ -9559,7 +9559,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 15328830,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 15328830,
+    "sisaHutang": 14828830,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -9569,7 +9569,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 15328830
+    "sisaHutangRiil": 14828830
   },
   {
     "id": "inv-new-320",
@@ -10549,7 +10549,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 4176640,
     "pembayaran": 0,
     "sumberAnggaran": "APBD",
-    "sisaHutang": 4176640,
+    "sisaHutang": 3676640,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -10559,7 +10559,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 4176640
+    "sisaHutangRiil": 3676640
   },
   {
     "id": "inv-new-353",
@@ -11209,7 +11209,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 24325180,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 24325180,
+    "sisaHutang": 23825180,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -11219,7 +11219,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 24325180
+    "sisaHutangRiil": 23825180
   },
   {
     "id": "inv-new-375",
@@ -11539,7 +11539,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 75724450,
     "pembayaran": 30289780,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 45434670,
+    "sisaHutang": 44934670,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -11549,7 +11549,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 45434670
+    "sisaHutangRiil": 44934670
   },
   {
     "id": "inv-new-386",
@@ -12199,7 +12199,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 6122990,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 6122990,
+    "sisaHutang": 5622990,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -12209,7 +12209,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 6122990
+    "sisaHutangRiil": 5622990
   },
   {
     "id": "inv-new-408",
@@ -12394,7 +12394,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
   {
     "id": "inv-new-414",
     "no": 414,
-    "rekanan": "PT. B BRAUN MEDICAL INDONESIA",
+    "rekanan": "PT. TIARA KENCANA",
     "bagian": "Sanitasi",
     "uraian": "Pengadaan Bahan Kimia Pembersih & Desinfektan",
     "subBelanja": "Belanja Peralatan Kebersihan dan Bahan Pembersih",
@@ -12405,8 +12405,8 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "noInvoice": "INV/4554/JUL/2025",
     "jatuhTempo": "01/07/2025",
     "jumlahInvoice": 1367980,
-    "koreksi": 0,
-    "totalInvoiceFix": 1367980,
+    "koreksi": 360,
+    "totalInvoiceFix": 1367620,
     "pembayaran": 1367980,
     "sumberAnggaran": "BLUD",
     "sisaHutang": 0,
@@ -12529,7 +12529,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 15172260,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 15172260,
+    "sisaHutang": 14672260,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -12539,7 +12539,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 15172260
+    "sisaHutangRiil": 14672260
   },
   {
     "id": "inv-new-419",
@@ -13189,7 +13189,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 112970800,
     "pembayaran": 45188320,
     "sumberAnggaran": "APBD",
-    "sisaHutang": 67782480,
+    "sisaHutang": 67282480,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -13199,7 +13199,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 67782480
+    "sisaHutangRiil": 67282480
   },
   {
     "id": "inv-new-441",
@@ -13519,7 +13519,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "totalInvoiceFix": 4020070,
     "pembayaran": 0,
     "sumberAnggaran": "BLUD",
-    "sisaHutang": 4020070,
+    "sisaHutang": 3520070,
     "sudahMasukBukuKas": false,
     "tglSpdBukuKas": "-",
     "bulanSpd": "-",
@@ -13529,7 +13529,7 @@ export const INITIAL_INVOICE_HUTANG_2025: InvoiceHutang2025Record[] = [
     "koreksiPlusMinus": 0,
     "koreksiMinusBlud": 0,
     "koreksiMinusApbd": 0,
-    "sisaHutangRiil": 4020070
+    "sisaHutangRiil": 3520070
   },
   {
     "id": "inv-new-452",

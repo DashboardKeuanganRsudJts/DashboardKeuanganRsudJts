@@ -13,12 +13,15 @@ import {
   RefreshCw, 
   Eye, 
   X, 
-  FileSpreadsheet 
+  FileSpreadsheet,
+  Package,
+  Zap
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { User } from 'firebase/auth';
 import { syncHighlightsToFirestore, clearFirestoreCollection } from '../services/firestoreSync';
 import { ImportInvoiceExcelModal } from './ImportInvoiceExcelModal';
+import { JenisPengadaanCategory, getPosBelanjaCategory, getCategoryBadge } from '../utils/rekapPengadaanCategories';
 import { 
   aggregateRekapHutang2026, 
   PosBelanja2026Item, 
@@ -364,15 +367,46 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
     setItemToDelete(null);
   };
 
+  const [filterKategori2026, setFilterKategori2026] = useState<JenisPengadaanCategory>('SEMUA');
+
+  // Categorized items for 2026 Rekap Pengadaan
+  const itemsBarjas2026 = useMemo(() => {
+    return displayedItems.filter(item => getPosBelanjaCategory(item) === 'BARANG_JASA');
+  }, [displayedItems]);
+
+  const itemsOperasional2026 = useMemo(() => {
+    return displayedItems.filter(item => getPosBelanjaCategory(item) === 'OPERASIONAL');
+  }, [displayedItems]);
+
+  const statsBarjas2026 = useMemo(() => {
+    const awal = itemsBarjas2026.reduce((a, b) => a + (b.totalTagihan || 0), 0);
+    const koreksi = itemsBarjas2026.reduce((a, b) => a + (b.koreksi || 0), 0);
+    const bayar = itemsBarjas2026.reduce((a, b) => a + (b.jumlahBayar || 0), 0);
+    const sisa = itemsBarjas2026.reduce((a, b) => a + (b.sisaHutang !== undefined ? b.sisaHutang : Math.max(0, (b.totalTagihan || 0) + (b.koreksi || 0) - (b.jumlahBayar || 0))), 0);
+    const invCount = itemsBarjas2026.reduce((a, b) => a + (b.invoiceCount || 0), 0);
+    return { awal, koreksi, bayar, sisa, count: itemsBarjas2026.length, invCount };
+  }, [itemsBarjas2026]);
+
+  const statsOperasional2026 = useMemo(() => {
+    const awal = itemsOperasional2026.reduce((a, b) => a + (b.totalTagihan || 0), 0);
+    const koreksi = itemsOperasional2026.reduce((a, b) => a + (b.koreksi || 0), 0);
+    const bayar = itemsOperasional2026.reduce((a, b) => a + (b.jumlahBayar || 0), 0);
+    const sisa = itemsOperasional2026.reduce((a, b) => a + (b.sisaHutang !== undefined ? b.sisaHutang : Math.max(0, (b.totalTagihan || 0) + (b.koreksi || 0) - (b.jumlahBayar || 0))), 0);
+    const invCount = itemsOperasional2026.reduce((a, b) => a + (b.invoiceCount || 0), 0);
+    return { awal, koreksi, bayar, sisa, count: itemsOperasional2026.length, invCount };
+  }, [itemsOperasional2026]);
+
   const handleExportRekap2026Excel = () => {
     const rows = displayedItems.map((item, idx) => {
       const saldoAwal = item.totalTagihan || 0;
       const koreksi = item.koreksi || 0;
       const pembayaran = item.jumlahBayar || 0;
       const saldoAkhir = item.sisaHutang !== undefined ? item.sisaHutang : (saldoAwal + koreksi - pembayaran);
+      const kategori = getPosBelanjaCategory(item);
       return {
         'NO': item.noUrut || (idx + 1),
         'KODE REKENING': item.kodeRekening || '',
+        'JENIS PENGADAAN': kategori === 'BARANG_JASA' ? 'Pengadaan Barang & Jasa (Barjas)' : 'Belanja Operasional',
         'URAIAN / JENIS PENGADAAN': item.kegiatan,
         'SALDO AWAL (HUTANG 2026)': saldoAwal,
         'KOREKSI': koreksi,
@@ -383,10 +417,40 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
       };
     });
 
+    // Subtotal Barjas row
+    rows.push({
+      'NO': 'SUBTOTAL' as any,
+      'KODE REKENING': '',
+      'JENIS PENGADAAN': 'SUBTOTAL BARANG & JASA (BARJAS)',
+      'URAIAN / JENIS PENGADAAN': `SUBTOTAL PENGADAAN BARANG & JASA (${statsBarjas2026.count} POS)`,
+      'SALDO AWAL (HUTANG 2026)': statsBarjas2026.awal,
+      'KOREKSI': statsBarjas2026.koreksi,
+      'PEMBAYARAN': statsBarjas2026.bayar,
+      'SALDO AKHIR': statsBarjas2026.sisa,
+      'JUMLAH INVOICE': statsBarjas2026.invCount,
+      'STATUS': ''
+    });
+
+    // Subtotal Operasional row
+    rows.push({
+      'NO': 'SUBTOTAL' as any,
+      'KODE REKENING': '',
+      'JENIS PENGADAAN': 'SUBTOTAL OPERASIONAL',
+      'URAIAN / JENIS PENGADAAN': `SUBTOTAL BELANJA OPERASIONAL (${statsOperasional2026.count} POS)`,
+      'SALDO AWAL (HUTANG 2026)': statsOperasional2026.awal,
+      'KOREKSI': statsOperasional2026.koreksi,
+      'PEMBAYARAN': statsOperasional2026.bayar,
+      'SALDO AKHIR': statsOperasional2026.sisa,
+      'JUMLAH INVOICE': statsOperasional2026.invCount,
+      'STATUS': ''
+    });
+
+    // Add total row
     rows.push({
       'NO': 'TOTAL' as any,
       'KODE REKENING': '',
-      'URAIAN / JENIS PENGADAAN': 'TOTAL KESELURUHAN',
+      'JENIS PENGADAAN': 'GRAND TOTAL KESELURUHAN',
+      'URAIAN / JENIS PENGADAAN': 'TOTAL KESELURUHAN (BARJAS + OPERASIONAL)',
       'SALDO AWAL (HUTANG 2026)': totalSaldoAwal,
       'KOREKSI': totalKoreksi,
       'PEMBAYARAN': totalSudahDibayar,
@@ -583,6 +647,106 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
           </div>
         </div>
 
+        {/* Quick Summary Cards: Barjas vs Operasional 2026 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#12181f] border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block uppercase">
+                Total Sisa Hutang 2026
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-rose-600 dark:text-rose-400">
+                {formatRupiah(totalHutangAktif)}
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                {displayedItems.length} Pos Belanja • {totalInvoicesCount} Berkas
+              </span>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-400 flex items-center justify-center font-bold">
+              Σ
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block uppercase flex items-center gap-1">
+                <Package className="w-3.5 h-3.5 text-emerald-600" /> Barang & Jasa (Barjas)
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-emerald-800 dark:text-emerald-300">
+                {formatRupiah(statsBarjas2026.sisa)}
+              </span>
+              <span className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 block mt-0.5">
+                {statsBarjas2026.count} Pos Belanja • {statsBarjas2026.invCount} Berkas
+              </span>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
+              <Package className="w-4 h-4" />
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block uppercase flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5 text-amber-600" /> Belanja Operasional
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-amber-800 dark:text-amber-300">
+                {formatRupiah(statsOperasional2026.sisa)}
+              </span>
+              <span className="text-[10px] text-amber-700/80 dark:text-amber-400/80 block mt-0.5">
+                {statsOperasional2026.count} Pos Belanja • {statsOperasional2026.invCount} Berkas
+              </span>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center">
+              <Zap className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+
+        {/* Category Filter Tabs */}
+        <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+          <div className="inline-flex rounded-xl bg-slate-100 dark:bg-zinc-800 p-1 text-xs border border-slate-200 dark:border-zinc-700">
+            <button
+              onClick={() => setFilterKategori2026('SEMUA')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                filterKategori2026 === 'SEMUA'
+                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-zinc-700'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+              }`}
+            >
+              <span>Semua Jenis ({displayedItems.length} Pos)</span>
+            </button>
+            <button
+              onClick={() => setFilterKategori2026('BARANG_JASA')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                filterKategori2026 === 'BARANG_JASA'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-emerald-700'
+              }`}
+            >
+              <Package className="w-3.5 h-3.5" />
+              <span>Barang & Jasa ({itemsBarjas2026.length} Pos)</span>
+            </button>
+            <button
+              onClick={() => setFilterKategori2026('OPERASIONAL')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                filterKategori2026 === 'OPERASIONAL'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-amber-700'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Operasional ({itemsOperasional2026.length} Pos)</span>
+            </button>
+          </div>
+
+          <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+            Menampilkan {
+              filterKategori2026 === 'SEMUA' 
+                ? `${displayedItems.length} Pos (Barang Jasa & Operasional)` 
+                : (filterKategori2026 === 'BARANG_JASA' ? `${itemsBarjas2026.length} Pos Barang & Jasa` : `${itemsOperasional2026.length} Pos Operasional`)
+            }
+          </div>
+        </div>
+
         <div className="overflow-x-auto rounded-xl border border-[#a8dbc0] dark:border-[#2b5a45]">
           <table className="w-full text-xs text-left border-collapse">
             <thead className="bg-[#e6f4ea] dark:bg-[#12181f] text-[#13422d] dark:text-[#a6ecc8] font-bold border-b border-[#a8dbc0] dark:border-[#2b5a45] uppercase text-[10.5px] tracking-wide">
@@ -597,130 +761,352 @@ export const RekapHutang2026View: React.FC<RekapHutang2026ViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800/80">
-              {displayedItems.map((item, idx) => {
-                const saldoAwal = item.totalTagihan || 0;
-                const koreksi = item.koreksi || 0;
-                const pembayaran = item.jumlahBayar || 0;
-                const saldoAkhir = item.sisaHutang !== undefined ? item.sisaHutang : (saldoAwal + koreksi - pembayaran);
-                const isHigh = Boolean(item.isHighlighted);
-                const canModify = canModifyRecord(item);
-                const invCount = item.invoiceCount ?? 0;
-
-                const handleOpenDetailModal = () => {
-                  setSelectedPosBelanjaDetail(item);
-                };
-
-                return (
-                  <tr 
-                    key={item.id || `pos-${item.noUrut}-${idx}`} 
-                    className={`transition ${
-                      isHigh 
-                        ? 'bg-[#ffff00] hover:bg-[#f6ee00] text-black font-semibold dark:bg-[#c9a600] dark:text-black' 
-                        : 'hover:bg-slate-50/90 dark:hover:bg-[#141c24]/90 bg-white dark:bg-[#0d1216]'
-                    }`}
-                  >
-                    <td className="px-3 py-2.5 text-center font-mono font-medium border-r border-slate-200 dark:border-zinc-800">
-                      {item.noUrut || (idx + 1)}
-                    </td>
-                    <td className="px-4 py-2.5 border-r border-slate-200 dark:border-zinc-800">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-semibold text-xs leading-snug">{item.kegiatan}</div>
-                          <div className={`text-[10px] font-mono mt-0.5 ${isHigh ? 'text-black/80 font-medium' : 'text-slate-500 dark:text-zinc-400'}`}>
-                            {item.kodeRekening || '-'}
-                          </div>
+              {/* SECTION 1: PENGADAAN BARANG & JASA (BARJAS) */}
+              {(filterKategori2026 === 'SEMUA' || filterKategori2026 === 'BARANG_JASA') && (
+                <>
+                  <tr className="bg-emerald-100/90 dark:bg-emerald-950/80 border-y-2 border-emerald-300 dark:border-emerald-800">
+                    <td colSpan={7} className="px-4 py-2.5">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="p-1 bg-emerald-600 text-white rounded">
+                            <Package className="w-3.5 h-3.5" />
+                          </span>
+                          <span className="font-extrabold text-xs text-emerald-950 dark:text-emerald-200 uppercase tracking-wider">
+                            I. PENGADAAN BARANG & JASA (BARJAS) — {itemsBarjas2026.length} Pos Belanja
+                          </span>
                         </div>
-                        {invCount > 0 ? (
-                          <button
-                            onClick={handleOpenDetailModal}
-                            className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 transition flex items-center gap-1 cursor-pointer"
-                            title="Klik untuk melihat rincian invoice vendor"
-                          >
-                            <Eye className="w-3 h-3" />
-                            {invCount} Inv
-                          </button>
-                        ) : (
-                          <button
-                            onClick={handleOpenDetailModal}
-                            className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 transition flex items-center gap-1 cursor-pointer"
-                            title="Pos Belanja Operasional / Jasa Langsung"
-                          >
-                            0 Inv
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
-                      {formatRupiah(saldoAwal)}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
-                      {koreksi > 0 ? formatRupiah(koreksi) : '-'}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
-                      {pembayaran > 0 ? formatRupiah(pembayaran) : '-'}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-bold border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
-                      {saldoAkhir > 0 ? (
-                        <span className="inline-block px-2 py-0.5 rounded bg-[#d7a9be] dark:bg-[#722c4d] text-slate-900 dark:text-pink-100 font-bold">
-                          {formatRupiah(saldoAkhir)}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 dark:text-zinc-500">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={handleOpenDetailModal}
-                          className="p-1.5 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition cursor-pointer"
-                          title="Lihat Rincian Invoice"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {isPicHutangOrAdmin && canModify && (
-                          <>
-                            <button
-                              onClick={() => handleOpenEdit(item)}
-                              className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
-                              title="Edit Baris Rekap"
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handlePromptDelete(item)}
-                              className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
-                              title="Hapus Baris"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
+                        <div className="flex items-center gap-3 text-xs font-mono">
+                          <span className="text-emerald-900 dark:text-emerald-300 font-semibold">
+                            Subtotal Sisa: <strong className="text-rose-600 dark:text-rose-400 font-black">{formatRupiah(statsBarjas2026.sisa)}</strong>
+                          </span>
+                        </div>
                       </div>
                     </td>
                   </tr>
-                );
-              })}
+                  {itemsBarjas2026.map((item, idx) => {
+                    const saldoAwal = item.totalTagihan || 0;
+                    const koreksi = item.koreksi || 0;
+                    const pembayaran = item.jumlahBayar || 0;
+                    const saldoAkhir = item.sisaHutang !== undefined ? item.sisaHutang : Math.max(0, saldoAwal + koreksi - pembayaran);
+                    const isHigh = Boolean(item.isHighlighted);
+                    const canModify = canModifyRecord(item);
+                    const invCount = item.invoiceCount ?? 0;
+
+                    const handleOpenDetailModal = () => {
+                      setSelectedPosBelanjaDetail(item);
+                    };
+
+                    return (
+                      <tr 
+                        key={item.id || `pos-bj-26-${item.noUrut}-${idx}`} 
+                        className={`transition ${
+                          isHigh 
+                            ? 'bg-[#ffff00] hover:bg-[#f6ee00] text-black font-semibold dark:bg-[#c9a600] dark:text-black' 
+                            : 'hover:bg-slate-50/90 dark:hover:bg-[#141c24]/90 bg-white dark:bg-[#0d1216]'
+                        }`}
+                      >
+                        <td className="px-3 py-2.5 text-center font-mono font-medium border-r border-slate-200 dark:border-zinc-800">
+                          {item.noUrut || (idx + 1)}
+                        </td>
+                        <td className="px-4 py-2.5 border-r border-slate-200 dark:border-zinc-800">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-xs leading-snug">{item.kegiatan}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold border bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700">
+                                  Barjas
+                                </span>
+                              </div>
+                              <div className={`text-[10px] font-mono mt-0.5 ${isHigh ? 'text-black/80 font-medium' : 'text-slate-500 dark:text-zinc-400'}`}>
+                                {item.kodeRekening || '-'}
+                              </div>
+                            </div>
+                            {invCount > 0 ? (
+                              <button
+                                onClick={handleOpenDetailModal}
+                                className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 transition flex items-center gap-1 cursor-pointer"
+                                title="Klik untuk melihat rincian invoice vendor"
+                              >
+                                <Eye className="w-3 h-3" />
+                                {invCount} Inv
+                              </button>
+                            ) : (
+                              <button
+                                onClick={handleOpenDetailModal}
+                                className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 transition flex items-center gap-1 cursor-pointer"
+                                title="Pos Belanja Operasional / Jasa Langsung"
+                              >
+                                0 Inv
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {formatRupiah(saldoAwal)}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {koreksi > 0 ? formatRupiah(koreksi) : '-'}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {pembayaran > 0 ? formatRupiah(pembayaran) : '-'}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-bold border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {saldoAkhir > 0 ? (
+                            <span className="inline-block px-2 py-0.5 rounded bg-[#d7a9be] dark:bg-[#722c4d] text-slate-900 dark:text-pink-100 font-bold">
+                              {formatRupiah(saldoAkhir)}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 dark:text-zinc-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={handleOpenDetailModal}
+                              className="p-1.5 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition cursor-pointer"
+                              title="Lihat Rincian Invoice"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            {isPicHutangOrAdmin && canModify && (
+                              <>
+                                <button
+                                  onClick={() => handleOpenEdit(item)}
+                                  className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+                                  title="Edit Baris Rekap"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handlePromptDelete(item)}
+                                  className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+                                  title="Hapus Baris"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {/* Subtotal Barjas */}
+                  <tr className="bg-emerald-50/80 dark:bg-emerald-950/40 border-b-2 border-emerald-300 dark:border-emerald-800 font-bold text-xs">
+                    <td colSpan={2} className="px-4 py-2.5 text-center text-emerald-950 dark:text-emerald-200 uppercase tracking-wide border-r border-emerald-200 dark:border-zinc-800">
+                      SUBTOTAL PENGADAAN BARANG & JASA ({statsBarjas2026.count} POS)
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-emerald-950 dark:text-emerald-100 border-r border-emerald-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsBarjas2026.awal)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-emerald-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsBarjas2026.koreksi)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-emerald-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsBarjas2026.bayar)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-emerald-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsBarjas2026.sisa)}
+                    </td>
+                    <td className="px-3 py-2.5 text-center font-mono text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold">
+                      {statsBarjas2026.invCount} berkas
+                    </td>
+                  </tr>
+                </>
+              )}
+
+              {/* SECTION 2: BELANJA OPERASIONAL */}
+              {(filterKategori2026 === 'SEMUA' || filterKategori2026 === 'OPERASIONAL') && (
+                <>
+                  <tr className="bg-amber-100/90 dark:bg-amber-950/80 border-y-2 border-amber-300 dark:border-amber-800">
+                    <td colSpan={7} className="px-4 py-2.5">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="p-1 bg-amber-600 text-white rounded">
+                            <Zap className="w-3.5 h-3.5" />
+                          </span>
+                          <span className="font-extrabold text-xs text-amber-950 dark:text-amber-200 uppercase tracking-wider">
+                            II. BELANJA OPERASIONAL — {itemsOperasional2026.length} Pos Belanja
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs font-mono">
+                          <span className="text-amber-900 dark:text-amber-300 font-semibold">
+                            Subtotal Sisa: <strong className="text-rose-600 dark:text-rose-400 font-black">{formatRupiah(statsOperasional2026.sisa)}</strong>
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  {itemsOperasional2026.map((item, idx) => {
+                    const saldoAwal = item.totalTagihan || 0;
+                    const koreksi = item.koreksi || 0;
+                    const pembayaran = item.jumlahBayar || 0;
+                    const saldoAkhir = item.sisaHutang !== undefined ? item.sisaHutang : Math.max(0, saldoAwal + koreksi - pembayaran);
+                    const isHigh = Boolean(item.isHighlighted);
+                    const canModify = canModifyRecord(item);
+                    const invCount = item.invoiceCount ?? 0;
+
+                    const handleOpenDetailModal = () => {
+                      setSelectedPosBelanjaDetail(item);
+                    };
+
+                    return (
+                      <tr 
+                        key={item.id || `pos-op-26-${item.noUrut}-${idx}`} 
+                        className={`transition ${
+                          isHigh 
+                            ? 'bg-[#ffff00] hover:bg-[#f6ee00] text-black font-semibold dark:bg-[#c9a600] dark:text-black' 
+                            : 'hover:bg-slate-50/90 dark:hover:bg-[#141c24]/90 bg-white dark:bg-[#0d1216]'
+                        }`}
+                      >
+                        <td className="px-3 py-2.5 text-center font-mono font-medium border-r border-slate-200 dark:border-zinc-800">
+                          {item.noUrut || (idx + 1)}
+                        </td>
+                        <td className="px-4 py-2.5 border-r border-slate-200 dark:border-zinc-800">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-xs leading-snug">{item.kegiatan}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold border bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300 dark:border-amber-700">
+                                  Operasional
+                                </span>
+                              </div>
+                              <div className={`text-[10px] font-mono mt-0.5 ${isHigh ? 'text-black/80 font-medium' : 'text-slate-500 dark:text-zinc-400'}`}>
+                                {item.kodeRekening || '-'}
+                              </div>
+                            </div>
+                            {invCount > 0 ? (
+                              <button
+                                onClick={handleOpenDetailModal}
+                                className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 transition flex items-center gap-1 cursor-pointer"
+                                title="Klik untuk melihat rincian invoice vendor"
+                              >
+                                <Eye className="w-3 h-3" />
+                                {invCount} Inv
+                              </button>
+                            ) : (
+                              <button
+                                onClick={handleOpenDetailModal}
+                                className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 transition flex items-center gap-1 cursor-pointer"
+                                title="Pos Belanja Operasional / Jasa Langsung"
+                              >
+                                0 Inv
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {formatRupiah(saldoAwal)}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {koreksi > 0 ? formatRupiah(koreksi) : '-'}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {pembayaran > 0 ? formatRupiah(pembayaran) : '-'}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-bold border-r border-slate-200 dark:border-zinc-800 text-[11px] whitespace-nowrap">
+                          {saldoAkhir > 0 ? (
+                            <span className="inline-block px-2 py-0.5 rounded bg-[#d7a9be] dark:bg-[#722c4d] text-slate-900 dark:text-pink-100 font-bold">
+                              {formatRupiah(saldoAkhir)}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 dark:text-zinc-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={handleOpenDetailModal}
+                              className="p-1.5 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition cursor-pointer"
+                              title="Lihat Rincian Invoice"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            {isPicHutangOrAdmin && canModify && (
+                              <>
+                                <button
+                                  onClick={() => handleOpenEdit(item)}
+                                  className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+                                  title="Edit Baris Rekap"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handlePromptDelete(item)}
+                                  className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+                                  title="Hapus Baris"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {/* Subtotal Operasional */}
+                  <tr className="bg-amber-50/80 dark:bg-amber-950/40 border-b-2 border-amber-300 dark:border-amber-800 font-bold text-xs">
+                    <td colSpan={2} className="px-4 py-2.5 text-center text-amber-950 dark:text-amber-200 uppercase tracking-wide border-r border-amber-200 dark:border-zinc-800">
+                      SUBTOTAL BELANJA OPERASIONAL ({statsOperasional2026.count} POS)
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-amber-950 dark:text-amber-100 border-r border-amber-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsOperasional2026.awal)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-amber-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsOperasional2026.koreksi)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-amber-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsOperasional2026.bayar)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-amber-200 dark:border-zinc-800 whitespace-nowrap">
+                      {formatRupiah(statsOperasional2026.sisa)}
+                    </td>
+                    <td className="px-3 py-2.5 text-center font-mono text-amber-800 dark:text-amber-300 text-[11px] font-semibold">
+                      {statsOperasional2026.invCount} berkas
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
-            {/* TOTAL FOOTER */}
+            {/* GRAND TOTAL FOOTER */}
             <tfoot className="bg-[#f0f9f3] dark:bg-[#12181f] font-bold text-slate-900 dark:text-white border-t-2 border-[#a8dbc0] dark:border-[#2b5a45] text-xs">
               <tr>
                 <td colSpan={2} className="px-4 py-3.5 text-center uppercase tracking-wide border-r border-[#c2e5d2] dark:border-[#2b5a45]">
-                  TOTAL ({displayedItems.length} POS BELANJA TERFILTER)
+                  {filterKategori2026 === 'SEMUA' ? 'GRAND TOTAL KESELURUHAN (BARJAS + OPERASIONAL)' : `TOTAL ${filterKategori2026 === 'BARANG_JASA' ? 'PENGADAAN BARANG & JASA' : 'BELANJA OPERASIONAL'}`}
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(totalSaldoAwal)}
+                  {formatRupiah(
+                    filterKategori2026 === 'SEMUA' 
+                      ? totalSaldoAwal 
+                      : (filterKategori2026 === 'BARANG_JASA' ? statsBarjas2026.awal : statsOperasional2026.awal)
+                  )}
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(totalKoreksi)}
+                  {formatRupiah(
+                    filterKategori2026 === 'SEMUA' 
+                      ? totalKoreksi 
+                      : (filterKategori2026 === 'BARANG_JASA' ? statsBarjas2026.koreksi : statsOperasional2026.koreksi)
+                  )}
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(totalSudahDibayar)}
+                  {formatRupiah(
+                    filterKategori2026 === 'SEMUA' 
+                      ? totalSudahDibayar 
+                      : (filterKategori2026 === 'BARANG_JASA' ? statsBarjas2026.bayar : statsOperasional2026.bayar)
+                  )}
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono font-black text-rose-700 dark:text-rose-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(totalHutangAktif)}
+                  {formatRupiah(
+                    filterKategori2026 === 'SEMUA' 
+                      ? totalHutangAktif 
+                      : (filterKategori2026 === 'BARANG_JASA' ? statsBarjas2026.sisa : statsOperasional2026.sisa)
+                  )}
                 </td>
                 <td className="px-3 py-3.5 text-center font-mono text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
-                  {totalInvoicesCount} berkas
+                  {filterKategori2026 === 'SEMUA' 
+                    ? `${totalInvoicesCount} berkas` 
+                    : (filterKategori2026 === 'BARANG_JASA' ? `${statsBarjas2026.invCount} berkas` : `${statsOperasional2026.invCount} berkas`)}
                 </td>
               </tr>
             </tfoot>

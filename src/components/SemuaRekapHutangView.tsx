@@ -24,7 +24,9 @@ import {
   Sparkles,
   ArrowUpRight,
   ArrowDownRight,
-  DollarSign
+  DollarSign,
+  Package,
+  Zap
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -55,6 +57,11 @@ import {
   aggregateRekapHutang2026, 
   PosBelanja2026Item 
 } from '../utils/rekapHutang2026Aggregator';
+import { 
+  JenisPengadaanCategory, 
+  getPosBelanjaCategory, 
+  getCategoryBadge 
+} from '../utils/rekapPengadaanCategories';
 import { useTheme } from '../context/ThemeContext';
 
 interface SemuaRekapHutangViewProps {
@@ -127,6 +134,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
   // Filters & Tabs
   const [activeYearTab, setActiveYearTab] = useState<'semua' | '2025' | '2026'>('semua');
   const [statusFilter, setStatusFilter] = useState<'semua' | 'belum_lunas' | 'lunas'>('semua');
+  const [kategoriFilter, setKategoriFilter] = useState<JenisPengadaanCategory>('SEMUA');
   const [searchQuery, setSearchQuery] = useState('');
   const [topAgingFilter, setTopAgingFilter] = useState<'semua' | 'belum_lunas'>('belum_lunas');
 
@@ -233,7 +241,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
 
   const saldoAkhir2025 = useMemo(() => {
     return rekap2025List.reduce((acc, curr) => {
-      const sisa = curr.sisaHutang !== undefined ? curr.sisaHutang : ((curr.totalTagihan || 0) + (curr.koreksi || 0) - (curr.jumlahBayar || 0));
+      const sisa = curr.sisaHutang !== undefined ? curr.sisaHutang : Math.max(0, (curr.totalTagihan || 0) - (curr.jumlahBayar || 0));
       return acc + sisa;
     }, 0);
   }, [rekap2025List]);
@@ -413,6 +421,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
       noUrut: number;
       kodeRekening: string;
       kegiatan: string;
+      kategori: 'BARANG_JASA' | 'OPERASIONAL';
       totalTagihan: number;
       koreksi: number;
       jumlahBayar: number;
@@ -430,12 +439,14 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         const koreksi = i.koreksi || 0;
         const pembayaran = i.jumlahBayar || 0;
         const sisa = i.sisaHutang !== undefined ? i.sisaHutang : (saldoAwal + koreksi - pembayaran);
+        const kat = getPosBelanjaCategory(i);
         list.push({
           id: `2025-${i.id || idx}`,
           tahun: '2025',
           noUrut: i.noUrut || (idx + 1),
           kodeRekening: i.kodeRekening || '-',
           kegiatan: i.kegiatan,
+          kategori: kat,
           totalTagihan: saldoAwal,
           koreksi: koreksi,
           jumlahBayar: pembayaran,
@@ -453,12 +464,14 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
         const koreksi = i.koreksi || 0;
         const pembayaran = i.jumlahBayar || 0;
         const sisa = i.sisaHutang !== undefined ? i.sisaHutang : (saldoAwal + koreksi - pembayaran);
+        const kat = getPosBelanjaCategory(i);
         list.push({
           id: `2026-${i.id || idx}`,
           tahun: '2026',
           noUrut: i.noUrut || (idx + 1),
           kodeRekening: i.kodeRekening || '-',
           kegiatan: i.kegiatan,
+          kategori: kat,
           totalTagihan: saldoAwal,
           koreksi: koreksi,
           jumlahBayar: pembayaran,
@@ -471,6 +484,9 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
     }
 
     return list.filter(item => {
+      // Category filter (Barjas vs Operasional)
+      if (kategoriFilter !== 'SEMUA' && item.kategori !== kategoriFilter) return false;
+
       // Status filter
       if (statusFilter === 'belum_lunas' && item.sisaHutang <= 0) return false;
       if (statusFilter === 'lunas' && item.sisaHutang > 0) return false;
@@ -487,13 +503,14 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
       }
       return true;
     });
-  }, [activeYearTab, statusFilter, searchQuery, rekap2025List, rekap2026List]);
+  }, [activeYearTab, statusFilter, kategoriFilter, searchQuery, rekap2025List, rekap2026List]);
 
   // Export Excel
   const handleExportCombinedExcel = () => {
     const rows = combinedTableRows.map((item, idx) => ({
       'NO': item.noUrut || (idx + 1),
       'TAHUN ANGGARAN': item.tahun,
+      'JENIS PENGADAAN': item.kategori === 'OPERASIONAL' ? 'Belanja Operasional' : 'Pengadaan Barang & Jasa',
       'KODE REKENING': item.kodeRekening,
       'URAIAN / POS BELANJA': item.kegiatan,
       'SALDO AWAL (TAGIHAN)': item.totalTagihan,
@@ -507,6 +524,7 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
     rows.push({
       'NO': 'TOTAL' as any,
       'TAHUN ANGGARAN': 'SEMUA TAHUN',
+      'JENIS PENGADAAN': 'SEMUA JENIS',
       'KODE REKENING': '',
       'URAIAN / POS BELANJA': 'TOTAL KESELURUHAN REKAP HUTANG',
       'SALDO AWAL (TAGIHAN)': totalSaldoAwalGabungan,
@@ -1070,6 +1088,17 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
               </button>
             </div>
 
+            {/* Category Filter */}
+            <select
+              value={kategoriFilter}
+              onChange={(e: any) => setKategoriFilter(e.target.value as JenisPengadaanCategory)}
+              className="px-3 py-1.5 bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200 shadow-2xs font-medium cursor-pointer"
+            >
+              <option value="SEMUA">Semua Jenis (Barjas & Ops)</option>
+              <option value="BARANG_JASA">Pengadaan Barang & Jasa</option>
+              <option value="OPERASIONAL">Belanja Operasional</option>
+            </select>
+
             {/* Status Filter */}
             <select
               value={statusFilter}
@@ -1142,7 +1171,18 @@ export const SemuaRekapHutangView: React.FC<SemuaRekapHutangViewProps> = ({
                       </span>
                     </td>
                     <td className="px-4 py-2.5 border-r border-slate-200 dark:border-zinc-800">
-                      <div className="font-semibold text-xs leading-snug">{item.kegiatan}</div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-xs leading-snug">{item.kegiatan}</span>
+                        {item.kategori === 'OPERASIONAL' ? (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold border bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300 dark:border-amber-700">
+                            Operasional
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold border bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700">
+                            Barjas
+                          </span>
+                        )}
+                      </div>
                       <div className={`text-[10px] font-mono mt-0.5 ${isHigh ? 'text-black/80 font-medium' : 'text-slate-500 dark:text-zinc-400'}`}>
                         {item.kodeRekening} • {item.invoiceCount} Invoice
                       </div>

@@ -21,6 +21,7 @@ import { aggregateRekapHutang2026 } from '../utils/rekapHutang2026Aggregator';
 import { rollForwardPerusahaanRows, syncSemuaRekapanFromSources } from '../services/rekapanSyncService';
 import { getInitialPendapatanData, PendapatanItem } from './PendapatanBludView';
 import { getInitialPengeluaranData, PengeluaranItem } from './PengeluaranBludView';
+import { sanitizeInvoiceRecord } from './InvoiceHutang2025View';
 import { 
   Calendar, 
   TrendingUp, 
@@ -138,10 +139,10 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       const saved = localStorage.getItem('rsud_invoice_hutang_2025');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return deduplicateInvoiceRecords(parsed, 2025);
+        if (Array.isArray(parsed) && parsed.length > 0) return deduplicateInvoiceRecords(parsed.map(sanitizeInvoiceRecord), 2025);
       }
     } catch (e) {}
-    return deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2025, 2025);
+    return deduplicateInvoiceRecords(INITIAL_INVOICE_HUTANG_2025.map(sanitizeInvoiceRecord), 2025);
   });
 
   const [invoices2026, setInvoices2026] = useState<InvoiceHutang2025Record[]>(() => {
@@ -173,12 +174,12 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
       // Load Hutang 2025 & 2026 from IndexedDB / LocalStorage
       const saved2025 = await idbGet<InvoiceHutang2025Record[]>('rsud_invoice_hutang_2025');
       if (saved2025 && Array.isArray(saved2025) && saved2025.length > 0) {
-        setInvoices2025(deduplicateInvoiceRecords(saved2025, 2025));
+        setInvoices2025(deduplicateInvoiceRecords(saved2025.map(sanitizeInvoiceRecord), 2025));
       } else {
         const ls2025 = localStorage.getItem('rsud_invoice_hutang_2025');
         if (ls2025) {
           const parsed = JSON.parse(ls2025);
-          if (Array.isArray(parsed) && parsed.length > 0) setInvoices2025(deduplicateInvoiceRecords(parsed, 2025));
+          if (Array.isArray(parsed) && parsed.length > 0) setInvoices2025(deduplicateInvoiceRecords(parsed.map(sanitizeInvoiceRecord), 2025));
         }
       }
 
@@ -316,17 +317,26 @@ export const Dashboard2026View: React.FC<Dashboard2026ViewProps> = ({ isAdmin, c
   const rekap2026 = useMemo(() => aggregateRekapHutang2026(invoices2026), [invoices2026]);
 
   const sisaHutang2025 = useMemo(() => {
-    const sum = rekap2025.reduce((acc, curr) => acc + (curr.sisaHutang ?? ((curr.totalTagihan || 0) + (curr.koreksi || 0) - (curr.jumlahBayar || 0))), 0);
-    return sum > 0 ? sum : 421543135;
-  }, [rekap2025]);
+    if (invoices2025 && invoices2025.length > 0) {
+      return invoices2025.reduce((acc, curr) => acc + (curr.sisaHutang ?? 0), 0);
+    }
+    return rekap2025.reduce((acc, curr) => acc + (curr.sisaHutang ?? 0), 0);
+  }, [invoices2025, rekap2025]);
 
   const sisaHutang2026 = useMemo(() => {
-    const sum = rekap2026.reduce((acc, curr) => acc + (curr.sisaHutang ?? ((curr.totalTagihan || 0) + (curr.koreksi || 0) - (curr.jumlahBayar || 0))), 0);
-    return sum > 0 ? sum : 282431591;
-  }, [rekap2026]);
+    if (invoices2026 && invoices2026.length > 0) {
+      return invoices2026.reduce((acc, curr) => {
+        const s = curr.sisaHutang !== undefined
+          ? curr.sisaHutang
+          : Math.max(0, (curr.totalInvoiceFix || curr.jumlahInvoice || 0) - (curr.pembayaran || 0));
+        return acc + s;
+      }, 0);
+    }
+    return rekap2026.reduce((acc, curr) => acc + (curr.sisaHutang ?? Math.max(0, (curr.totalTagihan || 0) + (curr.koreksi || 0) - (curr.jumlahBayar || 0))), 0);
+  }, [invoices2026, rekap2026]);
 
   const totalHutangKeseluruhan = useMemo(() => {
-    return sisaHutang2025 + sisaHutang2026 || 703974726;
+    return sisaHutang2025 + sisaHutang2026;
   }, [sisaHutang2025, sisaHutang2026]);
 
   const jumlahRekanan2026 = useMemo(() => {

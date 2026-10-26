@@ -219,8 +219,66 @@ let inMemoryInvoice2025Cache: InvoiceHutang2025Record[] | null = null;
 
 export { normalizeVendorName, getCanonicalVendorKey };
 
+// Helper to determine if an invoice uses the custom formula (jumlah - dibayar + koreksi)
+// Special Invoices (+ koreksi):
+// Invoice No 467 & 468
+export const isInvoiceSpecialPlusKoreksi = (item: { no?: number | string; id?: string } | any): boolean => {
+  if (!item) return false;
+  const no = Number(item.no);
+  const idStr = String(item.id || '');
+  return no === 467 || no === 468 || idStr === 'inv-new-467' || idStr === 'inv-new-468' || idStr === '467' || idStr === '468';
+};
+
+// Helper to determine if an invoice uses the custom formula (jumlah - koreksi - dibayar)
+// Special Invoices (- koreksi):
+// 1. PT. Tiara Kencana No 414
+// 2. Belanja Kawat/Faksimili/Internet/TV Berlangganan No 69
+export const isInvoiceSpecialMinusKoreksi = (item: { no?: number | string; id?: string; rekanan?: string; uraian?: string; subBelanja?: string } | any): boolean => {
+  if (!item) return false;
+  const no = Number(item.no);
+  const idStr = String(item.id || '');
+  const rekanan = String(item.rekanan || item.namaPerusahaan || '').toUpperCase().trim();
+  const uraian = String(item.uraian || item.subBelanja || item.kegiatan || '').toUpperCase().trim();
+
+  // 1. PT. Tiara Kencana No 414
+  const isTiara = rekanan.includes('TIARA KENCANA');
+  const isNo414 = no === 414 || idStr === 'inv-new-414' || idStr === '414';
+  if (isTiara || isNo414) return true;
+
+  // 2. Belanja Kawat/Faksimili/Internet/TV Berlangganan No 69
+  const isKawatInternet = rekanan.includes('KAWAT') || rekanan.includes('INTERNET') || rekanan.includes('FAKSIMILI') ||
+    uraian.includes('KAWAT') || uraian.includes('INTERNET') || uraian.includes('FAKSIMILI') || uraian.includes('TV BERLANGGANAN');
+  const isNo69 = no === 69 || idStr === 'inv-new-69' || idStr === '69';
+  if (isKawatInternet || isNo69) return true;
+
+  return false;
+};
+
+// Backwards-compatible aliases
+export const isInvoiceSpecialKoreksiDeduction = isInvoiceSpecialMinusKoreksi;
+export const isInvoiceTiaraKencana414 = isInvoiceSpecialMinusKoreksi;
+
+// Unified formula calculation helper for 2025 invoices
+export const calculateSisaHutang2025 = (
+  item: { no?: number | string; id?: string; rekanan?: string; uraian?: string; subBelanja?: string } | any,
+  jumlah: number,
+  koreksi: number,
+  pembayaran: number
+): number => {
+  if (isInvoiceSpecialPlusKoreksi(item)) {
+    // Khusus No 467 & 468: jumlah - dibayar + koreksi
+    return Math.max(0, jumlah - pembayaran + koreksi);
+  }
+  if (isInvoiceSpecialMinusKoreksi(item)) {
+    // Khusus PT. Tiara Kencana No 414 & Belanja Kawat No 69: jumlah - koreksi - dibayar
+    return Math.max(0, jumlah - koreksi - pembayaran);
+  }
+  // Umum 2025: saldo awal - pembayaran (tanpa koreksi)
+  return Math.max(0, jumlah - pembayaran);
+};
+
 // Helper to ensure mathematical integrity, General format for invoice number, and preserve user edits
-const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025Record => {
+export const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025Record => {
   let { jumlahInvoice, koreksi, pembayaran, noInvoice, rekanan } = item;
   
   if (jumlahInvoice === 7122025 || jumlahInvoice === 16122025 || jumlahInvoice === 25122025) {
@@ -240,34 +298,76 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025
   }
   cleanNoInvoice = cleanNoInvoice.replace(/^['"]+|['"]+$/g, '');
 
-  const cleanRekanan = normalizeVendorName(rekanan) || rekanan || '';
-
+  let cleanRekanan = normalizeVendorName(rekanan) || rekanan || '';
   let numJumlah = Number(jumlahInvoice) || 0;
-  const numKoreksi = Number(koreksi) || 0;
+  let numKoreksi = Number(koreksi) || 0;
   const numPembayaran = Number(pembayaran) || 0;
 
-  // Preserve user-specified totalInvoiceFix if already set, otherwise calculate
-  let totalInvoiceFix = item.totalInvoiceFix !== undefined ? Number(item.totalInvoiceFix) : (numJumlah + numKoreksi);
-
-  // If invoice has payment but zero amount recorded initially, synchronize total fix with payment
-  if (numPembayaran > 0 && totalInvoiceFix === 0 && numJumlah === 0) {
-    totalInvoiceFix = numPembayaran;
-    numJumlah = numPembayaran;
+  if (item.no === 414 || item.id === 'inv-new-414') {
+    if (!cleanRekanan || cleanRekanan.includes('BRAUN')) {
+      cleanRekanan = 'PT. TIARA KENCANA';
+    }
+    if (numKoreksi === 0 || !numKoreksi) {
+      numKoreksi = 360;
+    }
+  } else if (item.no === 69 || item.id === 'inv-new-69') {
+    if (!cleanRekanan) {
+      cleanRekanan = 'Belanja Kawat/Faksimili/Internet/TV Berlangganan';
+    }
   }
 
-  // Sisa Hutang: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+  // Restore baseline for invoice 69 if both were set to 0
+  if ((item.no === 69 || item.id === 'inv-new-69') && numJumlah === 0 && numKoreksi === 0) {
+    numJumlah = 16505700;
+    numKoreksi = 16505700;
+  }
+
+  // Nilai SPJ dikosongkan dan tidak dimasukkan ke dalam rumus hitung-hitungan
+  const totalInvoiceFix = 0;
+
+  const isPlusKoreksi = isInvoiceSpecialPlusKoreksi(item);
+  const isMinusKoreksi = isInvoiceSpecialMinusKoreksi({ 
+    no: item.no, 
+    id: item.id, 
+    rekanan: cleanRekanan,
+    uraian: item.uraian,
+    subBelanja: item.subBelanja
+  });
+
   let sisaHutang: number;
   let sisaHutangRiil: number;
 
-  if (numPembayaran >= numJumlah && numJumlah > 0) {
+  const targetTagihan = isPlusKoreksi
+    ? (numJumlah + numKoreksi)
+    : (isMinusKoreksi ? Math.max(0, numJumlah - numKoreksi) : numJumlah);
+
+  if (numPembayaran >= targetTagihan && targetTagihan > 0) {
     sisaHutang = 0;
     sisaHutangRiil = 0;
   } else if (item.sisaHutang === 0 || item.sisaHutangRiil === 0 || item.keterangan === 'Lunas') {
-    sisaHutang = 0;
-    sisaHutangRiil = 0;
+    if (numPembayaran === 0 && targetTagihan > 0) {
+      sisaHutang = calculateSisaHutang2025(
+        { no: item.no, id: item.id, rekanan: cleanRekanan, uraian: item.uraian, subBelanja: item.subBelanja },
+        numJumlah,
+        numKoreksi,
+        numPembayaran
+      );
+      sisaHutangRiil = sisaHutang;
+    } else {
+      sisaHutang = 0;
+      sisaHutangRiil = 0;
+    }
   } else {
-    // SALDO AKHIR = TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
-    sisaHutang = Math.max(0, numJumlah - numPembayaran);
+    // SALDO AKHIR:
+    // Khusus No 467 & 468 = Jumlah - Dibayar + Koreksi
+    // Khusus PT. Tiara Kencana No 414 & Belanja Kawat/Internet No 69 = Jumlah - Koreksi - Dibayar
+    // Lainnya = Total Saldo Awal - Pembayaran (Tanpa Koreksi)
+    sisaHutang = calculateSisaHutang2025(
+      { no: item.no, id: item.id, rekanan: cleanRekanan, uraian: item.uraian, subBelanja: item.subBelanja },
+      numJumlah,
+      numKoreksi,
+      numPembayaran
+    );
     sisaHutangRiil = sisaHutang;
   }
 
@@ -290,7 +390,7 @@ const sanitizeInvoiceRecord = (item: InvoiceHutang2025Record): InvoiceHutang2025
     lamaHariHutang: calculatedUmur,
     jumlahInvoice: numJumlah,
     koreksi: numKoreksi,
-    totalInvoiceFix,
+    totalInvoiceFix: 0,
     pembayaran: numPembayaran,
     sisaHutang,
     sisaHutangRiil,
@@ -693,8 +793,10 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     filteredItems.forEach(i => {
       totalInvoice += i.jumlahInvoice || 0;
       totalKoreksi += i.koreksi || 0;
-      totalInvoiceFix += i.totalInvoiceFix || ((i.jumlahInvoice || 0) + (i.koreksi || 0));
-      totalPembayaran += i.pembayaran || 0;
+      // Nilai SPJ dikosongkan dan tidak dimasukkan ke dalam perhitungan
+      totalInvoiceFix = 0;
+      const isTiara = ((i.rekanan || '').toUpperCase().includes('TIARA KENCANA')) || Number(i.no) === 414;
+      totalPembayaran += (i.pembayaran || 0) + (isTiara ? 360 : 0);
       totalSisaHutang += i.sisaHutang || 0;
       totalSisaHutangRiil += i.sisaHutangRiil || 0;
 
@@ -885,21 +987,29 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
     const nextData = data.map(record => {
       if (record.id === item.id) {
         if (isCurrentlyLunas) {
-          // Reset to Belum Lunas: Saldo Akhir = Saldo Awal - Pembayaran (0) = Saldo Awal
+          // Reset to Belum Lunas
+          const isPlus = isInvoiceSpecialPlusKoreksi(record);
+          const isMinus = isInvoiceSpecialMinusKoreksi(record);
+          const k = Number(record.koreksi) || 0;
+          const targetSisa = isPlus ? Math.max(0, jumlah + k) : (isMinus ? Math.max(0, jumlah - k) : jumlah);
           updatedRecord = {
             ...record,
             pembayaran: 0,
-            sisaHutang: jumlah,
-            sisaHutangRiil: jumlah,
+            sisaHutang: targetSisa,
+            sisaHutangRiil: targetSisa,
             keterangan: 'Belum Lunas',
             updatedAt: new Date().toISOString()
           };
           return updatedRecord;
         } else {
-          // Mark as Lunas: Pembayaran = Saldo Awal, Sisa = 0
+          // Mark as Lunas
+          const isPlus = isInvoiceSpecialPlusKoreksi(record);
+          const isMinus = isInvoiceSpecialMinusKoreksi(record);
+          const k = Number(record.koreksi) || 0;
+          const targetBayar = isPlus ? Math.max(0, jumlah + k) : (isMinus ? Math.max(0, jumlah - k) : jumlah);
           updatedRecord = {
             ...record,
-            pembayaran: jumlah,
+            pembayaran: targetBayar,
             sisaHutang: 0,
             sisaHutangRiil: 0,
             sudahMasukBukuKas: true,
@@ -939,30 +1049,41 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
 
     let jumlah = Number(formValues.jumlahInvoice) || 0;
     const koreksi = Number(formValues.koreksi) || 0;
-    let totalFix = formValues.totalInvoiceFix !== undefined && String(formValues.totalInvoiceFix) !== '' 
-      ? Number(formValues.totalInvoiceFix) 
-      : (jumlah + koreksi);
+    const totalFix = 0; // Nilai SPJ dikosongkan dan tidak dimasukkan ke dalam perhitungan
     let pembayaran = Number(formValues.pembayaran) || 0;
 
     // Auto-adjust if user entered payment on an invoice that had zero tagihan
-    if (pembayaran > 0 && totalFix === 0 && jumlah === 0) {
-      totalFix = pembayaran;
+    if (pembayaran > 0 && jumlah === 0) {
       jumlah = pembayaran;
     }
 
-    // Sisa hutang calculation: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
+    const isPlusKoreksi = isInvoiceSpecialPlusKoreksi(formValues);
+    const isMinusKoreksi = isInvoiceSpecialMinusKoreksi({ no: formValues.no, id: formValues.id, rekanan: cleanRekanan });
+    const targetTagihan = isPlusKoreksi
+      ? (jumlah + koreksi)
+      : (isMinusKoreksi ? Math.max(0, jumlah - koreksi) : jumlah);
+
+    // Sisa hutang calculation:
+    // KHUSUS NO 467 & 468: JUMLAH - DIBAYAR + KOREKSI
+    // KHUSUS PT. TIARA KENCANA NO 414 & BELANJA KAWAT NO 69: JUMLAH - KOREKSI - DIBAYAR
+    // INVOICE LAINNYA: TOTAL SALDO AWAL - PEMBAYARAN (TANPA KOREKSI)
     let sisa: number;
     let sisaRiil: number;
 
     // If user explicitly set sisaHutang or sisaHutangRiil to 0 or payment covers total tagihan
-    if (formValues.sisaHutang === 0 || formValues.sisaHutangRiil === 0 || (pembayaran >= jumlah && jumlah > 0)) {
+    if (formValues.sisaHutang === 0 || formValues.sisaHutangRiil === 0 || (pembayaran >= targetTagihan && targetTagihan > 0)) {
       sisa = 0;
       sisaRiil = 0;
-      if (pembayaran === 0 && jumlah > 0) {
-        pembayaran = jumlah;
+      if (pembayaran === 0 && targetTagihan > 0) {
+        pembayaran = targetTagihan;
       }
     } else {
-      sisa = Math.max(0, jumlah - pembayaran);
+      sisa = calculateSisaHutang2025(
+        { no: formValues.no, id: formValues.id, rekanan: cleanRekanan },
+        jumlah,
+        koreksi,
+        pembayaran
+      );
       sisaRiil = sisa;
     }
 
@@ -1190,7 +1311,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         `"${jtDisplay}"`,
         item.jumlahInvoice,
         item.koreksi || '',
-        item.totalInvoiceFix,
+        '',
         item.pembayaran,
         `"${item.sumberAnggaran || 'BLUD'}"`,
         item.sisaHutang,
@@ -1255,7 +1376,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
         jtDisplay,
         item.jumlahInvoice,
         item.koreksi || 0,
-        item.totalInvoiceFix,
+        '',
         item.pembayaran,
         item.sumberAnggaran,
         item.sisaHutang,
@@ -1715,8 +1836,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       <td className="px-3 py-2.5 text-right font-mono text-slate-500 dark:text-zinc-400">
                         {item.koreksi > 0 ? formatRupiah(item.koreksi) : '-'}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-mono font-semibold text-slate-900 dark:text-zinc-100">
-                        {formatRupiah(item.totalInvoiceFix)}
+                      <td className="px-4 py-2.5 text-right font-mono font-medium text-slate-400 dark:text-zinc-500">
+                        -
                       </td>
                       <td className="px-4 py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         {item.pembayaran > 0 ? formatRupiah(item.pembayaran) : '-'}
@@ -1817,8 +1938,8 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 <td className="px-3 py-3.5 text-right font-mono text-slate-600 dark:text-zinc-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {stats.totalKoreksi > 0 ? formatRupiah(stats.totalKoreksi) : '-'}
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono font-bold text-indigo-950 dark:text-indigo-200 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
-                  {formatRupiah(stats.totalInvoiceFix)}
+                <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-400 dark:text-zinc-500 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
+                  -
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 border-r border-[#c2e5d2] dark:border-[#2b5a45] whitespace-nowrap">
                   {stats.totalPembayaran > 0 ? formatRupiah(stats.totalPembayaran) : '-'}
@@ -2005,7 +2126,7 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-teal-100 dark:border-teal-900/50">
                   <span className="text-teal-900 dark:text-teal-200">Total Tagihan Fix / Nilai SPJ:</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white">{formatRupiah(selectedRecord.totalInvoiceFix)}</span>
+                  <span className="font-mono font-bold text-slate-400 dark:text-zinc-500">-</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-teal-100 dark:border-teal-900/50">
                   <span className="text-emerald-800 dark:text-emerald-300 font-semibold">Total Pembayaran / Realisasi:</span>
@@ -2087,7 +2208,19 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                     <input
                       type="number"
                       value={formValues.no || ''}
-                      onChange={(e) => setFormValues({ ...formValues, no: Number(e.target.value) })}
+                      onChange={(e) => {
+                        const newNo = Number(e.target.value);
+                        const j = Number(formValues.jumlahInvoice) || 0;
+                        const k = Number(formValues.koreksi) || 0;
+                        const p = Number(formValues.pembayaran) || 0;
+                        const sisa = calculateSisaHutang2025({ no: newNo, id: formValues.id, rekanan: formValues.rekanan }, j, k, p);
+                        setFormValues({
+                          ...formValues,
+                          no: newNo,
+                          sisaHutang: sisa,
+                          sisaHutangRiil: sisa
+                        });
+                      }}
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl"
                       required
                     />
@@ -2099,7 +2232,19 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       type="text"
                       list="rekanan-options"
                       value={formValues.rekanan || ''}
-                      onChange={(e) => setFormValues({ ...formValues, rekanan: e.target.value })}
+                      onChange={(e) => {
+                        const newRek = e.target.value;
+                        const j = Number(formValues.jumlahInvoice) || 0;
+                        const k = Number(formValues.koreksi) || 0;
+                        const p = Number(formValues.pembayaran) || 0;
+                        const sisa = calculateSisaHutang2025({ no: formValues.no, id: formValues.id, rekanan: newRek }, j, k, p);
+                        setFormValues({
+                          ...formValues,
+                          rekanan: newRek,
+                          sisaHutang: sisa,
+                          sisaHutangRiil: sisa
+                        });
+                      }}
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-medium"
                       placeholder="Pilih atau ketik nama rekanan..."
                       required
@@ -2475,12 +2620,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         const j = Number(e.target.value);
                         const k = Number(formValues.koreksi) || 0;
                         const p = Number(formValues.pembayaran) || 0;
-                        const fix = j + k;
-                        const sisa = Math.max(0, j - p);
+                        const sisa = calculateSisaHutang2025({ no: formValues.no, id: formValues.id, rekanan: formValues.rekanan }, j, k, p);
                         setFormValues({ 
                           ...formValues, 
                           jumlahInvoice: j,
-                          totalInvoiceFix: fix,
+                          totalInvoiceFix: 0,
                           sisaHutang: sisa,
                           sisaHutangRiil: sisa
                         });
@@ -2499,12 +2643,11 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                         const k = Number(e.target.value);
                         const j = Number(formValues.jumlahInvoice) || 0;
                         const p = Number(formValues.pembayaran) || 0;
-                        const fix = j + k;
-                        const sisa = Math.max(0, j - p);
+                        const sisa = calculateSisaHutang2025({ no: formValues.no, id: formValues.id, rekanan: formValues.rekanan }, j, k, p);
                         setFormValues({ 
                           ...formValues, 
                           koreksi: k,
-                          totalInvoiceFix: fix,
+                          totalInvoiceFix: 0,
                           sisaHutang: sisa,
                           sisaHutangRiil: sisa
                         });
@@ -2514,23 +2657,16 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Nilai SPJ / Tagihan Fix (Rp)</label>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">
+                      Nilai SPJ / Tagihan Fix (Rp)
+                      <span className="text-[10px] font-normal text-slate-400 dark:text-zinc-500 ml-1">(Dikosongkan)</span>
+                    </label>
                     <input
-                      type="number"
-                      value={formValues.totalInvoiceFix !== undefined ? formValues.totalInvoiceFix : ''}
-                      onChange={(e) => {
-                        const fix = Number(e.target.value);
-                        const j = Number(formValues.jumlahInvoice) || 0;
-                        const p = Number(formValues.pembayaran) || 0;
-                        const sisa = Math.max(0, j - p);
-                        setFormValues({ 
-                          ...formValues, 
-                          totalInvoiceFix: fix,
-                          sisaHutang: sisa,
-                          sisaHutangRiil: sisa
-                        });
-                      }}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-blue-600 dark:text-blue-400 font-bold"
+                      type="text"
+                      value="-"
+                      disabled
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-zinc-800/60 border border-slate-300 dark:border-zinc-700 rounded-xl font-mono text-slate-400 dark:text-zinc-500 cursor-not-allowed text-center"
+                      title="Nilai SPJ dikosongkan dan tidak dimasukkan ke dalam rumus perhitungan"
                     />
                   </div>
 
@@ -2541,19 +2677,16 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                       value={formValues.pembayaran || 0}
                       onChange={(e) => {
                         const p = Number(e.target.value);
-                        let fix = formValues.totalInvoiceFix !== undefined && String(formValues.totalInvoiceFix) !== '' 
-                          ? Number(formValues.totalInvoiceFix) 
-                          : ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
                         let j = Number(formValues.jumlahInvoice) || 0;
-                        if (p > 0 && fix === 0 && j === 0) {
-                          fix = p;
+                        const k = Number(formValues.koreksi) || 0;
+                        if (p > 0 && j === 0) {
                           j = p;
                         }
-                        const sisa = Math.max(0, j - p);
+                        const sisa = calculateSisaHutang2025({ no: formValues.no, id: formValues.id, rekanan: formValues.rekanan }, j, k, p);
                         setFormValues({ 
                           ...formValues, 
                           pembayaran: p,
-                          totalInvoiceFix: fix,
+                          totalInvoiceFix: 0,
                           jumlahInvoice: j,
                           sisaHutang: sisa,
                           sisaHutangRiil: sisa
@@ -2564,7 +2697,22 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-bold mb-1">Sisa Hutang (Rp)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-slate-700 dark:text-zinc-300 font-bold">Sisa Hutang (Rp)</label>
+                      {isInvoiceSpecialPlusKoreksi({ no: formValues.no, id: formValues.id }) ? (
+                        <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                          (Jumlah - Dibayar + Koreksi)
+                        </span>
+                      ) : isInvoiceSpecialMinusKoreksi({ no: formValues.no, id: formValues.id, rekanan: formValues.rekanan, subBelanja: formValues.subBelanja }) ? (
+                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                          (Jumlah - Koreksi - Dibayar)
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                          (Saldo Awal - Pembayaran)
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="number"
                       value={formValues.sisaHutang !== undefined ? formValues.sisaHutang : (formValues.sisaHutangRiil || 0)}
@@ -2599,23 +2747,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      let fix = Number(formValues.totalInvoiceFix) || ((Number(formValues.jumlahInvoice) || 0) + (Number(formValues.koreksi) || 0));
                       let j = Number(formValues.jumlahInvoice) || 0;
-                      let p = Number(formValues.pembayaran) || 0;
-                      if (fix === 0 && p > 0) {
-                        fix = p;
-                        j = p;
-                      } else if (fix === 0 && j > 0) {
-                        fix = j;
-                        p = j;
-                      } else if (fix > 0 && p === 0) {
-                        p = fix;
-                      }
+                      let k = Number(formValues.koreksi) || 0;
+                      const isPlus = isInvoiceSpecialPlusKoreksi(formValues);
+                      const isMinus = isInvoiceSpecialMinusKoreksi(formValues);
+                      const targetBayar = isPlus ? Math.max(0, j + k) : (isMinus ? Math.max(0, j - k) : j);
                       setFormValues({
                         ...formValues,
-                        jumlahInvoice: j > 0 ? j : fix,
-                        totalInvoiceFix: fix,
-                        pembayaran: p > 0 ? p : fix,
+                        totalInvoiceFix: 0,
+                        pembayaran: targetBayar,
                         sisaHutang: 0,
                         sisaHutangRiil: 0,
                         sudahMasukBukuKas: true,
@@ -2631,13 +2771,15 @@ export const InvoiceHutang2025View: React.FC<InvoiceHutang2025ViewProps> = ({
                     onClick={() => {
                       const j = Number(formValues.jumlahInvoice) || 0;
                       const k = Number(formValues.koreksi) || 0;
-                      const fix = j + k;
+                      const isPlus = isInvoiceSpecialPlusKoreksi(formValues);
+                      const isMinus = isInvoiceSpecialMinusKoreksi(formValues);
+                      const targetSisa = isPlus ? Math.max(0, j + k) : (isMinus ? Math.max(0, j - k) : j);
                       setFormValues({
                         ...formValues,
-                        totalInvoiceFix: fix,
+                        totalInvoiceFix: 0,
                         pembayaran: 0,
-                        sisaHutang: fix,
-                        sisaHutangRiil: fix,
+                        sisaHutang: targetSisa,
+                        sisaHutangRiil: targetSisa,
                         keterangan: 'Belum Lunas'
                       });
                     }}
